@@ -9,21 +9,24 @@ import asyncio
 
 class ServerGUI(ctk.CTkToplevel):
 
-    def __init__(self ,master, index,connection ,HOST, PORT):
+    def __init__(self ,master, name ,index,connection ,HOST, PORT):
         super().__init__(master)
         self.width = 400
         self.height = 400
         self.geometry(f"{self.height}x{self.width}")
+
         self.gui_queue = queue.Queue()
+        self.notifications_queue = queue.Queue()
         self.title("WEB SERVER")
         self.HOST = HOST
         self.PORT = PORT
+        self.name = name
 
         self.destroyed = False
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
         ## SERVER
-        self.server =  connection(10, self.gui_queue , HOST ,PORT)
+        self.server =  connection(self.name,10, self.gui_queue ,self.notifications_queue, HOST ,PORT)
         self.top_info = ctk.CTkLabel(self,text= "Numero de usuarios ativos : 0")
         self.top_info.pack(pady = 3)
 
@@ -83,7 +86,8 @@ class ServerGUI(ctk.CTkToplevel):
                 next_message = self.gui_queue.get(block=False)
                 self.add_message_on_gui(**next_message)
         except queue.Empty:
-            print("sem melnsagens na fila")
+            # print("sem melnsagens na fila")
+            pass
         finally:
             if not self.destroyed : self.master.after(800 , self.check_queue_for_gui)
 

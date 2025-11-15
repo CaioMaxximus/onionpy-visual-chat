@@ -94,7 +94,8 @@ class ClientGUI(ctk.CTkToplevel):
                 next_message = self.gui_queue.get(block=False)
                 self.add_message_on_gui(**next_message)
         except queue.Empty:
-            print("sem melnsagens na fila")
+            # print("sem melnsagens na fila")
+            pass
         finally:
             if not self.destroyed : self.master.after(800 , self.check_queue_for_gui)
 

@@ -1,4 +1,8 @@
 import asyncio
+from python_socks.async_.asyncio import Proxy
+import ssl
+from python_socks._types import ProxyType
+
 
 class ClientConnection():
     def __init__(self, messages_queue, HOST , PORT , pin = None):
@@ -7,6 +11,7 @@ class ClientConnection():
         self.messages_queue = messages_queue
         self.HOST = HOST
         self.PORT = PORT
+        self.sock = None
         print(HOST , PORT)
         print("parametros")
 
@@ -51,13 +56,24 @@ class ClientConnection():
             await local_listerner(reader , writer)
         
         self.web_queue = asyncio.Queue()
-        # print("==========")
-        # print(self.HOST)
-        # print(self.PORT)
-        try:
-            reader,writer = await asyncio.open_connection( self.HOST , self.PORT)
-        except :
-            print("conexao falhou!")
+
+        # try:
+
+        print("esperando o proxy tor estar pronto")
+        self.proxy = Proxy(proxy_type= ProxyType.SOCKS5,
+                           host= "127.0.0.1" , port = 9050, rdns=True)
+        await asyncio.sleep(delay=3)
+        # self.proxy._loop = self.web_loop
+        print(self.HOST, self.PORT)
+        self.sock  = await self.proxy.connect(dest_host = self.HOST,dest_port= self.PORT,
+        )
+        print("o proxy fez a conexao!!")
+        reader,writer = await asyncio.open_connection( 
+            # ssl=ssl.create_default_context(),
+            sock = self.sock)
+        print("conexao concluida!!")
+        # except :
+            # print("conexao falhou!")
 
         await connection_handler(reader,writer)
 

@@ -1,0 +1,61 @@
+# Tor state file last generated on 2025-11-15 14:21:56 local time
+# Other times below are in UTC
+# You *do not* need to edit this file.
+
+CircuitBuildTimeBin 625 2
+CircuitBuildTimeBin 675 3
+CircuitBuildTimeBin 725 4
+CircuitBuildTimeBin 775 6
+CircuitBuildTimeBin 825 10
+CircuitBuildTimeBin 875 9
+CircuitBuildTimeBin 925 7
+CircuitBuildTimeBin 975 3
+CircuitBuildTimeBin 1025 1
+CircuitBuildTimeBin 1075 8
+CircuitBuildTimeBin 1125 5
+CircuitBuildTimeBin 1175 1
+CircuitBuildTimeBin 1225 4
+CircuitBuildTimeBin 1275 7
+CircuitBuildTimeBin 1325 8
+CircuitBuildTimeBin 1375 2
+CircuitBuildTimeBin 1425 3
+CircuitBuildTimeBin 1475 1
+CircuitBuildTimeBin 1525 4
+CircuitBuildTimeBin 1575 3
+CircuitBuildTimeBin 1625 1
+CircuitBuildTimeBin 1675 1
+CircuitBuildTimeBin 1775 2
+CircuitBuildTimeBin 1825 3
+CircuitBuildTimeBin 1875 1
+CircuitBuildTimeBin 2575 1
+CircuitBuildTimeBin 2875 1
+CircuitBuildTimeBin 3125 1
+CircuitBuildTimeBin 3975 1
+Dormant 0
+Guard in=default rsa_id=FF929A01FB58B8988E9AD7A75DE8C414486A82EB nickname=1jcbcaulbxid sampled_on=2025-11-04T07:53:25 sampled_idx=0 sampled_by=0.4.5.16 listed=1 confirmed_on=2025-11-09T08:08:38 confirmed_idx=1 pb_use_attempts=10.000000 pb_use_successes=10.000000 pb_circ_attempts=26.000000 pb_circ_successes=26.000000 pb_successful_circuits_closed=26.000000 pb_timeouts=1.000000
+Guard in=default rsa_id=AFBC1D205139EA93EB9F1F5FB26550E7F85304CA nickname=prsv sampled_on=2025-11-06T06:34:28 sampled_idx=1 sampled_by=0.4.5.16 listed=1 confirmed_on=2025-11-03T22:44:21 confirmed_idx=0 pb_use_attempts=12.000000 pb_use_successes=12.000000 pb_circ_attempts=30.000000 pb_circ_successes=30.000000 pb_successful_circuits_closed=30.000000
+Guard in=default rsa_id=02C7A07B1214AA338A705EFCCA409D700F757201 nickname=kykeon sampled_on=2025-11-10T12:00:29 sampled_idx=2 sampled_by=0.4.5.16 listed=1 pb_circ_attempts=3.000000 pb_timeouts=3.000000
+Guard in=default rsa_id=850A0B0001E5C3EE088376D498B8FE219C577152 nickname=vidi sampled_on=2025-11-06T03:37:29 sampled_idx=3 sampled_by=0.4.5.16 listed=1 confirmed_on=2025-11-06T03:36:20 confirmed_idx=2 pb_use_attempts=22.000000 pb_use_successes=22.000000 pb_circ_attempts=43.000000 pb_circ_successes=42.000000 pb_successful_circuits_closed=42.000000 pb_timeouts=1.000000
+Guard in=default rsa_id=1A243DA6F639A9C99B4391158E0E14E89C29754C nickname=Quetzalcoatl sampled_on=2025-11-05T13:56:30 sampled_idx=4 sampled_by=0.4.5.16 listed=1 confirmed_on=2025-11-12T11:53:26 confirmed_idx=3 pb_circ_attempts=1.000000 pb_circ_successes=1.000000 pb_successful_circuits_closed=1.000000 pb_timeouts=1.000000
+Guard in=default rsa_id=4BAED35CC72FCF2D77DA3F46BC45709D45682018 nickname=mikrogravitation5 sampled_on=2025-11-07T03:23:28 sampled_idx=5 sampled_by=0.4.5.16 listed=1 confirmed_on=2025-11-07T12:25:44 confirmed_idx=4 pb_circ_attempts=1.000000 pb_circ_successes=1.000000 pb_successful_circuits_closed=1.000000 pb_timeouts=1.000000
+Guard in=default rsa_id=5DB9AE27A44EB7B476CC04A66C67A71C97A001E6 nickname=Chenjesu sampled_on=2025-11-15T00:44:30 sampled_idx=6 sampled_by=0.4.5.16 listed=1
+Guard in=default rsa_id=509EAB4C5D10C9A9A24B4EA0CE402C047A2D64E6 nickname=fuchs2 sampled_on=2025-11-12T22:42:10 sampled_idx=7 sampled_by=0.4.5.16 listed=1
+Guard in=default rsa_id=44DC23661E05DEFD94398936D9334987ABCB6E5E nickname=currentlane sampled_on=2025-11-11T21:42:47 sampled_idx=8 sampled_by=0.4.5.16 listed=1
+Guard in=default rsa_id=09AEBB996358FE22A268E71CDE038106F2B6EAE1 nickname=Nicosia sampled_on=2025-11-04T15:59:25 sampled_idx=9 sampled_by=0.4.5.16 listed=1
+Guard in=default rsa_id=5A24448FEC0BEBF9330532D93E42705D25AB2CF5 nickname=0xcc01 sampled_on=2025-11-13T15:02:21 sampled_idx=10 sampled_by=0.4.5.16 listed=1
+Guard in=default rsa_id=575B47977496E830DF5334F1A2266F16E028CB4B nickname=QuackyForPrivacy sampled_on=2025-11-04T00:08:52 sampled_idx=11 sampled_by=0.4.5.16 listed=1
+Guard in=default rsa_id=F475E5987E44A2B7B143A2BEE3F8128EEFD7E5A3 nickname=0x1ea7deadbeef sampled_on=2025-11-05T10:24:15 sampled_idx=12 sampled_by=0.4.5.16 listed=1
+Guard in=default rsa_id=9BBE9F153A6B5AAB62D20EA9B38A819B6FA5086D nickname=rendezvousobserver sampled_on=2025-11-12T13:47:50 sampled_idx=13 sampled_by=0.4.5.16 listed=1
+Guard in=default rsa_id=8D0E575C7C5E6B8075891121368244C283CBC65A nickname=Novastation sampled_on=2025-11-11T03:18:35 sampled_idx=14 sampled_by=0.4.5.16 listed=1
+Guard in=default rsa_id=03D1EF3EF2BE5145150C58ACC72519DD860E61BA nickname=blackfox sampled_on=2025-11-14T16:03:13 sampled_idx=15 sampled_by=0.4.5.16 listed=1
+Guard in=default rsa_id=FDBDCB10E183F8846F6746544CA6490DC30504D9 nickname=DFRI74 sampled_on=2025-11-10T20:47:11 sampled_idx=16 sampled_by=0.4.5.16 listed=1
+Guard in=default rsa_id=379AD084786C17EC2D53C2B0420A330A3838E174 nickname=Downunder1 sampled_on=2025-11-04T19:25:19 sampled_idx=17 sampled_by=0.4.5.16 listed=1
+Guard in=default rsa_id=8DED52F5DD238921C97442D81ECDC7EBD6EB73DA nickname=prsv sampled_on=2025-11-04T15:15:01 sampled_idx=18 sampled_by=0.4.5.16 listed=1
+Guard in=default rsa_id=D55E7B3D3DE8AC83F94CB3E264D27F35656DA623 nickname=Aurorara sampled_on=2025-11-08T13:53:34 sampled_idx=19 sampled_by=0.4.5.16 listed=1
+Guard in=default rsa_id=1CE1BE5A0847B901306CD1A302E0B2265C887F76 nickname=NTH18R1 sampled_on=2025-11-05T16:08:37 sampled_idx=20 sampled_by=0.4.5.16 listed=1
+Guard in=default rsa_id=949838C7EDCBC3AA0FF057935D2E7AD9184389BD nickname=prsv sampled_on=2025-11-04T14:38:27 sampled_idx=21 sampled_by=0.4.5.16 listed=1
+Guard in=default rsa_id=E785813FBBD352664BC1F133CE31A54EF596C5BD nickname=Quetzalcoatl sampled_on=2025-11-13T17:17:58 sampled_idx=22 sampled_by=0.4.5.16 listed=1
+LastWritten 2025-11-15 17:21:56
+MinutesSinceUserActivity 2
+TorVersion Tor 0.4.5.16
+TotalBuildTimes 103

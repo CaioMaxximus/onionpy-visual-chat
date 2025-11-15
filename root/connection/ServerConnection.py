@@ -1,17 +1,21 @@
 import asyncio
 import re
+from  connection.TorServiceManager import TorServiceManager
 
 class ServerConnection():
-    def __init__(self, max_number_of_connections,messages_queue, HOST , PORT , pin = None):
+    def __init__(self, name , max_number_of_connections,messages_queue, notifications_queue, HOST , PORT , pin = None):
         self.users = []
+        self.name = name
         self.max_number_of_connections = max_number_of_connections
         self.pin = pin
         self.messages_queue = messages_queue
+        self.notifications_queue = notifications_queue
+        self.onion_adress = ""
+
         self.active  = True
         self.HOST = HOST
         self.PORT = PORT
         self.my_connections = []
-
 
     def delete_user(self, user_id):
         self.users.remove(user_id)
@@ -28,9 +32,9 @@ class ServerConnection():
         while True:
             last_message = await self.web_queue.get()
             await self.broadcast_message(last_message)
-
+            
     async def server_listener(self):
-        print("inicio um loop para o servidor")
+        # print("inicio um loop para o servidor")
 
         async def connection_handler(reader, writer):
             async def local_listerner(reader, writer):
@@ -47,21 +51,31 @@ class ServerConnection():
                         "author_name": writer.get_extra_info('peername'), 
                         "owner": False
                     }
-                    
                     await self.web_queue.put(msg_info)
                     self.messages_queue.put(msg_info)
                     print("mensagem recebida!!")
                     # self.add_message_on_gui(entry = message, author_name = " " , owner =  False)
             await local_listerner(reader , writer)
-        
+            
+        async def serve(server):
+            print("to servindo pra sempre")
+            async with server:
+                print("servidor iniciado")
+                await server.serve_forever()
+
         self.web_queue = asyncio.Queue()
-        server = await asyncio.start_server(connection_handler , self.HOST , self.PORT)
-        async with server:
-            print("servidor iniciado")
-            await server.serve_forever()
+        server = await asyncio.start_server(connection_handler , self.HOST ,self.PORT)
+        sock = server.sockets[0]
+        local_port = sock.getsockname()[1]
 
+        await asyncio.gather(serve(server) ,self.start_onion_service(local_port))
 
-    
+    async def start_onion_service(self, port):
+        
+        self.onion_connection = TorServiceManager.start_onion_server(self.name , port)
+
+            
+
     async def broadcast_message(self, message):
         data = message["entry"]
         data_encoded = (data + "\n").encode()
