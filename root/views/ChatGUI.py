@@ -5,7 +5,7 @@ import time
 import random
 # import socket
 import asyncio
-from connection.ServerConnection import ServerConnection
+from root.connection.server_connection import ServerConnection
 
 class ServerGUI(ctk.CTkToplevel):
 
