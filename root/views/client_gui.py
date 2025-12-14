@@ -3,9 +3,9 @@ import  queue
 import threading
 import time
 import random
-from components.MessageFrame import  MessageFrame
-from views.popup_entry_gui import PopUPEntryGui
-from root.models.notification import NotificationType
+from components.message_frame import  MessageFrame
+from popups import PopUpEntryGui
+from models.notification import NotificationType
 # import socket
 import asyncio
 HOST = '127.0.0.1'
@@ -13,27 +13,25 @@ PORT = 8080
 
 class ClientGUI(ctk.CTkToplevel):
 
-    def __init__(self ,master, index , controler,data_queue , notification_queue):
+    def __init__(self ,master, index , controler):
         super().__init__(master)
         self.width = 400
         self.height = 400
         self.geometry(f"{self.height}x{self.width}")
-        self.gui_queue =data_queue
         self.title("CLIENT SERVER")
+        self.notification_queue = queue.Queue()
+        self.messages_queue = queue.Queue()
         self._on_start()
+        # self.master.after(100 , self.check_queue_for_gui)
 
 
         self.destroyed = False
         self.protocol("WM_DELETE_WINDOW", self._on_close)
-        self.notification_queue = notification_queue
 
         ## SERVER
         self.controler =  controler
-        
+        # self.stop_thread_event = threading.Event()
 
-        self.stop_thread_event = threading.Event()
-
-        self.master.after(100 , self.check_queue_for_gui)
         # self.server_thread = threading.Thread(target = self.controler.async_server, daemon= True)
         # self.server_thread.start()
 
@@ -51,6 +49,22 @@ class ClientGUI(ctk.CTkToplevel):
         self._wait_succed_connection()
 
     
+    def collect_notification(self):
+        def store_notification(notification):
+            self.notification_queue.put(notification)
+            self.after(100 , self.collect_notification)
+
+        self.controler.get_notification(lambda res : store_notification(res))
+
+    def collect_message(self):
+        def store_message(msg):
+            self.message_queue.put(msg)
+            self.after(100 , self.collect_message)
+
+        self.controler.get_web_message(lambda res : store_message(res))
+    
+
+
     def _wait_succed_connection(self):
         if not self.notification_queue.empty():
             notification = self.notification_queue.get()
@@ -68,7 +82,10 @@ class ClientGUI(ctk.CTkToplevel):
             elif notification.message_type == NotificationType.SUCCESS:
                 self.message_loading_element.insert("end", f"{notification.content}\n")
                 self.message_loading_element.see("end")
-                self.after(2000, self.build_gui)
+                self.after(1500, self.build_gui)
+        else :
+            self.after(2000, self.build_gui)
+
 
     def build_gui(self):
         self.top_info = ctk.CTkLabel(self,text= "Numero de usuarios ativos : 0")
@@ -85,11 +102,12 @@ class ClientGUI(ctk.CTkToplevel):
                                                   width=  min(int(self.width * 0.75),200 ),
                                                   height= int(self.height * 0.15))
         self.message_entry_bottom.pack(side = "bottom" , pady = 5)
+        self.collect_notification()
+        self.collect_message()
 
 
     def _on_close(self):
-        # self.stop_thread_event.set()
-        # self.web_thread.join()
+
         self.destroyed = True
         print("fechei a janela!")
         self.destroy()
@@ -117,17 +135,14 @@ class ClientGUI(ctk.CTkToplevel):
 
         self.after(90 , self.scroll_to_bottom)
 
-    # def remove_guest(self,name):
-    #     print("removing guest!")
-
     def scroll_to_bottom(self):
         self.scroll_frame._parent_canvas.yview_moveto(1.0)
 
-    def check_queue_for_gui(self):
+    def check_messages_queue_for_gui(self):
         try:
             # print("checkando a queue")
             while True:
-                next_message = self.gui_queue.get(block=False)
+                next_message = self.messages_queue.get(block=False)
                 self.add_message_on_gui(**next_message)
         except queue.Empty:
             # print("sem melnsagens na fila")
@@ -137,10 +152,12 @@ class ClientGUI(ctk.CTkToplevel):
 
         
     def add_my_message(self):
+
+        def put_my_message_on_gui():
+            self.messages_queue.put({"entry" : last_message,
+                                "author_name" : " " , "owner" :  True })
         last_message = self.message_entry_bottom.get("1.0", "end-1c")
-        self.message_entry_bottom.delete("1.0", "end") 
-        
-        self.controler.send_message_to_web(last_message)
-        self.gui_queue.put({"entry" : last_message,
-                             "author_name" : " " , "owner" :  True })
+        self.message_entry_bottom.delete("1.0", "end")
+        self.controler.send_message_to_web(last_message, lambda _ : put_my_message_on_gui())
+
         

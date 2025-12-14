@@ -1,43 +1,68 @@
 import asyncio
 from python_socks.async_.asyncio import Proxy
-import ssl
-from python_socks._types import ProxyType
+from python_socks import ProxyType
+from models.notification import Notification , NotificationType
 
 
 class ClientConnection():
-    def __init__(self,pin = None):
+    def __init__(self, pin = None):
         self.users = []
         self.pin = pin
-        self.on_messages_callback = None
-        self.on_notification_callback = None
+        self.messages_queue = asyncio.Queue()
+        self.notification_queue= asyncio.Queue()
         self.HOST  = None 
         self.PORT = None
+        self.proxy_port = None
         self.sock = None
-        self.web_loop = None
-        self.writer = None
-        self.web_queue = asyncio.Queue()
+        self.writer = None  
+        self.messages_to_send_queue = asyncio.Queue()
+        self._connected = False
 
+    def validate_connection_state(func):
+        async def inner_wrapper(self ,*args, **kwargs):
+            if self._connected:
+                return await func(self,*args, **kwargs)
+            else:
+                raise ValueError("The connection didnt start yet!")
+        return inner_wrapper
+    
 
-    def set_callbacks(self , on_messages_callback ,on_notification_callback):
-        self.on_messages_callback = on_messages_callback
-        self.on_notification_callback = on_notification_callback
-
-    async def async_server(self, host: str, port: int) -> None:
+    async def run(self, host: str, port: int ,proxy_port) -> None:
         self.HOST = host
         self.PORT = port
-        await asyncio.gather(self.server_connection() ,self.check_messages_for_web())
-            
-    async def check_messages_for_web(self):
-        while True:
-            last_message = await self.web_queue.get()
-            await self.send_message(last_message)
+        self.proxy_port = proxy_port
+        await self.start_server_connection()
 
+    @validate_connection_state
+    async def end_connection(self):
+        self._connected = False
+        self.messages_checker_task.cancel()
+        try:
+            await self.messages_checker_task
+        except :
+            pass
+        await self.notification_queue.put(Notification(NotificationType.WARNING,
+                                          "Connection finished with the server."))
+        
+
+        
+    @validate_connection_state    
+    async def check_messages_for_web(self):
+        while  True:
+            try :
+                last_message = await self.messages_to_send_queue.get()
+                await self.send_message(last_message)
+            except asyncio.CancelledError():
+                pass
+
+    @validate_connection_state
     async def connection_handler(self,reader, writer):
         self.writer = writer
         while True:
-            data = await reader.read()
+            data = await reader.read(4096)
             if not data:
-                self.on_notification_callback("Connection closed by the server.")
+                await self.notification_queue.put(
+                    Notification(NotificationType.WARNING,"Connection closed by the server."))
                 break
             message = data.decode().strip()
             msg_info = {
@@ -45,16 +70,15 @@ class ClientConnection():
                 "author_name": str(writer.get_extra_info('peername')), 
                 "owner": False
             }
-            self.on_messages_callback(msg_info)
+            await self.messages_queue.put(msg_info)
 
-    async def server_connection(self):
-
+    async def start_server_connection(self):
 
         try:
             self.proxy = Proxy(proxy_type= ProxyType.SOCKS5,
-                            host= "127.0.0.1" , port = 9050, rdns=True)
+                            host= "127.0.0.1" , port = self.proxy_port, rdns=True)
             self.sock  = await self.proxy.connect(dest_host = self.HOST,dest_port= self.PORT,
-            )
+            )   
         except TimeoutError as e:
             raise RuntimeError(f"Connection timeout in proxy connection {self.HOST}:{self.PORT}") from e
         except ConnectionError as e:
@@ -63,14 +87,17 @@ class ClientConnection():
         try :
             reader,writer = await asyncio.open_connection( 
                 sock = self.sock)
+            self._connected = True
         except TimeoutError:
             raise RuntimeError(f"Connection timeout trying to connect to server {self.HOST}:{self.PORT}")
         except ConnectionError as e:
             raise ConnectionError(f"Error! Unable to connect to server {self.HOST}:{self.PORT}") from e
-
-        await self.connection_handler(reader,writer)
+        else:
+            self.messages_checker_task = asyncio.create_task(self.check_messages_for_web())
+            await self.connection_handler(reader,writer)
+        await self.end_connection()
         
-
+    @validate_connection_state
     async def send_message(self, message):
         data = message
         data_encoded = (data + "\n").encode()
@@ -81,7 +108,19 @@ class ClientConnection():
             await w.drain()
             print("a mensagem foi envida do cliente com sucesso!!")
         except (ConnectionResetError , ConnectionRefusedError): 
-            print("erro de conexao")
+            await self.notification_queue.put(
+                Notification(NotificationType.WARNING , 
+                "Unable to send the message , try again"))
         
+    @validate_connection_state
     async def add_message_to_send(self,message):
-        await self.web_queue.put(message)
+        await self.messages_to_send_queue.put(message)
+    
+    @validate_connection_state
+    async def get_message_in_queue(self):
+        return await self.messages_queue.get()
+    
+    async def get_notification_in_queue(self):
+        return await self.notification_queue.get()
+    
+    

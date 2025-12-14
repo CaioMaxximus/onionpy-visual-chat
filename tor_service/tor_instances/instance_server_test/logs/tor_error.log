@@ -1,6 +1,0 @@
-Nov 15 11:56:47.000 [notice] Tor 0.4.5.16 opening new log file.
-Nov 18 12:59:53.000 [notice] Tor 0.4.5.16 opening log file.
-Nov 18 14:22:59.000 [notice] Tor 0.4.5.16 opening log file.
-Nov 18 14:23:04.000 [err] No, it's still there.  Exiting.
-Nov 18 14:23:04.000 [err] set_options(): Bug: Acting on config options left us in a broken state. Dying. (on Tor 0.4.5.16 )
-Nov 18 14:23:04.000 [err] Reading config failed--see warnings above.

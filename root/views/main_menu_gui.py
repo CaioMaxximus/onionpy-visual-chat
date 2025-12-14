@@ -1,26 +1,29 @@
 import customtkinter as ctk
-from coordinator.application_coordinator import ApplicationCoordinator
-from views.popup_entry_gui import PopUPEntryGui
-HOST = '127.0.0.1'
-PORT = 8080
+from models.notification import  NotificationType
+from popups import PopUpNotificationGUI  , PopUpEntryGui
+# HOST = '127.0.0.1'
+# PORT = 8080
 
 class MainMenuGUI:
 
-    def __init__(self,root , controller
-                 ):
+    def __init__(self,root , controller,
+                 client_gui_navigate,server_gui_navigate):
         
         self.root = root
         self.root.geometry("600x600")
-        self.controler.run(self.root.loop)
-        self.start_screen()
+        self.controller = controller
+        self.controller.run(self.root)
+        self.get_notification_routine()
+        # self.start_screen()
+        self.client_gui_navigate = client_gui_navigate
+        self.server_gui_navigate = server_gui_navigate
 
-        self.controler.start_proxy(None)
 
         self.label = ctk.CTkLabel(root, text="WELCOLME! what do you wanna do now?")
         self.label.pack(pady = 30)
 
         self.createServerBtn = ctk.CTkButton(root, text = "Create a new server",
-                                             command= self.create_new_server_window)
+                                             command= self.create_new_server)
         self.createServerBtn.pack(pady = 20)
 
         self.enterServerBtn = ctk.CTkButton(root, text = "Enter in a new server",
@@ -36,29 +39,58 @@ class MainMenuGUI:
         self.my_visited_servers_list = ElementList(self.bottow_frame,print)
         self.my_visited_servers_list.pack(side = "right", fill = "y", padx=10, pady=10)
 
-        self.controler.get_my_servers(lambda servers_names: self.my_servers_list.set_list(servers_names) )
-        self.controler.get_my_servers(lambda servers_names: self.my_visited_servers_list.set_list(servers_names) )
+        self.controller.get_my_servers(lambda servers_names: self.my_servers_list.set_items(servers_names) )
+        self.controller.get_my_servers(lambda servers_names: self.my_visited_servers_list.set_items(servers_names) )
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
 
 
-    def create_new_server_window(self,server_name = "server_test",):
-        pop_w = PopUPEntryGui(self.root, ["Define a name for the new server"], ["server_name"])
+    def on_close(self):
+            self.controller.end_tor(callback = lambda _ : self.root.destroy())
+            
+
+    def create_new_server(self):
+        pop_w = PopUpEntryGui(self.root, ["Define a name for the new server"], ["server_name"])
         self.root.wait_window(pop_w)
         server_name = pop_w.registered_values["server_name"]
-        self.control.create_new_onion_server(
-            server_name , 
-            lambda server_name : self.iniatiate_server_chat_window(server_name))
-        
-    def create_new_client_window(self):
-        ApplicationCoordinator.client_chat((self.root , 0))
-        # ClientGUI(self.root,0 ,ClientConnection, host, port)
+        self.create_new_server_window(server_name)
+
+        # self.controller.create_new_onion_server(
+        #     server_name , 
+        #     lambda  : self.create_new_server_window(server_name))
     
-    def iniatiate_server_chat_window(self,server_name):
-        ApplicationCoordinator.(self.root,server_name,0, ServerConnection,HOST,PORT)
+    def create_a_new_client(self):
+        # pop_w = PopUPEntryGui(self.root, ["HOST" , "PORT"], ["host" , "port"])
+        # self.root.wait_window(pop_w)
+        # host , port = pop_w.registered_values.values()
+        self.create_new_client_window()
+
+    # def start_onion_server(self, server_name):
+    #     self.control.start_onion_server(server_name , lambda _ : self.create_new_server_window(server_name))
+ 
+    def get_notification_routine(self):
+        self.controller.get_notification(self.handle_notification)
+    
+    def handle_notification(self, notificaton):
+        if notificaton is not None:
+            n_type = notificaton.message_type
+            msg = notificaton.content
+            PopUpNotificationGUI(self.root, msg)
+        self.root.after(10 , self.get_notification_routine)
+
+
+    def create_new_server_window(self , server_name):
+        self.server_gui_navigate(self.root , server_name ,mode = True)
+
+    def create_new_client_window(self):
+        self.client_gui_navigate(self.root , 0)
+
+    def iniatiate_server_window(self, *args):
+        print("Initiate sever window!")
 
 class ElementList(ctk.CTkScrollableFrame):
 
-    def __init__(self, master, callback, items = None):
+    def __init__(self, master, callback, items = []):
         super().__init__(master)
         self.master = master
         self.callback = callback

@@ -14,4 +14,4 @@ echo "APPLICATION_ROOT set to $APPLICATION_ROOT"
 source venv/bin/activate
 
 
-python3 root/main.py 
+python3 root/root.py 

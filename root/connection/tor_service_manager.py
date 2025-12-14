@@ -5,6 +5,8 @@ import socket
 import asyncio
 from python_socks.sync import Proxy
 from python_socks._types import ProxyType
+import signal
+
 
 class TorServiceManager():
 
@@ -40,7 +42,7 @@ class TorServiceManager():
           
         
     @classmethod
-    async def start_onion_server(cls,server_name ):
+    def start_onion_server(cls,server_name, timeout = 10 ):
         instance_path = f"{cls.APPLICATION_ROOT}/{cls.INSTANCES_PATH}/{server_name}"
         data_dir = f"{instance_path}/data"
         torcc_path = f"{instance_path}/conf/torrc"
@@ -61,7 +63,7 @@ class TorServiceManager():
         except Exception as e:
             raise e
         try:
-            cls.check_server_conection(adrr[0] , adrr[1], timeout= 5)
+            cls.check_server_conection(adrr[0] , adrr[1], timeout= timeout)
         except Exception as e:
             raise e
         
@@ -130,7 +132,18 @@ class TorServiceManager():
             sock.close()
         except Exception as e:
             raise e
-                
+        
+    @classmethod
+    def stop_tor(cls):
+        if cls.proxy_id is None:
+                return
+
+        try:
+            os.kill(cls.proxy_id, signal.SIGTERM)
+        except ProcessLookupError:
+            pass  # processo já morreu
+        except Exception as e:
+            raise RuntimeError(f"Erro ao encerrar Tor PID {cls.proxy_id}: {e}")
     
 class OnionConnection():
     def __init__(self, onion_adress , pid):
