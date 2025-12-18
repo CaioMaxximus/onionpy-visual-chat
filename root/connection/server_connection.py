@@ -10,7 +10,7 @@ class ServerConnection():
         self.name = name
         # self.max_number_of_connections = max_number_of_connections
         self.pin = pin
-        self.messages_queue = None
+        self.message_queue = None
         self.notification_queue = None
         self.messages_to_send_queue = None
 
@@ -37,7 +37,7 @@ class ServerConnection():
     
     async def start_server(self ,port):
         # async def events():
-        self.messages_queue = asyncio.Queue()
+        self.message_queue = asyncio.Queue()
         self.notification_queue = asyncio.Queue()
         self.messages_to_send_queue = asyncio.Queue()
         self.PORT  = port
@@ -59,20 +59,21 @@ class ServerConnection():
     @validate_connection_state
     async def connection_handler(self,reader, writer):
         async def local_listerner(reader, writer):
+            print("acabou de conectar alguem!!")
             self.my_connections.append(writer)
             while True:
-                data = await reader.read(4096)
+                data = await reader.readline()
                 if not data:
                     await self.notification_queue.put(
                     Notification(NotificationType.WARNING,f"User {writer.get_extra_info('peername')}"))
-                break
-            message = data.decode().strip()
-            msg_info = {
-                "entry": message,
-                "author_name": writer.get_extra_info('peername'), 
-                "owner": False
-            }
-            await self.messages_queue.put(msg_info)
+                    break
+                message = data.decode().strip()
+                msg_info = {
+                    "entry": message,
+                    "author_name": writer.get_extra_info('peername'), 
+                    "owner": False
+                }
+                await self.message_queue.put(msg_info)
 
         await local_listerner(reader , writer)
 
@@ -101,6 +102,7 @@ class ServerConnection():
             raise RuntimeError(f"Unexpected error while starting the server: {e}") from e
         self._connected = True
         self.server_task = asyncio.create_task(serve(server))
+        self.check_messages_for_web_task = asyncio.create_task(self.check_messages_for_web())
 
     @validate_connection_state            
     async def broadcast_message(self, message):
@@ -126,7 +128,7 @@ class ServerConnection():
         
     # @validate_connection_state
     async def get_message_in_queue(self):
-        return await self.messages_queue.get()
+        return await self.message_queue.get()
     
     async def get_notification_in_queue(self):
         return await self.notification_queue.get()

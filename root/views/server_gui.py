@@ -30,6 +30,7 @@ class ServerGUI(ctk.CTkToplevel):
         self.notifications_queue = queue.Queue()
         self.controller = controller
         self.controller.run(self.master , lambda : step2())
+        self.destroyed = False
         
 
     def start_routines(self):
@@ -52,7 +53,7 @@ class ServerGUI(ctk.CTkToplevel):
         self.scroll_frame = ctk.CTkScrollableFrame(self, label_text="Lista de elementos")
         self.scroll_frame.pack(expand=True, fill="both", padx=10, pady=10)
 
-        self.insert_message_btn = ctk.CTkButton(self, text = "enter", command= (self.add_my_message) 
+        self.insert_message_btn = ctk.CTkButton(self, text = "enter", command= self.add_my_message
                                                 , width= min(int(self.width * 0.45),175 ))
         self.insert_message_btn.pack(side = "bottom" , pady = 5)
 
@@ -101,9 +102,11 @@ class ServerGUI(ctk.CTkToplevel):
         last_message = self.message_entry_bottom.get("1.0", "end-1c")
         self.message_entry_bottom.delete("1.0", "end") 
         
-        self.controller.send_message_to_web(last_message)
-        self.message_queue.put({"entry" : last_message,
-                             "author_name" : " " , "owner" :  True })
+        msg= {"entry" : last_message,
+                             "author_name" : " " , "owner" :  True }
+
+        self.controller.send_message_to_web(msg)
+        self.message_queue.put(msg)
 
 
     ## a funcao so e chamda quando um item foi retornado do controller

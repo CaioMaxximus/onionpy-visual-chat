@@ -1,6 +1,6 @@
 from .client_connection import ClientConnection
 from .server_connection import ServerConnection
-from .tor_service_manager2 import TorServiceManager
+from .tor_service_manager import TorServiceManager
 
 __all__ = [
     "ClientConnection",

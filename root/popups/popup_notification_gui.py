@@ -24,7 +24,8 @@ class PopUpNotificationGUI(CTkToplevel):
         self.disable_button = not self.disable_button
     
     def set_message(self, new_msg) ->None:
-        self.message_label.configure(text=new_msg)
+        if self.winfo_exists():
+            self.message_label.configure(text=new_msg)
 
     def close(self,value) -> None:
         if self.callback is not None:

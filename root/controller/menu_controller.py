@@ -1,7 +1,7 @@
 import threading
 import queue
 from models.notification import Notification , NotificationType
-from connection.tor_service_manager2 import TorServiceManager
+from connection.tor_service_manager import TorServiceManager
 from data_base import db_service_manager as db
 import asyncio
 

@@ -13,6 +13,7 @@ class PopUpEntryGui(ctk.CTkToplevel):
         self.confirm_btn = ctk.CTkButton(self,text= "CONFIRM", command= self.confirm)
         self.confirm_btn.pack(side = "bottom" , pady = 8)
         self.generate_personalized_inputs()
+        self.registered_values = {}
 
     def generate_personalized_inputs(self):
         for label_text in self.labels:

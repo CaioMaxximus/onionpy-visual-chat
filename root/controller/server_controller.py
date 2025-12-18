@@ -2,7 +2,7 @@ import queue
 import asyncio
 from models.notification import Notification , NotificationType
 import threading
-from connection.tor_service_manager2 import TorServiceManager
+from connection.tor_service_manager import TorServiceManager
 from data_base import db_service_manager  as db
 import random
 import socket
@@ -50,7 +50,7 @@ class ServerController:
         self.message_routine = None
         self.main_task = None
         self.server_name = server_name
-        self.data_queue = None
+        self.message_queue = None
         self.notification_queue = None
         self.function_queue = None
         self.main_routine = None
@@ -75,7 +75,7 @@ class ServerController:
     def start_event_loop(self ,callback):
     
         async def start():
-            self.data_queue = asyncio.Queue()
+            self.message_queue = asyncio.Queue()
             self.notification_queue = asyncio.Queue()
             self.function_queue = asyncio.Queue()
             self.loop = asyncio.get_running_loop()
@@ -142,6 +142,7 @@ class ServerController:
                                                                 server_info["local_server_port"] , # type: ignore
                                                                 server_info["onion_port"]) # type: ignore
         await self.notification_queue.put(Notification(NotificationType.INFO , "Server started"))
+        print("criou td o server sem problema!")
 
 
     def _enqueue(self, func, *args, callback=None):
@@ -168,16 +169,16 @@ class ServerController:
     async def _get_notification(self) :
         # if self.notification_queue is None:
         #     return 
-        print("ta pedidndo notificacao ja")
+        # print("ta pedidndo notificacao ja")
         return await self.notification_queue.get()
 
     async def _get_web_message(self):
         print("ta pedidndo mensagem ja")
 
-        return await self.data_queue.get()
+        return await self.message_queue.get()
     
-    async def _insert_web_message_in_queue(self, message: str) -> None:
-        await self.data_queue.put(message)
+    # async def _insert_web_message_in_queue(self, message: str) -> None:
+    #     await self.message_queue.put(message)
     
 
     async def _insert_notification_in_queue(self, notification: str) -> None:
@@ -186,14 +187,16 @@ class ServerController:
     async def _get_notification_on_connection_routine(self):
         while True:
             try :
-                await self.connection.get_notification_in_queue()
+                notification = await self.connection.get_notification_in_queue()
+                await self.notification_queue.put(notification)
             except asyncio.CancelledError:
                 pass
             
     async def _get_messages_on_connection_routine(self):
         while True:
             try :
-                await self.connection.get_message_in_queue()
+                msg = await self.connection.get_message_in_queue()
+                await self.message_queue.put(msg)
             except asyncio.CancelledError:
                 pass
 
@@ -227,9 +230,9 @@ class ServerController:
 
         while True:
 
-            print(f"to no loop da task manager {self.function_queue.qsize()}")
+            # print(f"to no loop da task manager {self.function_queue.qsize()}")
             func, args ,  callback = await self.function_queue.get()
-            print("A FUNCTION QUEUE TA RODADNDO !!@!!")
+            # print("A FUNCTION QUEUE TA RODADNDO !!@!!")
             asyncio.create_task(wrapped(func , args ,  callback))
             
 

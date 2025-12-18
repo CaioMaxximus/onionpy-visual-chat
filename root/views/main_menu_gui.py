@@ -86,7 +86,7 @@ class MainMenuGUI:
         self.client_gui_navigate(self.root , 0)
 
     def iniatiate_server_window(self, *args):
-        print("Initiate sever window!")
+        self.server_gui_navigate(self.root , *args ,mode = False)
 
 class ElementList(ctk.CTkScrollableFrame):
 
@@ -105,6 +105,7 @@ class ElementList(ctk.CTkScrollableFrame):
                                              text=e)
             btn.pack(fill = "x")
             self.buttons[i] = btn
+    
 
     def set_items(self,items):
         self.items = items
