@@ -2,6 +2,7 @@ import asyncio
 import re
 from  connection.tor_service_manager import TorServiceManager
 from models.notification import Notification , NotificationType
+from typing import Any, Callable
 
 
 class ServerConnection():
@@ -20,8 +21,9 @@ class ServerConnection():
         self.HOST = "127.0.0.1"
         self.my_connections = []
         self._connected = False
+        self.broadcast_queue : asyncio.Queue
         
-    def validate_connection_state(func):
+    def validate_connection_state(func : Callable) -> Callable:
         async def inner_wrapper(self ,*args, **kwargs):
             if self._connected:
                 return await func(self,*args, **kwargs)
@@ -40,6 +42,7 @@ class ServerConnection():
         self.message_queue = asyncio.Queue()
         self.notification_queue = asyncio.Queue()
         self.messages_to_send_queue = asyncio.Queue()
+        self.broadcast_queue = asyncio.Queue()
         self.PORT  = port
         self._connected = True
         await self.server_listener() 
@@ -74,8 +77,16 @@ class ServerConnection():
                     "owner": False
                 }
                 await self.message_queue.put(msg_info)
+                await self.broadcast_queue.put(msg_info)
 
         await local_listerner(reader , writer)
+    
+    async def broadcast_routine(self) -> None:
+        while True:
+            msg = await self.broadcast_queue.get()
+            await self.broadcast_message(msg)
+
+
 
     @validate_connection_state
     async def server_listener(self):
@@ -103,6 +114,8 @@ class ServerConnection():
         self._connected = True
         self.server_task = asyncio.create_task(serve(server))
         self.check_messages_for_web_task = asyncio.create_task(self.check_messages_for_web())
+        self.broadcast_messages_task = asyncio.create_task(self.broadcast_routine())
+
 
     @validate_connection_state            
     async def broadcast_message(self, message):
@@ -123,7 +136,7 @@ class ServerConnection():
                     Notification(NotificationType.INFO, f"Error send message to {peername}"))
     
     @validate_connection_state    
-    async def add_message_to_send(self,message):
+    async def send_message(self,message):
         await self.messages_to_send_queue.put(message)
         
     # @validate_connection_state
