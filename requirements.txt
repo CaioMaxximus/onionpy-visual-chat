@@ -1,0 +1,7 @@
+aiosqlite==0.22.0
+async-timeout==5.0.1
+customtkinter==5.2.2
+darkdetect==0.8.0
+packaging==25.0
+python-socks==2.8.0
+stem==1.8.2

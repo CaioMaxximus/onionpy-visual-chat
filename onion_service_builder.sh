@@ -1,4 +1,3 @@
-
 if [ ! -d "tor_service/files" ]; then
     mkdir -p tor_service/files
     cd tor_service

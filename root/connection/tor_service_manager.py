@@ -14,8 +14,13 @@ TOR_CONTROL_PORT = 9051
 
 class TorServiceManager():
 
-    # APPLICATION_ROOT = os.getenv("APPLICATION_ROOT")
-    APPLICATION_ROOT = "/home/caiomaxx/Documentos/projetos/web_chat_with_tkinter"
+    # substitua a linha original por isto
+    APPLICATION_ROOT = os.getenv("APPLICATION_ROOT") or str(Path(__file__).resolve().parents[2])
+
+    # opcional: validar existência
+    if not os.path.isdir(APPLICATION_ROOT):
+        raise RuntimeError(f"APPLICATION_ROOT inválido: {APPLICATION_ROOT}")
+    # APPLICATION_ROOT = "/home/caiomaxx/Documentos/projetos/web_chat_with_tkinter"
     INSTANCES_PATH = "tor_service/tor_instances"
     TEMPLATE_TORRC_PATH = "tor_service/files/etc/tor/torrc"
     proxy_id = None
