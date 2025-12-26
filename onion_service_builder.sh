@@ -13,4 +13,7 @@ echo "APPLICATION_ROOT set to $APPLICATION_ROOT"
 source venv/bin/activate
 
 
-python3 root/root.py 
+# python3 src/onion_app/root.py
+# PYTHONPATH=src/onion_app python -m unittest discover -s tests
+PYTHONPATH=src python3 -m root
+# python3 src/onion_app/root.py

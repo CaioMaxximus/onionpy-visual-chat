@@ -38,12 +38,19 @@ chmod +X onion_service_builder.sh
 ./onion_service_builder.sh
 ```
 
+## Tests
+
+- TorServiceManager ![Status](https://img.shields.io/badge/status-pending-yellow)
+- client_connection ![Status](https://img.shields.io/badge/status-lacking-red)
+- server_connection ![Status](https://img.shields.io/badge/status-lacking-red)
+- client_controller ![Status](https://img.shields.io/badge/status-lacking-red)
+- basic_async_controller ![Status](https://img.shields.io/badge/status-lacking-red)
+- menu_controller ![Status](https://img.shields.io/badge/status-lacking-red)
+- server_controller ![Status](https://img.shields.io/badge/status-lacking-red)
 
 ## Project Structure
 ```
 ```
-
-## Tests
 
 ## Contact
 - Author: Caio Maxximus
