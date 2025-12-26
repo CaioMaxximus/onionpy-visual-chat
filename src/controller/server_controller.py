@@ -82,11 +82,12 @@ class ServerController(BasicAsyncController):
             self.notification_queue = asyncio.Queue()
             self.function_queue = asyncio.Queue()
             self.my_loop = asyncio.get_running_loop()
-            print("tabelas de dados prontas!")
             # self.main_task = asyncio.create_task(
             #     self.check_function_queue()
             # )
             await db.create_tables()
+            print("tabelas de dados prontas!")
+
             self.gui_loop.after(100,callback)
             print("vou criar a rotina do dispatcher")
             self.main_routine = asyncio.create_task(self.dispatcher())
@@ -118,7 +119,8 @@ class ServerController(BasicAsyncController):
         except Exception as e:
             raise e
         finally:
-            # precisso  dps isso aq para desfazer as criacoes de arquivos e  elementos na tabela se houver algum erro 
+            ## need to work in redo method for this , in case something go wrong
+
             pass
             
 

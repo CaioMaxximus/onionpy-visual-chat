@@ -32,6 +32,12 @@ class ServerConnection():
         return inner_wrapper
     
 
+    async def end_connection():
+        ## TO IMPLEMENT
+        ## NEED TO WORK TO CLOSE WEB CONNECTION
+        ## AND GARATEE THE END OF ALL PENDING TASKS
+        pass
+
     def delete_user(self, user_id):
         self.users.remove(user_id)
         self.local_black_list.append()
@@ -39,12 +45,15 @@ class ServerConnection():
     
     async def start_server(self ,port):
         # async def events():
+        print("entrei na duncao do start_server")
+
         self.message_queue = asyncio.Queue()
         self.notification_queue = asyncio.Queue()
         self.messages_to_send_queue = asyncio.Queue()
         self.broadcast_queue = asyncio.Queue()
         self.PORT  = port
         self._connected = True
+        print("OK o a classe conneciton dos serverr incious")
         await self.server_listener() 
         # asyncio.run(events())
         # await events()
@@ -101,6 +110,8 @@ class ServerConnection():
         try:
             server = await asyncio.start_server(self.connection_handler, self.HOST, self.PORT)
             sock = server.sockets[0]
+            print("serviu na porta adequada")
+
             local_port = sock.getsockname()[1]
             # update address/port and notify success
             self.onion_adress = f"{self.HOST}:{local_port}"

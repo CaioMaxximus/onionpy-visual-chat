@@ -31,7 +31,6 @@ class ClientConnection():
                 raise e
         return inner_wrapper
     
-
     async def run(self, host: str, port: int ) -> None:
         self.messages_queue = asyncio.Queue()
         self.notification_queue= asyncio.Queue()
@@ -43,6 +42,8 @@ class ClientConnection():
  
     @validate_connection_state
     async def end_connection(self):
+        ## NEED TO WORK TO CLOSE WEB CONNECTION
+        ## AND GARATEE THE END OF ALL PENDING TASKS
         self._connected = False
         self.messages_checker_task.cancel()
         try:

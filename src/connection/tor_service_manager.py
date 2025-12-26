@@ -41,8 +41,8 @@ class TorServiceManager():
 
     @classmethod   
     def start_onion_server(cls,server_name, local_port, onion_port):
-        cls._start_onion_server(server_name, local_port , onion_port ,Controller)
-    
+        onion_c = cls._start_onion_server(server_name, local_port , onion_port ,Controller)
+        return onion_c
     @classmethod
     def _start_onion_server(cls,server_name, local_port, onion_port , controller):
         instance_path = f"{cls.APPLICATION_ROOT}/{cls.INSTANCES_PATH}/instance_{server_name}"

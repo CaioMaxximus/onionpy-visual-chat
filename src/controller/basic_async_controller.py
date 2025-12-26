@@ -54,13 +54,13 @@ class BasicAsyncController():
                                     Notification(NotificationType.WARNING, f"{str(e)}")
                                 )
                                 attempt +=1
-                                # raise e ## just for test
+                                raise e ## just for test
                             except Exception as e:
                                 await self.notification_queue.put(
                                     Notification(NotificationType.ERROR, f"Error executing {func.__name__}: {str(e)}")
                                 )
                                 attempt =  self.max_attempts_retry
-                                # raise e
+                                raise e
 
                             else:
                                 self._execute_callback( res , callback = callback)
