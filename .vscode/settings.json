@@ -1,8 +1,0 @@
-{
-    "python.analysis.typeCheckingMode": "standard",
-    "editor.defaultFormatter": "ms-python.vscode-pylance",
-    "notebook.defaultFormatter": "ms-python.vscode-pylance",
-    "editor.formatOnType": true,
-    "editor.formatOnSave": true,
-    "notebook.formatOnSave.enabled": true
-}
