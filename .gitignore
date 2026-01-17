@@ -7,3 +7,6 @@ enderoeco_server_test.txt
 my.db
 root/controller/__pycache__
 rebuild_commits.sh
+__pycache__/
+**/__pycache__/
+*.pyc
