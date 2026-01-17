@@ -10,7 +10,8 @@ class MainMenuGUI:
                  client_gui_navigate,server_gui_navigate):
         
         self.root = root
-        self.root.geometry("600x600")
+        self.root.geometry("630x630")
+        self.root.title("ONION.PY VISUAL CHAT")
         self.controller = controller
         self.controller.run(self.root)
         self.get_notification_routine()
@@ -75,7 +76,7 @@ class MainMenuGUI:
         if notificaton is not None:
             n_type = notificaton.message_type
             msg = notificaton.content
-            PopUpNotificationGUI(self.root, msg)
+            PopUpNotificationGUI(self.root, msg,n_type)
         self.root.after(10 , self.get_notification_routine)
 
 

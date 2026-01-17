@@ -10,3 +10,4 @@ rebuild_commits.sh
 __pycache__/
 **/__pycache__/
 *.pyc
+tarefas_a_executar.txt

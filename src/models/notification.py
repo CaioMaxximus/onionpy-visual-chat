@@ -6,7 +6,7 @@ class NotificationType(Enum):
     WARNING = "warning"
     INFO = "info"
 
-class Notification:
+class Notification():
     def __init__(self, message_type: NotificationType, content: str):
         if not isinstance(message_type, NotificationType):
             raise ValueError("message_type must be an instance of MessageType Enum")

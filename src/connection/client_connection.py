@@ -38,10 +38,10 @@ class ClientConnection():
 
         self.HOST = host.strip()
         self.PORT = port
-        await self.start_server_connection()
+        await self.start_connection()
  
     @validate_connection_state
-    async def end_connection(self):
+    async def close_connection(self):
         ## NEED TO WORK TO CLOSE WEB CONNECTION
         ## AND GARATEE THE END OF ALL PENDING TASKS
         self._connected = False
@@ -54,34 +54,38 @@ class ClientConnection():
                                           "Connection finished with the server."))
         
 
-        
-    # @validate_connection_state    
-    # async def check_messages_for_web(self):
-    #     while  True:
-    #         try :
-    #             last_message = await self.messages_to_send_queue.get()
-    #             await self.send_message(last_message)
-    #         except asyncio.CancelledError:
-    #             pass
-
     @validate_connection_state
     async def connection_handler(self,reader, writer):
         self.writer = writer
         while True:
-            data = await reader.readline()
+            try:
+                data = await reader.readuntil(separator=b'\0')
+            except asyncio.exceptions.IncompleteReadError as e:
+                data = e.partial
+                if not data:
+                    await self.notification_queue.put(
+                        Notification(NotificationType.WARNING, f"Error reading message from server {writer.get_extra_info('peername')}"))
+            except:
+                await self.notification_queue.put(
+                                            Notification(NotificationType.WARNING, f"""Unexpected error from server: {writer.get_extra_info('peername')}
+                                                        closing connection..."""))
+                break
+
             if not data:
                 await self.notification_queue.put(
                     Notification(NotificationType.WARNING,"Connection closed by the server."))
                 break
+            
             message = data.decode().strip()
             msg_info = {
                 "entry": message,
                 "author_name": str(writer.get_extra_info('peername')), 
                 "owner": False
             }
+
             await self.messages_queue.put(msg_info)
 
-    async def start_server_connection(self):
+    async def start_connection(self):
 
         try:
             self.proxy = Proxy(proxy_type= ProxyType.SOCKS5,
@@ -108,21 +112,22 @@ class ClientConnection():
         
     @validate_connection_state
     async def send_message(self, message):
-        data = message
+        data = message["entry"]
         data_encoded = (data + "\n").encode()
         w = self.writer
 
         w.write(data_encoded)
-        await w.drain()
-        print("a mensagem foi envida do cliente com sucesso!!")
-        # except (ConnectionResetError , ConnectionRefusedError) as e: 
-            # await self.notification_queue.put(
-            #     Notification(NotificationType.WARNING , 
-            #     "Unable to send the message , try again"))
+        try:
+            await w.drain()
+            print("a mensagem foi envida do cliente com sucesso!!")
+        except (ConnectionResetError , ConnectionRefusedError) as e: 
+            await self.notification_queue.put(
+                Notification(NotificationType.WARNING , 
+                "Unable to send the message"))
         
-    @validate_connection_state
-    async def add_message_to_send(self,message):
-        await self.messages_to_send_queue.put(message)
+    # @validate_connection_state
+    # async def add_message_to_send(self,message):
+    #     await self.messages_to_send_queue.put(message)
     
     # @validate_connection_state
     async def get_message_in_queue(self):

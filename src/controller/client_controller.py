@@ -15,21 +15,7 @@ class ClientController(BasicAsyncController):
                  connection,
                  ) -> None:
         super().__init__(connection)
-
-        # self.connection = connection
-        # self.message_queue = None
-        # self.notification_queue = None
-        # self.function_queue = None
-        # self.HOST = None
-        # self.PORT = None
-        # self.running =  False
-        # self.max_attempts_retry = 1
-        # self.notification_routine = None
-        # self.message_routine = None
-        # self.main_task_routine = None
-        # self.my_loop = None
-        # self.all_running_tasks = []
-
+        self.connected = False
 
     def run(self, host: str, port: int, gui_root , callback) -> None:
         
@@ -50,55 +36,43 @@ class ClientController(BasicAsyncController):
             self.notification_queue = asyncio.Queue()
             self.function_queue = asyncio.Queue()       
             self.my_loop = asyncio.get_running_loop()
+            self.running =  True
             # await self.function_queue.put((self._start_connection_control, () , None))
             self.main_routine = asyncio.create_task(self.dispatcher())
             self.gui_loop.after(100,callback)
 
             await self.main_routine
             
-        asyncio.run(start())
-            
+        try:
+            asyncio.run(start())
+        except asyncio.CancelledError:
+            pass
+        print("==========")
+        print("este controle foi encerrado com sucesso a thread acaba de moerrer filhote !!!")
 
-    # async def check_function_queue(self):
-    #     async def wrapped(func ,args , callback):
-    #         attempt = 0
-    #         print(f" ATTENTION !! {func.__name__}")
-    #         while self.running:
-    #             if attempt < self.max_attempts_retry:
-    #                 try :
-    #                     res = await func(*args)
-    #                 except RETRYABLE_ERRORS as e:
-    #                     await self.notification_queue.put(
-    #                         Notification(NotificationType.WARNING, f"{str(e)}")
-    #                     )
-    #                     attempt +=1
-    #                     raise e
-    #                 except Exception as e:
-    #                     await self.notification_queue.put(
-    #                         Notification(NotificationType.ERROR, f"Error executing {func.__name__}: {str(e)}")
-    #                     )
-    #                     attempt =  self.max_attempts_retry
-    #                     raise e
 
-    #                 else:
-    #                     self._execute_callback( res , callback = callback)
-    #                     break
-    #             else:
-    #                 await self.notification_queue.put(
-    #                     Notification(NotificationType.INFO ,
-    #                                                    f"Aborting execution of {func.__name__}:")
-    #                 )
-    #                 break
-
-    #     while True:
-    #         func, args ,  callback = await self.function_queue.get()
-    #         new_task = asyncio.create_task((wrapped(func , args ,  callback)))
-    #         # self.all_running_tasks.append(new_task) # idéia a desenvolver
-            
-
-    # def _execute_callback(self,*args,callback = None):
-    #     if callback is not None:
-    #         self.gui_loop.after(10,callback,*args)
+    def close_controller(self):
+       self.my_loop.call_soon_threadsafe( # type: ignore
+           lambda : asyncio.create_task(self._close_controller())  # type: ignore
+       )
+    
+    def close_connection(self, callback):
+        self._enqueue(self._close_connection,(),callback)
+    
+    async def _close_connection(self):
+        if self.connected:
+            await self.connection.close_connection()
+            self.connected = False
+        else:
+            raise ConnectionError("The connection is already closed!")
+    
+    async def _close_controller(self):
+        try:
+            await self._close_connection()
+        except ConnectionError:
+            pass 
+        finally:
+            await self.stop_routines()
 
     def start_client(self,callback):
         self._enqueue(self._start_client ,callback= callback)
@@ -106,68 +80,7 @@ class ClientController(BasicAsyncController):
     async def _start_client(self) -> None:
 
         await self.connection.run(self.HOST, self.PORT)
+        self.connected = True
+
         await self.start_routines()
-        # await self.function_queue.put((self._get_notification_on_connection_routine, (),None))
-        # await self.function_queue.put((self._get_messages_on_connection_routine, (),None))
-
-        
-        # self.notification_routine = asyncio.create_task(
-        #     self._get_notification_on_connection_routine())
-        # self.message_routine = asyncio.create_task(
-        #     self._get_messages_on_connection_routine())
-
-    # def _enqueue(self, func, *args, callback=None):
-    #     try:
-    #         self.my_loop.call_soon_threadsafe(self.function_queue.put_nowait, (func, args, callback))
-    #     except Exception as e:
-    #         raise e
-
-
-    # def send_message_to_web(self, message: str, callback) -> None:
-    #     self._enqueue( self._send_message_to_web , message, callback = callback)
-
-    # async def _send_message_to_web(self, message):
-    #     await self.connection.send_message(message)
-
-    # def start_connection(self, callback) -> None:
-    #     self._enqueue(self._start_connection_control, callback= callback)
-
-
-    # def get_web_message(self, callback) -> None:
-    #     self._enqueue(self._get_web_message,callback= callback)
-
-
-    # def get_notification(self, callback) -> None:
-    #     self._enqueue(self._get_notification, callback= callback)
-
-    # async def _get_notification(self) :
-    #     return await self.notification_queue.get()
-
-    # async def _get_web_message(self):
-    #     return await self.message_queue.get()
-    
-    # def _insert_web_message_in_queue(self, message: str) -> None:
-    #     self.message_queue.put(message)
-    
-
-    # def _insert_notification_in_queue(self, notification: str) -> None:
-    #     self.notification_queue.put( notification)
-        
-    # async def _get_notification_on_connection_routine(self):
-    #     try :
-    #         notfication = await self.connection.get_notification_in_queue()
-    #         await self.notification_queue.put(notfication)
-    #         await self.function_queue.put((self._get_notification_on_connection_routine, () , None))
-    #     except asyncio.CancelledError:
-    #         print("deu erro na coleta da notificacao")
-    #         raise
-        
-    # async def _get_messages_on_connection_routine(self):
-    #     # while True:
-    #     try :
-    #         msg = await self.connection.get_message_in_queue()
-    #         await self.message_queue.put(msg)
-    #         await self.function_queue.put((self._get_messages_on_connection_routine, (),None))
-    #     except asyncio.CancelledError:
-    #         print("deu erro na coleta da messagem")
-    #         raise
+   

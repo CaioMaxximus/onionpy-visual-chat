@@ -40,6 +40,19 @@ async def save_new_server(server_name: str, local_port , onion_hostname, onion_p
         )
         await conn.commit()
 
+async def remove_server(server_name: str, db_path : str= "my.db"):
+    """
+    Remove a server record from the database
+    """
+
+    async with  aiosqlite.connect(db_path) as conn:
+        await conn.execute(
+            "DELETE FROM servers WHERE server_name = ?",
+            (server_name,)
+        )
+        await conn.commit()
+
+
 async def get_server_by_name(server_name: str, db_path: str = "my.db"):
     """
     Retrieve a server by server_name.
@@ -53,19 +66,21 @@ async def get_server_by_name(server_name: str, db_path: str = "my.db"):
         ) as cursor:
             res = await cursor.fetchone()
             if res is None:
-                return None
+                raise FileNotFoundError
             return {"server_name": res["server_name"], "onion_hostname": res["onion_hostname"],
                      "local_server_port": res["local_server_port"], "onion_port" : res["onion_port"]}
 
 
 async def list_all_ports(db_path: str = "my.db") -> list:
     """Return a list of all server_port values stored in the database."""
+
     async with aiosqlite.connect(db_path) as conn:
         async with conn.execute(
             """SELECT local_server_port FROM servers
             union  all
         select onion_port FROM servers """) as cursor:
             rows = await cursor.fetchall()
+
             return [int(r[0]) for r in rows if r[0] is not None]
         
 

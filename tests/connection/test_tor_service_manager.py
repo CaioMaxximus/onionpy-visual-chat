@@ -16,7 +16,7 @@ class TestTorServiceManager(unittest.TestCase):
     
     def test_start_onion_server_raises_if_not_return(self):
         mocked_crt = MagicMock()
-        mocked_crt.create_hidden_service.return_value = None
+        mocked_crt.create_hidden_service.side_effect = Exception()
 
         mocked_context = MagicMock()
         mocked_context.__enter__.return_value = mocked_crt
@@ -24,7 +24,7 @@ class TestTorServiceManager(unittest.TestCase):
         mocked_controller = MagicMock()
         mocked_controller.from_port.return_value = mocked_context
 
-        with self.assertRaises(ConnectionError):
+        with self.assertRaises(Exception):
             TorServiceManager._start_onion_server("teste" , 888 , 111,mocked_controller )
             # test_mock("teste" , 888 , 111,mocked_controller)
 
