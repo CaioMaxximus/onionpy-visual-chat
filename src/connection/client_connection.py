@@ -18,6 +18,7 @@ class ClientConnection():
         self.messages_queue = None
         self.notification_queue= None
         self.messages_to_send_queue = None
+        self.server_task = None
 
     def validate_connection_state(func):
         async def inner_wrapper(self ,*args, **kwargs):
@@ -45,10 +46,10 @@ class ClientConnection():
         ## NEED TO WORK TO CLOSE WEB CONNECTION
         ## AND GARATEE THE END OF ALL PENDING TASKS
         self._connected = False
-        self.messages_checker_task.cancel()
+        self.server_task.cancel()
         try:
-            await self.messages_checker_task
-        except :
+            await self.server_task
+        except asyncio.CancelledError :
             pass
         await self.notification_queue.put(Notification(NotificationType.WARNING,
                                           "Connection finished with the server."))
@@ -57,7 +58,7 @@ class ClientConnection():
     @validate_connection_state
     async def connection_handler(self,reader, writer):
         self.writer = writer
-        while True:
+        while self._connected:
             try:
                 data = await reader.readuntil(separator=b'\0')
             except asyncio.exceptions.IncompleteReadError as e:

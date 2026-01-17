@@ -147,10 +147,10 @@ class BasicAsyncController():
         except Exception:
             pass
 
-        self.message_queue = None
-        self.notification_queue = None
-        self.function_queue = None
-        print("encerrei as rotinas do controller")
+        # self.message_queue = None
+        # self.notification_queue = None
+        # self.function_queue = None
+        # print("encerrei as rotinas do controller")
     
 
         

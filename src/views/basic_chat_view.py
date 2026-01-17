@@ -70,7 +70,8 @@ class BasicChatView(ctk.CTkToplevel):
         def put_in_queue(notification):
             self.notifications_queue.put(notification)
             self.after(10 ,self.get_notification_routine)
-        self.controller.get_notification(put_in_queue) 
+        if not self.destroyed: 
+            self.controller.get_notification(put_in_queue) 
 
     ## a funcao so e chamda quando um item foi retornado do controller
     ## o controlle ropera em asyncio ent pode esperar pela fila
@@ -78,7 +79,8 @@ class BasicChatView(ctk.CTkToplevel):
         def put_in_queue(message):
             self.message_queue.put(message)
             self.after(10 ,self.get_message_routine)
-        self.controller.get_web_message(put_in_queue)
+        if not self.destroyed: 
+            self.controller.get_web_message(put_in_queue)
     
 
 
