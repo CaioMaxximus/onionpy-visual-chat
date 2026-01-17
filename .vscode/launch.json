@@ -10,8 +10,9 @@
             "name": "Python Debugger: Current File",
             "type": "debugpy",
             "request": "launch",
-            "program": "root/root.py",
-            "console": "integratedTerminal"
+            "program": "src/root.py",
+            "console": "integratedTerminal",
+            "justMyCode": false
         }
     ]
 }
