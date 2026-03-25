@@ -40,12 +40,12 @@ chmod +X onion_service_builder.sh
 
 ## Tests
 
-- TorServiceManager ![Status](https://img.shields.io/badge/status-pending-yellow)
+- TorServiceManager ![Status](https://img.shields.io/badge/status-done-brightgreen)
 - client_connection ![Status](https://img.shields.io/badge/status-lacking-red)
 - server_connection ![Status](https://img.shields.io/badge/status-lacking-red)
 - client_controller ![Status](https://img.shields.io/badge/status-lacking-red)
-- basic_async_controller ![Status](https://img.shields.io/badge/status-lacking-red)
-- menu_controller ![Status](https://img.shields.io/badge/status-lacking-red)
+- basic_async_controller ![Status](https://img.shields.io/badge/status-done-brightgreen)
+- menu_controller ![Status](https://img.shields.io/badge/statusldone-brightgreen)
 - server_controller ![Status](https://img.shields.io/badge/status-lacking-red)
 
 ## Project Structure
