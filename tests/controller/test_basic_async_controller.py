@@ -56,7 +56,7 @@ class TestBasicAsyncController(unittest.IsolatedAsyncioTestCase):
                                             ("payload",) , cb_function)
         
         self.assertEqual(exe_function.call_count, 4)
-
+        cb_function.assert_called_once_with("ok")
             
 
     async def test_dispacther_aborts_immediately_when_a_non_retryable_error_is_raised(self):

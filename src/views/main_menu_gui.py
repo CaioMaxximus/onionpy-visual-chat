@@ -28,7 +28,7 @@ class MainMenuGUI:
         self.createServerBtn.pack(pady = 20)
 
         self.enterServerBtn = ctk.CTkButton(root, text = "Enter in a new server",
-                                            command= self.create_new_client_window)
+                                            command= self.create_a_new_client)
         self.enterServerBtn.pack(pady = 20)
         
         self.bottow_frame = ctk.CTkFrame(self.root)
@@ -61,10 +61,15 @@ class MainMenuGUI:
         #     lambda  : self.create_new_server_window(server_name))
     
     def create_a_new_client(self):
-        # pop_w = PopUPEntryGui(self.root, ["HOST" , "PORT"], ["host" , "port"])
-        # self.root.wait_window(pop_w)
-        # host , port = pop_w.registered_values.values()
-        self.create_new_client_window()
+        pop_w = PopUpEntryGui(self.root,["Enter the Server Adress"],["onion_adress"])
+        self.root.wait_window(pop_w)
+        if pop_w.done:
+            print(pop_w)
+            host_port = pop_w.registered_values["onion_adress"].split(":")
+            host = host_port[0]
+            port = int(host_port[1]) if len(host_port) > 1  else 80
+
+            self.create_new_client_window(host, port)
 
     # def start_onion_server(self, server_name):
     #     self.control.start_onion_server(server_name , lambda _ : self.create_new_server_window(server_name))
@@ -83,8 +88,8 @@ class MainMenuGUI:
     def create_new_server_window(self , server_name):
         self.server_gui_navigate(self.root , server_name ,mode = True)
 
-    def create_new_client_window(self):
-        self.client_gui_navigate(self.root , 0)
+    def create_new_client_window(self,host , port):
+        self.client_gui_navigate(self.root , 0 , host ,port)
 
     def iniatiate_server_window(self, *args):
         self.server_gui_navigate(self.root , *args ,mode = False)

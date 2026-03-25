@@ -18,6 +18,7 @@ TOR_CONTROL_PORT = 9051
 class TorServiceManager():
 
     APPLICATION_ROOT = os.getenv("APPLICATION_ROOT") or str(Path(__file__).resolve().parents[2])
+    global_controller = None
 
 
     if not os.path.isdir(APPLICATION_ROOT):
@@ -45,7 +46,9 @@ class TorServiceManager():
 
     @classmethod   
     def start_onion_server(cls,server_name, local_port, onion_port):
-        onion_info = cls._start_onion_server(server_name, local_port , onion_port ,Controller)
+        if cls.global_controller is None:
+            cls.global_controller = Controller
+        onion_info = cls._start_onion_server(server_name, local_port , onion_port ,cls.global_controller)
         return onion_info
     
     @classmethod
@@ -69,11 +72,11 @@ class TorServiceManager():
         except Exception as e:
             raise e
                             
-        return adrr , ctrl
+        return adrr
 
     @classmethod
     def stop_onion_server(cls,server_name):
-        cls._stop_onion_server(server_name, Controller)
+        cls._stop_onion_server(server_name, cls.global_controller)
 
     @classmethod
     def _stop_onion_server(cls , server_name, controller): 
@@ -81,8 +84,8 @@ class TorServiceManager():
         data_dir = f"{instance_path}/data"
         with controller.from_port(port=TOR_CONTROL_PORT) as ctrl:
             ctrl.authenticate()
-            ctrl.remove_hidden_service(data_dir)
-
+            res = ctrl.remove_hidden_service(data_dir)
+            print(res , "*********" * 20)
     
     @classmethod
     def find_local_servers(cls):
@@ -95,14 +98,15 @@ class TorServiceManager():
 
         return dirs_list
 
-    
-    @classmethod
-    def end_onion_server(cls,pid):
-        try:
-            subprocess.run(f"kill {pid}", shell= True)
-        except Exception as e:
-            raise Exception(f"Faling to kill the {pid} process")
 
+    # TO REMOVE
+    # @classmethod
+    # def end_onion_server(cls,pid):
+    #     try:
+    #         subprocess.run(f"kill {pid}", shell= True)
+    #     except Exception as e:
+    #         raise Exception(f"Faling to kill the {pid} process")
+ 
 
     @classmethod
     def wait_for_socks(cls,port=9050, timeout=30):
@@ -154,7 +158,7 @@ class TorServiceManager():
             process = subprocess.Popen([f"{executabel_path}", "-f", torcc_path])
             
         except Exception as e:
-            raise RuntimeError(
+            raise ConnectionError(
             f"Error! Trying to run tor proxy service process! check executable path: {executabel_path}"
             ) from e
         cls.wait_for_socks()
@@ -164,7 +168,7 @@ class TorServiceManager():
             socket = proxy.connect(dest_host="8.8.8.8" , dest_port=53,timeout = timeout)
             socket.close()
         except TimeoutError as e:
-            raise RuntimeError(f"Tor proxy was unable to connect in {timeout} seconds") from e
+            raise TimeoutError(f"Tor proxy was unable to connect in {timeout} seconds") from e
         except Exception:
             raise
         # except Exception as e:

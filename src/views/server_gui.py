@@ -10,6 +10,7 @@ class ServerGUI(BasicChatView):
         super().__init__(master , controller)
         def step2(): ## Temporary here
             print("coloquei na pilha uma funcao")
+            self.running = True
             if creator_mode :
                 self.controller.create_server(name , self._build_interface)
             else: 

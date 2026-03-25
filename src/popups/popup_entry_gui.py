@@ -14,6 +14,7 @@ class PopUpEntryGui(ctk.CTkToplevel):
         self.confirm_btn.pack(side = "bottom" , pady = 8)
         self.generate_personalized_inputs()
         self.registered_values = {}
+        self.done = False
 
     def generate_personalized_inputs(self):
         for label_text in self.labels:
@@ -22,10 +23,11 @@ class PopUpEntryGui(ctk.CTkToplevel):
             input_ = ctk.CTkEntry(self.inputs_canvas )
             input_.pack(pady = 5)
             self.entrys.append(input_)
-
+            
     def confirm(self):
         values = [entry.get() for entry in self.entrys]
         keys = self.maps_of_inputs
         self.registered_values = dict(zip(keys , values))
+        self.done = True
         self.destroy()
         

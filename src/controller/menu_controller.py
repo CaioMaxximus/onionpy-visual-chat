@@ -5,7 +5,6 @@ from src.connection.tor_service_manager import TorServiceManager
 from data_base import db_service_manager as db
 import asyncio
 
-
 class MenuController:
 
     def __init__(self) -> None:
@@ -37,7 +36,7 @@ class MenuController:
     
         if not self.running:
             self.running = True
-            self.thread = threading.Thread(target= self.check_function_queue, daemon=True)
+            self.thread = threading.Thread(target= self.function_dispatcher, daemon=True)
             self.gui_loop = gui_loop
             self._enqueue(self._start_tor_service)
             self.thread.start()
@@ -48,12 +47,14 @@ class MenuController:
 
 
     def _close(self) ->  None:
+        print("encerrando a thread do menu")
         if self.running:
             self.thread.join()
 
     def start_proxy(self,  callback=None):
         self._enqueue(
              TorServiceManager.start_tor ,8)
+        
     def end_tor(self, callback = None):
         self._enqueue(
              TorServiceManager.end_tor,callback = callback)
@@ -64,36 +65,32 @@ class MenuController:
             return self.notification_queue.get()
         return res
 
-    # def create_new_onion_server(self,server_name, callback=None):
-    #     self._enqueue(
-    #          self._create_new_onion_server, 
-    #         server_name,
-    #         callback = callback)
-
-    # def _create_new_onion_server(self, server_name):
-    #     TorServiceManager.create_new_onion_server(server_name)
-    #     port = asyncio.run(db.save_server(server_name))
-
     def _enqueue(self, func, *args, callback=None):
         try:
             self.function_queue.put_nowait((func, args, callback))
         except Exception:
             pass
+
+    
+    def function_executer(self,func, args , callback ):
+        try:
+            res = func(*args)
+        except (ConnectionError, TimeoutError ,FileNotFoundError , RuntimeError) as e:
+            self.notification_queue.put(
+                Notification(NotificationType.ERROR, str(e))
+            )
+        except Exception as e :
+            self.notification_queue.put(
+                Notification(NotificationType(NotificationType.ERROR ,str(e) + "\n An unexpected error occurred, please reestart the application." ))
+            )
+
+        else:
+            self._execute_callback(callback , res)
+    
+    def function_dispatcher(self):
         
-    def check_function_queue(self):
-        
-       while True:
+       while self.running:
             func, args , callback = self.function_queue.get()
-            try:
-                res = func(*args)
-            except (ConnectionError, TimeoutError) as e:
-                self.notification_queue.put(
-                    Notification(NotificationType.ERROR, str(e))
-                )
-            except FileNotFoundError as e:
-                self.notification_queue.put(
-                    Notification(NotificationType.ERROR, str(e))
-                )
-            else:
-                self._execute_callback(callback , res)
+            self.function_executer(func, args , callback)
+           
 

@@ -36,10 +36,10 @@ class ClientController(BasicAsyncController):
             self.notification_queue = asyncio.Queue()
             self.function_queue = asyncio.Queue()       
             self.my_loop = asyncio.get_running_loop()
+            self.gui_loop.after(100,callback)
             self.running =  True
             # await self.function_queue.put((self._start_connection_control, () , None))
             self.main_routine = asyncio.create_task(self.dispatcher())
-            self.gui_loop.after(100,callback)
 
             await self.main_routine
             
@@ -48,7 +48,7 @@ class ClientController(BasicAsyncController):
         except asyncio.CancelledError:
             pass
         print("==========")
-        print("este controle foi encerrado com sucesso a thread acaba de moerrer filhote !!!")
+        print("este controle foi encerrado com sucesso !!!")
 
 
     def close_controller(self):
@@ -67,6 +67,7 @@ class ClientController(BasicAsyncController):
             raise ConnectionError("The connection is already closed!")
     
     async def _close_controller(self):
+        
         try:
             await self._close_connection()
         except ConnectionError:
@@ -80,7 +81,7 @@ class ClientController(BasicAsyncController):
     async def _start_client(self) -> None:
 
         await self.connection.run(self.HOST, self.PORT)
+        await self.start_routines()
         self.connected = True
 
-        await self.start_routines()
    

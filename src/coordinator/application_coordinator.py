@@ -17,14 +17,14 @@ class ApplicationCoordinator():
     
 
     @classmethod
-    def client_chat(cls, master, index):
+    def client_chat(cls, master, index, host  , port):
 
 
         client_connection_instance = ClientConnection()
         client_controller_instance = ClientController(
             client_connection_instance)
         client_gui_instance = ClientGUI(
-            master, 0 ,client_controller_instance)
+            master, 0 ,client_controller_instance , host ,port)
 
         return client_gui_instance
     

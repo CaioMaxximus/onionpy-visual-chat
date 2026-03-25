@@ -109,7 +109,7 @@ class ServerController(BasicAsyncController):
         except asyncio.CancelledError:
             pass
         print("==========")
-        print("este controle foi encerrado com sucesso a thread acaba de moerrer filhote !!!")
+        print("este controle foi encerrado com sucesso !!!")
 
 
     def start_server(self, name , callback):
@@ -121,29 +121,25 @@ class ServerController(BasicAsyncController):
     def close_server(self ,callback):
         self._enqueue(func=self._close_server,callback=callback)
 
-
-
     def close_controller(self):
-        print("chamei da thread principal")
+        print("chamei para fechar o controller!!!")
         self.my_loop.call_soon_threadsafe( # type: ignore
             lambda: asyncio.create_task(self._close_controller())  # type: ignore
         )
     
     async def _close_server(self):
-        TorServiceManager.stop_onion_server(self.onion_controller)
+        TorServiceManager.stop_onion_server(self.server_name)
         await self.connection.close_server()
     
     async def _close_controller(self):
-        print("chamei o close controller!!")
 
         try: 
             await self._close_server()
         except ConnetionClosedError:
-            pass 
-        await self.stop_routines()
+            pass
+        finally:
+            await self.stop_routines()
     
-
-
 
     @rollback        
     async def _create_server(self ,rollback_operations, name):
@@ -162,13 +158,12 @@ class ServerController(BasicAsyncController):
         rollback_operations.append(lambda : self.connection.close_server())
         await self.start_routines()
         rollback_operations.append(self.stop_routines)
-        onion_hostname , onion_controller = TorServiceManager.start_onion_server(self.server_name, local_port , onion_port)
-        self.onion_controller = onion_controller
-        rollback_operations.append(lambda : TorServiceManager.stop_onion_server(self.onion_controller))
+        onion_hostname  = TorServiceManager.start_onion_server(self.server_name, local_port , onion_port)
+        rollback_operations.append(lambda : TorServiceManager.stop_onion_server(self.server_name))
         await self.notification_queue.put(Notification(NotificationType.SUCCESS , "Server started"))
         await db.save_new_server(self.server_name,local_port , 
                             onion_hostname, onion_port)
-        rollback_operations.append(lambda : db.remove_server(self.onion_controller))
+        rollback_operations.append(lambda : db.remove_server(self.server_name))
         onion_connection = OnionConnection(onion_hostname,onion_port,
                                             name,local_port) 
             
@@ -182,11 +177,10 @@ class ServerController(BasicAsyncController):
         await self.connection.start_server(server_info["local_server_port"]) # type: ignore
         await self.start_routines()
 
-        onion_hostname  ,  onion_controller= TorServiceManager.start_onion_server(self.server_name, 
+        onion_hostname = TorServiceManager.start_onion_server(self.server_name, 
                                                                 server_info["local_server_port"] , # type: ignore
                                                                 server_info["onion_port"]) # type: ignore
         await self.notification_queue.put(Notification(NotificationType.SUCCESS , "Server started"))
-        self.onion_controller = onion_controller
 
         onion_connection = OnionConnection(onion_hostname ,
                                             server_info["onion_port"],name, server_info["local_server_port"])

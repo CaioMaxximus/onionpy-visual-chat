@@ -22,7 +22,7 @@ class ServerConnection():
         self.my_connections = []
         self._connected = False
         self.broadcast_queue : asyncio.Queue
-        self.message_queue: asyncio.Queue
+        self.messages_queue: asyncio.Queue
         self.notification_queue : asyncio.Queue
         
         self.server_task : asyncio.Task  
@@ -46,12 +46,12 @@ class ServerConnection():
             await self.check_messages_for_web_task
         except asyncio.CancelledError:
             pass
-        # print("fechei a web task!")
+        print("fechei a web task!")
 
         for writer in self.my_connections:
             writer.close()
             await writer.wait_closed()
-        # print("fechei os meu writers")
+        print("fechei os meu writers")
 
         self.server.close()
         await self.server.wait_closed()
@@ -64,7 +64,7 @@ class ServerConnection():
     
     async def start_server(self ,port):
 
-        self.message_queue = asyncio.Queue()
+        self.messages_queue = asyncio.Queue()
         self.notification_queue = asyncio.Queue()
         # self.messages_to_send_queue = asyncio.Queue()
         self.broadcast_queue = asyncio.Queue()
@@ -79,15 +79,15 @@ class ServerConnection():
             try:
                 last_message = await self.broadcast_queue.get()
                 await self.broadcast_message(last_message)
-            except  asyncio.CancelledError :
-                pass
+            except  asyncio.CancelledError as e :
+                raise e
    
     @validate_connection_state
     async def connection_handler(self,reader, writer):
         async def local_listerner(reader, writer):
             # print("acabou de conectar alguem!!")
             self.my_connections.append(writer)
-            while True:
+            while self._connected:
                 try:
 
                     data = await reader.readuntil(separator=b'\0')
@@ -114,7 +114,7 @@ class ServerConnection():
                     "author_name": writer.get_extra_info('peername'), 
                     "owner": False
                 }
-                await self.message_queue.put(msg_info)
+                await self.messages_queue.put(msg_info)
                 await self.broadcast_queue.put(msg_info)
 
         await local_listerner(reader , writer)
@@ -157,30 +157,33 @@ class ServerConnection():
     @validate_connection_state            
     async def broadcast_message(self, message):
         data = message["entry"]
-        print(f"a mensagem foi :{data}")
-        data_encoded = (data + "\n").encode()
-
-
+        # print(f"a mensagem foi :{data}")
+        data = message["entry"].replace("\x00", "")
+        data_encoded = (data + "\n\0").encode()
 
         for w in self.my_connections:
             peername = w.get_extra_info('peername')
             print(message, peername, sep="\n==========\n")
 
             try:
-                if message["author_name"] != peername:
+                if message["owner"] or message["author_name"][1] != peername[1] :
+                    print("ENVIOU")
                     w.write(data_encoded)
                     await w.drain()
             except (ConnectionResetError , ConnectionRefusedError): 
                 await self.notification_queue.put(
-                    Notification(NotificationType.INFO, f"Error send message to {peername}"))
+                    Notification(NotificationType.INFO, f"Error sending message to {peername}"))
+            except Exception as e:
+                raise e
     
     @validate_connection_state    
     async def send_message(self,message):
+        print("pus a mensagem na pilha para broadcast")
         await self.broadcast_queue.put(message)
         
     # @validate_connection_state
     async def get_message_in_queue(self):
-        return await self.message_queue.get()
+        return await self.messages_queue.get()
     
     async def get_notification_in_queue(self):
         return await self.notification_queue.get()

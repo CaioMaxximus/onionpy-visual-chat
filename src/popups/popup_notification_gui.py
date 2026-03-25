@@ -13,11 +13,11 @@ class PopUpNotificationGUI(CTkToplevel):
         
         self.disable_button = disable_button
         self.message_label = CTkLabel(self, text=message)
-        self.confirm_btn = CTkButton(self, text="CONFIRM", command=lambda: self.close(True))
+        self.confirm_btn = CTkButton(self, text="CONFIRM", command=lambda: self.on_close(True))
         self.deny_btn = None
         if deny_option:
             self.deny_btn = CTkButton(self,text="DENY" ,
-                                  command= lambda : self.close(False))
+                                  command= lambda : self.on_close(False))
             self.deny_btn.pack(pady = (5, 5), side = "bottom")
 
 
@@ -26,6 +26,7 @@ class PopUpNotificationGUI(CTkToplevel):
         self.change_notification_type( notification_type)
         self.final_val = False
         self.callback = callback
+        self.protocol("WM_DELETE_WINDOW", lambda : print("suave"))
 
     
 
@@ -69,9 +70,9 @@ class PopUpNotificationGUI(CTkToplevel):
             self.message_label.configure(text=new_msg)
             self.change_notification_type(n_type)
 
-    def close(self,value) -> None:
+    def on_close(self,value) -> None:
+        self.destroy()
         if self.callback is not None:
             self.callback()
         if not self.disable_button:
             self.final_val = value
-            self.destroy()

@@ -15,10 +15,10 @@ class ClientConnection():
         self.sock = None
         self.writer = None  
         self._connected = False
-        self.messages_queue = None
-        self.notification_queue= None
-        self.messages_to_send_queue = None
-        self.server_task = None
+        self.messages_queue = asyncio.Queue()
+        self.notification_queue= asyncio.Queue()
+        self.messages_to_send_queue = asyncio.Queue()
+        self.server_task =  asyncio.Task 
 
     def validate_connection_state(func):
         async def inner_wrapper(self ,*args, **kwargs):
@@ -35,7 +35,7 @@ class ClientConnection():
     async def run(self, host: str, port: int ) -> None:
         self.messages_queue = asyncio.Queue()
         self.notification_queue= asyncio.Queue()
-        self.messages_to_send_queue = asyncio.Queue()
+        self.messages_to_send_queue = asyncio.Queue() # Discontinued
 
         self.HOST = host.strip()
         self.PORT = port
@@ -61,6 +61,7 @@ class ClientConnection():
         while self._connected:
             try:
                 data = await reader.readuntil(separator=b'\0')
+                print("chegou mensagem no cliente!!!")
             except asyncio.exceptions.IncompleteReadError as e:
                 data = e.partial
                 if not data:
@@ -80,9 +81,12 @@ class ClientConnection():
             message = data.decode().strip()
             msg_info = {
                 "entry": message,
-                "author_name": str(writer.get_extra_info('peername')), 
+                "author_name": (writer.get_extra_info('peername')), 
                 "owner": False
             }
+
+            print(id(self.messages_queue))
+
 
             await self.messages_queue.put(msg_info)
 
@@ -132,7 +136,9 @@ class ClientConnection():
     
     # @validate_connection_state
     async def get_message_in_queue(self):
-        return await self.messages_queue.get()
+        print(id(self.messages_queue))
+        msg = await self.messages_queue.get()
+        return msg
     
     async def get_notification_in_queue(self):
         return await self.notification_queue.get()
