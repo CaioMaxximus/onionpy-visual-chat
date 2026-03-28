@@ -7,9 +7,39 @@ import asyncio
 
 class MenuController:
 
+    """
+        Coordinates a background thread that dispatches tasks, enabling asynchronous
+        communication between the UI and the network layer.
+
+        Handles callbacks and notifications between both layers.
+
+        Attributes
+        ----------
+
+        function_queue : Queue
+            Stores the tasks asynchronous scheduled by the UI layer
+        notification_queue : Queue
+            Stores the notification to be collected by the UI layer
+        gui_loop : ctk
+            The root tkinter object for the all aplication, used to execute the callbacks 
+            in the tkinter event loop
+        runnig : Bool
+            Represents the state of the controller
+
+        Methods
+        -------
+        The methods that have a '_' underscore start version,are just the public version 
+        of their counter part, using the queue to schedule theirs private selfs.
+        
+        _start_tor_service:
+            Synchronusly start the tor service responsible for create all the application 
+            connections
+        _get_my_servers
+    """
+
+
     def __init__(self) -> None:
         self.function_queue = queue.Queue()
-        self.data_queue = queue.Queue()
         self.notification_queue = queue.Queue()
         self.gui_loop = None
         self.running = False
@@ -47,7 +77,6 @@ class MenuController:
 
 
     def _close(self) ->  None:
-        print("encerrando a thread do menu")
         if self.running:
             self.thread.join()
 
@@ -80,8 +109,9 @@ class MenuController:
                 Notification(NotificationType.ERROR, str(e))
             )
         except Exception as e :
+            error_message = "An unexpected error occurred, please reestart the application."
             self.notification_queue.put(
-                Notification(NotificationType(NotificationType.ERROR ,str(e) + "\n An unexpected error occurred, please reestart the application." ))
+                Notification(NotificationType.ERROR ,str(e) + f"\n {error_message}" )
             )
 
         else:
