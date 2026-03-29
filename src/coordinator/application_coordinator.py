@@ -6,8 +6,19 @@ import queue
 class ApplicationCoordinator():
 
     """
-        This class is a Factory/Coordinator service, it establishs the workflow format for the UI
-        components, and prevents tight coupling  and circular dependency
+        This class is a Factory/Coordinator service, it establishes the workflow format injecting the dependecies
+        for the UI components, and prevents tight coupling  and circular dependency
+
+        Methods
+        -------
+        main_menu
+            Instanciate the main aplication UI 
+        client_chat
+            Instanciate a client view window 
+        server_chat
+            Instanciate a server view window
+        
+
     """
 
     @classmethod
