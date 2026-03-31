@@ -8,9 +8,20 @@ RETRYABLE_ERRORS = (TimeoutError , ConnectionError , ConnectionAbortedError)
 
 class BasicAsyncController():
 
+    """
+        This class represents the fundamental format for a controller, it executes in
+        a background thread with his own evenn loop.
+
+        It works as a bridge  between the UI and the network layer and also as a event
+        dispacther, synchronizing the events with a function queue and data queues, 
+        executing the callbacks and handling the exceptions.
+
+        
+    
+    """
+
     def __init__(self, connection):
         self.connection = connection
-
 
         self.message_queue : Optional[asyncio.Queue] 
         self.notification_queue : Optional[asyncio.Queue] 

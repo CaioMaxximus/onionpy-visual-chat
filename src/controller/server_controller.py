@@ -134,8 +134,18 @@ class ServerController(BasicAsyncController):
 
             thread.start()
             
-        
+     ## This function can be moved for the superclass partially
     def start_event_loop(self ,callback):
+
+        """
+            Instanciate the asynchronous queues inside the event loop,
+            initate the data base and create the main task
+
+            Parameters
+            ---------
+            callback : <function>
+                function to be executed by the tkinter event loop after the controller is active
+        """
     
         async def start():
             self.message_queue = asyncio.Queue()
@@ -143,8 +153,8 @@ class ServerController(BasicAsyncController):
             self.function_queue = asyncio.Queue()
             self.my_loop = asyncio.get_running_loop()
             await db.create_tables()
-            self.gui_loop.after(100,callback)
             self.running =  True
+            self.gui_loop.after(100,callback)
             self.main_routine = asyncio.create_task(self.dispatcher())
             await self.main_routine
         try:
@@ -203,7 +213,7 @@ class ServerController(BasicAsyncController):
             Notes
             -----
             This method contains multiple side effects:
-            - Creates and removion onion services
+            - Creates and remove onion services
             - Starts and stops a local server
             - Writes fundamental content to the databbase
             - Emits notificaitons
@@ -236,6 +246,30 @@ class ServerController(BasicAsyncController):
 
             
     async def _start_server(self,name) -> OnionConnection:
+        """
+            Establish the steps to start a new valid server, attaching a decorator rollback feature.
+
+            Parameters
+            ---------
+            rollback_operations : list
+                functions to be executed during the rollback process
+            name : str
+                name of the target server
+            Returns
+            -------
+            Onion_connection 
+                Object representing the started onion server connection.
+            ------
+            Exception
+                Propagates any exception raised during the setup process after
+                registering rollback steps.
+            Notes
+            -----
+            This method contains multiple side effects:
+            - Creates and remove onion services
+            - Starts and stops a local server
+            - Emits notificaitons
+        """
 
         await self.notification_queue.put(Notification(NotificationType.WARNING , "Starting server.."))
         server_info = await db.get_server_by_name(name)
