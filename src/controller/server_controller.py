@@ -61,6 +61,7 @@ def _generate_new_available_port(used_ports: set[int]) -> int:
         if _is_port_free(port):
             return port
 
+## put this funciotn in a utility module
 def _is_port_free(port: int) -> bool:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
@@ -72,17 +73,59 @@ def _is_port_free(port: int) -> bool:
 
 class ServerController(BasicAsyncController):
 
+    """
+        This class defines a controller for the server UI, working as Bridge/Dispatcher 
+        between the UI layer and the connection layer
+
+        Attributes
+        ----------
+        server_name: str
+            local name for the server
+
+        Methods
+        -------
+
+        The methods that have a '_' underscore at the begining version,are just the public version 
+        of their counter part, using the queue to schedule theirs private selfs.
+
+        run()
+            Creates a new Thread and defines a event loop for the controller lifecycle
+        start_event_loop()
+            Start the event loop and iniate all the asynchronous queue
+        _create_server(rollback_operations, name)
+            Creates a new server with a valid -name-
+        _start_server(self,name)
+            Starts a existing server  
+        _close_server
+            Stops the onion service and the local asynchronous server
+        _close_controller
+            Shutdowns the controller event loop, closing all the connections in the process
+
+    """
+
     def __init__(self, connection , server_name):
         super().__init__(connection)
         self.server_name = server_name
 
 
-
     def run(self, gui_root , callback) -> None:
+
+        """
+            Start point for the Thread, after the start, the lifecyle of the controller is 
+            detached from the tkinter event loop.
+
+            Parameters
+            ----------
+            gui_root: Tkinter
+                the tkinter application root, it allows to schedule callback functions to 
+                be executed by the UI layer
+            callback: <funciton>
+                executed after the asyncio event loop is defined
+
+        """
         
         if not self.running:
             self.gui_loop = gui_root
-            # self.PORT = port
             self.running = True
             thread = threading.Thread(
                 target=self.start_event_loop,
@@ -108,9 +151,6 @@ class ServerController(BasicAsyncController):
             asyncio.run(start())
         except asyncio.CancelledError:
             pass
-        print("==========")
-        print("este controle foi encerrado com sucesso !!!")
-
 
     def start_server(self, name , callback):
         self._enqueue(self._start_server, name ,callback = callback)
@@ -122,7 +162,6 @@ class ServerController(BasicAsyncController):
         self._enqueue(func=self._close_server,callback=callback)
 
     def close_controller(self):
-        print("chamei para fechar o controller!!!")
         self.my_loop.call_soon_threadsafe( # type: ignore
             lambda: asyncio.create_task(self._close_controller())  # type: ignore
         )
@@ -143,7 +182,32 @@ class ServerController(BasicAsyncController):
 
     @rollback        
     async def _create_server(self ,rollback_operations, name):
-                
+        
+        """
+            Establish the steps to create a new valid server, attaching a decorator rollback feature.
+
+            Parameters
+            ---------
+            rollback_operations : list
+                functions to be executed during the rollback process
+            name : str
+                name of the new server
+            Returns
+            -------
+            Onion_connection 
+                Object representing the created onion server connection.
+            ------
+            Exception
+                Propagates any exception raised during the setup process after
+                registering rollback steps.
+            Notes
+            -----
+            This method contains multiple side effects:
+            - Creates and removion onion services
+            - Starts and stops a local server
+            - Writes fundamental content to the databbase
+            - Emits notificaitons
+        """
 
         onion_connection = None
         TorServiceManager.create_new_onion_server(name)
@@ -156,6 +220,7 @@ class ServerController(BasicAsyncController):
         onion_port  = _generate_new_available_port(used_ports) # type: ignore
         await self.connection.start_server(local_port)
         rollback_operations.append(lambda : self.connection.close_server())
+        # Move this for the start of the controller
         await self.start_routines()
         rollback_operations.append(self.stop_routines)
         onion_hostname  = TorServiceManager.start_onion_server(self.server_name, local_port , onion_port)
