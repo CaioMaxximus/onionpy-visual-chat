@@ -9,15 +9,29 @@ RETRYABLE_ERRORS = (TimeoutError , ConnectionError , ConnectionAbortedError)
 class BasicAsyncController():
 
     """
-        This class represents the fundamental format for a controller, it executes in
-        a background thread with his own evenn loop.
+        This class acts as a asynchronous controller,a background thread
+        with his own asyncio event loop.
 
         It works as a bridge  between the UI and the network layer and also as a event
         dispacther, synchronizing the events with a function queue and data queues, 
         executing the callbacks and handling the exceptions.
 
+        Responsibilities:
+        - Dispatch async operations with retry logic
+        - Forward messages and notifications from the connection layer
+        - Execute UI callbacks safely via the GUI event loop
+
+        Methods
+        -------
+        dispatcher_executer(func : Callable ,args , callback : Callable)
+            core function to control the dispatcher of tasks comming from the UI layer,
+            executing  callbacks, handle erros and the retryable operations
+        dispatcher()
+            auxiliar functions to dispatcher_executer, colects the function in the queue
+            and creates the asynchronous tasks for each one, the functions were separeted
+            to improve testability
+
         
-    
     """
 
     def __init__(self, connection):
@@ -31,6 +45,7 @@ class BasicAsyncController():
         self.PORT = None
 
         self.running =  False
+        self.retry_sleep_time = 0.8
 
         self.max_attempts_retry = 2
         self.notification_routine: Optional[asyncio.Task]
@@ -47,6 +62,8 @@ class BasicAsyncController():
         # print(f" ATTENTION !! {func.__name__}")
         while self.running:
             if attempt < self.max_attempts_retry:
+                if attempt > 0:
+                    asyncio.sleep(self.retry_sleep_time * attempt)
                 try :
                     res = await func(*args)
                     print("a funcao ja executei!")
@@ -57,13 +74,13 @@ class BasicAsyncController():
                     )
                     attempt +=1
                 
-                    raise e ## just for test
+                    # raise e ## just for test
                 except Exception as e:
                     await self.notification_queue.put(
                         Notification(NotificationType.ERROR, f"Error executing {func.__name__}: {str(e)}")
                     )
                     attempt =  self.max_attempts_retry
-                    raise e ## just for test
+                    # raise e ## just for test
 
                 else:
                     self._execute_callback( res , callback = callback)
