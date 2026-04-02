@@ -4,6 +4,8 @@
 This is a graphical application to host and use local onion web chats, 
 allowing the creation of N independent onion servers with no complicated setup required.
 
+
+
 ## Features
 - CustomTkinter interface providing easy and intuitive access to the application features.
  ![Status](https://img.shields.io/badge/status-done-brightgreen)
@@ -16,7 +18,7 @@ allowing the creation of N independent onion servers with no complicated setup r
 - Multithreaded asynchronous application providing a smooth and non-blocking interface.
  ![Status](https://img.shields.io/badge/status-done-brightgreen)
 - Create servers with special requirements such as passwords and authentication keys.
- ![Status](https://img.shields.io/badge/status-lacking-red)
+ ![Status](https://img.shields.iclearo/badge/status-lacking-red)
 - Options to mute certain users connected to you server.
  ![Status](https://img.shields.io/badge/status-lacking-red)
 
