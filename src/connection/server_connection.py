@@ -9,10 +9,14 @@ from src.error.special_errors import ConnetionClosedError
 
 
 class ServerConnection():
+
+
+
     def __init__(self, name  , pin = None):
+
+
         self.users = []
         self.name = name
-        # self.max_number_of_connections = max_number_of_connections
         self.pin = pin
 
         self.onion_adress = ""
@@ -81,6 +85,12 @@ class ServerConnection():
                 await self.broadcast_message(last_message)
             except  asyncio.CancelledError as e :
                 raise e
+            except Exception as e:
+                await self.notification_queue.put(Notification(
+                    NotificationType.ERROR,f"FATAL ERROR: {e})"))
+                await asyncio.sleep(2)
+                asyncio.create_task(self.close_server())
+                
    
     @validate_connection_state
     async def connection_handler(self,reader, writer):
@@ -149,9 +159,7 @@ class ServerConnection():
             raise RuntimeError(f"Unexpected error while starting the server: {e}") from e
         
         self._connected = True
-        # self.server_task = asyncio.create_task(serve(server))
         self.check_messages_for_web_task = asyncio.create_task(self.check_messages_for_web())
-        # self.broadcast_messages_task = asyncio.create_task(self.broadcast_routine())
 
 
     @validate_connection_state            

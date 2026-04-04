@@ -31,7 +31,6 @@ class BasicAsyncController():
             and creates the asynchronous tasks for each one, the functions were separeted
             to improve testability
 
-        
     """
 
     def __init__(self, connection):
