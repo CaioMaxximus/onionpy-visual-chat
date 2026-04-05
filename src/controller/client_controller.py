@@ -22,7 +22,6 @@ class ClientController(BasicAsyncController):
 
         Methods
         -------
-
         The methods that have a '_' underscore at the begining version,are just the public version 
         of their counter part, using the queue to schedule theirs private selfs.
 
