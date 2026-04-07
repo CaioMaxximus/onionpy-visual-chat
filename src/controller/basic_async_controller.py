@@ -56,6 +56,9 @@ class BasicAsyncController():
         self.my_loop: Optional[asyncio.AbstractEventLoop]
         self.gui_loop: Optional[Any]
 
+        self.notification_routine = None
+        self.message_routine = None
+
     async def dispatcher_executer(self,func : Callable ,args , callback : Callable):
         """Asynchronously execute a callable with retry logic and callback handling.
         This coroutine repeatedly attempts to call the provided async callable until it succeeds, 
@@ -109,7 +112,7 @@ class BasicAsyncController():
         while self.running:
             if attempt < self.max_attempts_retry:
                 if attempt > 0:
-                    asyncio.sleep(self.retry_sleep_time * attempt)
+                    await asyncio.sleep(self.retry_sleep_time * attempt)
                 try :
                     res = await func(*args)
                     print("a funcao ja executei!")
@@ -204,6 +207,8 @@ class BasicAsyncController():
 
             tasks: list[asyncio.Task] = []
             for routine in (self.notification_routine, self.message_routine):
+                if routine is None:
+                    continue
                 routine.cancel()
                 print("mandei encerra a primeira rotina do controller")
                 try:

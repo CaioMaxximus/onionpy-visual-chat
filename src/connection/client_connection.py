@@ -2,7 +2,12 @@ import asyncio
 from python_socks.async_.asyncio import Proxy
 from python_socks import ProxyType
 from models.notification import Notification , NotificationType
+import re
 
+
+## Temporary
+class InvalidOnionHost(Exception): pass
+class InvalidPort(Exception): pass
 
 class ClientConnection():
 
@@ -86,11 +91,42 @@ class ClientConnection():
                 raise e
         return inner_wrapper
     
+    import re
+
+
+    def validate_onion_and_port(self ,host: str, port: int):
+
+        host = host.strip().lower()
+
+        if not host.endswith(".onion"):
+            raise InvalidOnionHost("Hostname must end with '.onion'.")
+
+        name = host[:-6]  # remove ".onion"
+
+        # v3: 56 chars base32 (a-z2-7)
+        if len(name) != 56:
+            raise InvalidOnionHost("Invalid Onion name, it must have 56 characters")
+
+        if not re.fullmatch(r"[a-z2-7]+", name):
+            raise InvalidOnionHost("Invalid Onion name: it must be base32 [a-z2-7].")
+
+        try:
+            port = int(port)
+        except (TypeError, ValueError):
+            raise InvalidPort("Port number must be an Integer")
+
+        if not (1 <= port <= 65535):
+            raise InvalidPort("Invalid interval number for the port (1–65535).")
+
+    
     async def run(self, host: str, port: int ) -> None:
+
+        self.validate_onion_and_port(host, port)
+
         self.messages_queue = asyncio.Queue()
         self.notification_queue= asyncio.Queue()
 
-        self.HOST = host.strip()
+        self.HOST = host
         self.PORT = port
         await self.start_connection()
  

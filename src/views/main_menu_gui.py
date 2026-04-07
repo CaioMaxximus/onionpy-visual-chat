@@ -101,12 +101,14 @@ class MainMenuGUI:
         self.create_new_server_window(server_name)
     
     def create_new_client(self):
-        pop_w = PopUpEntryGui(self.root,["Enter the Server Adress"],["onion_adress"])
+        pop_w = PopUpEntryGui(self.root,
+                              ["Enter the Server Adress" ,"Enter the onion port"],
+                              ["onion_adress" ,"onion_port"])
         self.root.wait_window(pop_w)
         if pop_w.done:
-            host_port = pop_w.registered_values["onion_adress"].split(":")
-            host = host_port[0]
-            port = int(host_port[1]) if len(host_port) > 1  else 80
+            host = pop_w.registered_values["onion_adress"]
+            port = pop_w.registered_values["onion_port"]
+            port = port if port.strip(" ") != ""  else "-1"
 
             self.create_new_client_window(host, port)
 
