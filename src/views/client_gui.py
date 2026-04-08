@@ -13,15 +13,22 @@ from .basic_chat_view import BasicChatView
 
 class ClientGUI(BasicChatView):
 
+    """
+        The class represents the client side chat interface.
+
+        It add to the base class behaviour by establishing his own
+        schedule of actions to perform in the initialization process
+        and some visual changes
+    """
+
     def __init__(self ,master, index , controller, host , port):
 
         super().__init__(master , controller)
-        self.destroyed = False
-        self.active_notification_gui = None
         self.host = host
         self.port = port
         self.controller =  controller
         self.master = master
+        self.title("Client Onion conneciton")
 
         
         def _on_start(self): 

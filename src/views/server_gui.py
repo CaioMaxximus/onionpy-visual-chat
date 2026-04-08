@@ -6,39 +6,57 @@ from .basic_chat_view import BasicChatView
 
 class ServerGUI(BasicChatView):
 
-    def __init__(self ,master, name ,index,controller  ,creator_mode = False , ):
+    """
+    Represents the server-side chat interface.
+
+    Extends the base controller by defining its own initialization workflow
+    and applying UI-specific customizations.
+
+    Attributes
+    ---------
+
+    HOST : str
+        The onion server hostname
+    PORT : int
+        The onion port
+    name : str
+        The server name, stored in the database
+    
+
+    """
+
+    def __init__(self ,master, name ,index,controller  ,creator_mode = False ):
         super().__init__(master , controller)
-        def step2(): ## Temporary here
-            print("coloquei na pilha uma funcao")
-            self.running = True
-            if creator_mode :
-                self.controller.create_server(name , self._build_interface)
-            else: 
-                self.controller.start_server(name, self._build_interface)
-            self.start_routines()
+
 
         self.HOST = None
         self.PORT = None
         self.name = name
-        self.active_notification_gui = None
+        self.creator_mode = creator_mode
+        self.title("Server Onion conneciton")
 
 
-        self.controller.run(self.master , lambda : step2())
-        self.destroyed = False
-        
-
+        self.controller.run(self.master , lambda : self._start_server())
+    
+    def _start_server(self): ## Temporary here
+        print("coloquei na pilha uma funcao")
+        self.running = True
+        if self.creator_mode :
+            self.controller.create_server(self.name , self._build_interface)
+        else: 
+            self.controller.start_server(self.name, self._build_interface)
+        # to notifications schedule must be already active to the server initialization
+        self.start_routines() 
 
 
     def _build_interface(self, onion_connecion):
         super().build_interface()
         self.onion_connecion = onion_connecion
-        # store server info and show a small top label
         host_info = f"{onion_connecion.hostname}:{onion_connecion.onion_port}"
         port_text = f"Serving on local port : {onion_connecion.local_port}"
 
         self.title(onion_connecion.server_name)
         self.top_info.configure(text=host_info)
-        # try to update the scroll frame's label if it exists, otherwise keep a fallback attribute
         self.scroll_frame.configure(label_text=port_text)
 
         end_server_btn = ctk.CTkButton(self, width=20 , height=20,text = "TURN OFF SERVER",

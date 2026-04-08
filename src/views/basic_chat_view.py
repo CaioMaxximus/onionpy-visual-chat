@@ -65,12 +65,15 @@ class BasicChatView(ctk.CTkToplevel):
         self.message_queue = queue.Queue()
         self.notifications_queue = queue.Queue()
         self.protocol("WM_DELETE_WINDOW", self.on_close)
+        self.destroyed = False
+
 
 
         self.width = 750
         self.height = 750
         self.geometry(f"{self.height}x{self.width}")
         self.running = False
+        self.active_notification_gui = None
 
 
         
@@ -167,7 +170,7 @@ class BasicChatView(ctk.CTkToplevel):
     def handle_notification(self):
 
         """
-            This methond schedule himself with Tkinter
+            This methond schedule himself with the Tkinter
             event loop, keeping track of the notification Queue
             and operating a dynamic pop window that is responsive
             for newer notifications.
@@ -187,16 +190,19 @@ class BasicChatView(ctk.CTkToplevel):
             n_type = notificaton.message_type
             msg = notificaton.content
 
-            if notificaton is not None and n_type != NotificationType.INFO:
+            # n_type != NotificationType.INFO: a differnt kind a notification to be added in this case in the future
 
-                if self.active_notification_gui is not None:
-                    self.active_notification_gui.callback  = lambda :  change_state(n_type)
-                    self.master.after(2000, self.active_notification_gui.set_message, msg , n_type)
-                   
-                else:
-                    self.active_notification_gui = PopUpNotificationGUI(
-                        self, msg, n_type,
-                        callback = lambda :  change_state(n_type))
+            if self.active_notification_gui is not None:
+                print("ainda exixte  a not")
+                self.active_notification_gui.callback  = lambda :  change_state(n_type)
+                self.master.after(2000, self.active_notification_gui.set_message, msg , n_type)
+                
+            else:
+                print("nao exixte fiz uma")
+
+                self.active_notification_gui = PopUpNotificationGUI(
+                    self, msg, n_type,
+                    callback = lambda :  change_state(n_type))
 
         except queue.Empty:
             pass
