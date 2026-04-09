@@ -23,7 +23,6 @@ async def create_tables(db_path: str = "my.db"):
             )
             """
         )
-        print("Executou")
         await conn.commit()
 
 

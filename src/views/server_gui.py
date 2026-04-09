@@ -64,4 +64,4 @@ class ServerGUI(BasicChatView):
         end_server_btn.pack(side ="top")
 
     def end_server(self):
-        self.controller.close_server(lambda b: print("server closed!!"))
+        self.controller.close_server(lambda b: print("server closed!!")) ## add pop up

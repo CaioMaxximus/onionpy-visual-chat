@@ -87,7 +87,6 @@ class ClientConnection():
                 else:
                     raise ValueError("The connection didnt start yet!")
             except Exception as e:
-                print(f"deu erro na hora da chamda da funcao : {func.__name__}")
                 raise e
         return inner_wrapper
     
@@ -150,7 +149,6 @@ class ClientConnection():
         while self._connected:
             try:
                 data = await reader.readuntil(separator=b'\0')
-                print("chegou mensagem no cliente!!!")
             except asyncio.exceptions.IncompleteReadError as e:
                 data = e.partial
                 if not data:
@@ -174,7 +172,6 @@ class ClientConnection():
                 "owner": False
             }
 
-            print(id(self.messages_queue))
 
 
             await self.messages_queue.put(msg_info)
@@ -213,7 +210,6 @@ class ClientConnection():
         w.write(data_encoded)
         try:
             await w.drain()
-            print("a mensagem foi envida do cliente com sucesso!!")
         except (ConnectionResetError , ConnectionRefusedError) as e: 
             await self.notification_queue.put(
                 Notification(NotificationType.WARNING , 
@@ -222,7 +218,6 @@ class ClientConnection():
 
     # @validate_connection_state
     async def get_message_in_queue(self):
-        print(id(self.messages_queue))
         msg = await self.messages_queue.get()
         return msg
     

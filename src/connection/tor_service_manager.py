@@ -20,7 +20,6 @@ class TorServiceManager():
     APPLICATION_ROOT = os.getenv("APPLICATION_ROOT") or str(Path(__file__).resolve().parents[2])
     global_controller = None
 
-
     if not os.path.isdir(APPLICATION_ROOT):
         raise RuntimeError(f"APPLICATION_ROOT invalid: {APPLICATION_ROOT}")
     # APPLICATION_ROOT = "/home/caiomaxx/Documentos/projetos/web_chat_with_tkinter"
@@ -99,31 +98,15 @@ class TorServiceManager():
         return dirs_list
 
 
-    # TO REMOVE
-    # @classmethod
-    # def end_onion_server(cls,pid):
-    #     try:
-    #         subprocess.run(f"kill {pid}", shell= True)
-    #     except Exception as e:
-    #         raise Exception(f"Faling to kill the {pid} process")
- 
-
     @classmethod
     def wait_for_socks(cls,port=9050, timeout=30):
         start = time.time()
-        # print("esperando pelo tor")
         while time.time() - start < timeout:
             try:
                 with socket.create_connection(("127.0.0.1", port), timeout=10):
-                    # print("tor eentrou@!")
-
                     return True
             except OSError:
                 time.sleep(0.3)
-                # print("ainda esperando pelo tor..")
-
-        
-
 
         raise TimeoutError("Tor SOCKS proxy Timeout.")
     

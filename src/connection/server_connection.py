@@ -117,7 +117,6 @@ class ServerConnection():
     @validate_connection_state
     async def connection_handler(self,reader, writer):
         async def local_listerner(reader, writer):
-            # print("acabou de conectar alguem!!")
             self.my_connections.append(writer)
             while self._connected:
                 try:
@@ -156,7 +155,6 @@ class ServerConnection():
     async def server_listener(self):
    
         async def serve(server):
-            # print("to servindo pra sempre")
             async with server:
                 await server.serve_forever()
 
@@ -185,13 +183,11 @@ class ServerConnection():
     @validate_connection_state            
     async def broadcast_message(self, message , w):
         data = message["entry"]
-        # print(f"a mensagem foi :{data}")
         data = message["entry"].replace("\x00", "")
         data_encoded = (data + "\n\0").encode()
 
         # for w in self.my_connections:
         peername = w.get_extra_info('peername')
-        print(message, peername, sep="\n==========\n")
 
         try:
             if message["owner"] or message["author_name"][1] != peername[1] :

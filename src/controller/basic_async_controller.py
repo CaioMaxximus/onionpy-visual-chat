@@ -115,8 +115,6 @@ class BasicAsyncController():
                     await asyncio.sleep(self.retry_sleep_time * attempt)
                 try :
                     res = await func(*args)
-                    print("a funcao ja executei!")
-                    print(func.__name__)
                 except RETRYABLE_ERRORS as e:
                     await self.notification_queue.put(
                         Notification(NotificationType.WARNING, f"{str(e)}")
@@ -194,7 +192,6 @@ class BasicAsyncController():
         self.notification_routine = asyncio.create_task(
             self._get_notification_on_connection_routine()
         )
-        print("criei a notification routine")
         self.message_routine = asyncio.create_task(
             self._get_messages_on_connection_routine()
         )
@@ -210,14 +207,12 @@ class BasicAsyncController():
                 if routine is None:
                     continue
                 routine.cancel()
-                print("mandei encerra a primeira rotina do controller")
                 try:
                     await routine
                 except asyncio.CancelledError:
                     pass
                 except Exception:
                     pass
-            print("encerrei duas rotinas!")
 
             tasks = self.all_running_tasks.values()
             for t in tasks:
@@ -230,7 +225,6 @@ class BasicAsyncController():
                     pass
                 except Exception:
                     pass
-                print("encerrei as tasks presentes!")
 
 
             for q in (self.message_queue, self.notification_queue, self.function_queue):
@@ -241,7 +235,6 @@ class BasicAsyncController():
                         q.get_nowait()
                 except asyncio.QueueEmpty:
                     pass
-            print("linpei as fi]las")
 
             self.main_routine.cancel()
             try:
@@ -259,11 +252,9 @@ class BasicAsyncController():
 
         
     async def _get_messages_on_connection_routine(self):
-        print("fui chamado pela classe", self.__class__ )
         while self.running:
             try :
                 msg = await self.connection.get_message_in_queue()
-                print("coloquei a mensagem")
                 await self.message_queue.put(msg)
             except asyncio.CancelledError:
                 pass
@@ -276,8 +267,7 @@ class BasicAsyncController():
         await self.connection.send_message(message)
 
     def get_web_message(self, callback) -> None:
-        # print("to pedindo mensagem pela view")
-        # print(self.__class__)
+
         self._enqueue(self._get_web_message,callback= callback)
 
 
@@ -289,7 +279,6 @@ class BasicAsyncController():
 
     async def _get_web_message(self):
         msg = await self.message_queue.get()
-        # print("olha a mensagem aí")
         return msg
     
     

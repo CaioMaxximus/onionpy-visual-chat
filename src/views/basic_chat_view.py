@@ -190,15 +190,14 @@ class BasicChatView(ctk.CTkToplevel):
             n_type = notificaton.message_type
             msg = notificaton.content
 
-            # n_type != NotificationType.INFO: a differnt kind a notification to be added in this case in the future
+            # n_type != NotificationType.INFO: a differnt 
+            # kind a notification to be added in this case in the future
 
             if self.active_notification_gui is not None:
-                print("ainda exixte  a not")
                 self.active_notification_gui.callback  = lambda :  change_state(n_type)
                 self.master.after(2000, self.active_notification_gui.set_message, msg , n_type)
                 
             else:
-                print("nao exixte fiz uma")
 
                 self.active_notification_gui = PopUpNotificationGUI(
                     self, msg, n_type,
@@ -214,7 +213,6 @@ class BasicChatView(ctk.CTkToplevel):
             next_message = self.message_queue.get(block=False)
             self.add_message_on_gui(**next_message)
         except queue.Empty:
-            # print("sem melnsagens na fila")
             pass
         finally:
             if not self.destroyed : self.master.after(50 , self.handle_message)
