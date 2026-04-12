@@ -52,6 +52,42 @@ chmod +X onion_service_builder.sh
 
 ## Project Structure
 ```
+├── components/
+│   └── message_frame.py 
+├── connection/
+│   ├── __init__.py
+│   ├── client_connection.py 
+│   ├── server_connection.py 
+│   └── tor_service_manager.py 
+├── controller/
+│   ├── __init__.py 
+│   ├── basic_async_controller.py 
+│   ├── client_controller.py 
+│   ├── menu_controller.py
+│   └── server_controller.py 
+├── coordinator/
+│   └── application_coordinator.py 
+├── data_base/
+│   └── db_service_manager.py
+├── error/
+│   └── special_errors.py 
+├── models/
+│   ├── __init__.py 
+│   ├── notification.py 
+│   └── user.py 
+├── popups/
+│   ├── __init__.py 
+│   ├── popup_choice_gui.py 
+│   ├── popup_entry_gui.py 
+│   └── popup_notification_gui.py 
+├── views/
+│   ├── __init__.py 
+│   ├── basic_chat_view.py 
+│   ├── client_gui.py 
+│   ├── main_menu_gui.py 
+│   └── server_gui.py 
+├── __init__.py 
+├── root.py
 ```
 
 ## Contact
