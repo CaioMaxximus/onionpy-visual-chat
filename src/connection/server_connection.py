@@ -7,7 +7,6 @@ from src.error.special_errors import ConnetionClosedError
 
 ## Temporary
 
-
 class ServerConnection():
 
     """
