@@ -17,6 +17,13 @@ TOR_CONTROL_PORT = 9051
 
 class TorServiceManager():
 
+    """
+        This class defines the methods to interact with the tor process.
+
+        It allows to add , remove and configure  onion servers.
+    
+    """
+
     APPLICATION_ROOT = os.getenv("APPLICATION_ROOT") or str(Path(__file__).resolve().parents[2])
     global_controller = None
 
@@ -93,7 +100,7 @@ class TorServiceManager():
         try:
             dirs_list = ["_".join(dir.split("_")[1:]) for dir in os.listdir(instances_path) if os.path.isdir(f"{instances_path}/{dir}")]
         except FileNotFoundError as e:
-            raise FileNotFoundError(f"Path: {instances_path} to local isntances not found, check the directiories.")
+            raise FileNotFoundError(f"Path: {instances_path} to local isntances not found, check the directories.")
 
         return dirs_list
 
