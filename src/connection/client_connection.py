@@ -111,6 +111,7 @@ class ClientConnection():
 
         try:
             port = int(port)
+            
         except (TypeError, ValueError):
             raise InvalidPort("Port number must be an Integer")
 
@@ -126,7 +127,7 @@ class ClientConnection():
         self.notification_queue= asyncio.Queue()
 
         self.HOST = host
-        self.PORT = port
+        self.PORT = int(port)
         await self.start_connection()
  
     @validate_connection_state
@@ -149,11 +150,14 @@ class ClientConnection():
         while self._connected:
             try:
                 data = await reader.readuntil(separator=b'\0')
-            except asyncio.exceptions.IncompleteReadError as e:
-                data = e.partial
-                if not data:
+            except asyncio.IncompleteReadError as e:
+                if e.partial:
+                    data = e.partial
+                else:
                     await self.notification_queue.put(
-                        Notification(NotificationType.WARNING, f"Error reading message from server {writer.get_extra_info('peername')}"))
+                        Notification(NotificationType.WARNING, "Server closed connection.")
+                    )
+                    break
             except:
                 await self.notification_queue.put(
                                             Notification(NotificationType.WARNING, f"""Unexpected error from server: {writer.get_extra_info('peername')}
@@ -177,6 +181,8 @@ class ClientConnection():
             await self.messages_queue.put(msg_info)
 
     async def start_connection(self):
+
+        print("Entrou para iniciar uma conexao!!")
 
         try:
             self.proxy = Proxy(proxy_type= ProxyType.SOCKS5,
