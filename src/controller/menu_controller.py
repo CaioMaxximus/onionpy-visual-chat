@@ -43,10 +43,11 @@ class MenuController:
         self.notification_queue = queue.Queue()
         self.gui_loop = None
         self.running = False
+        self.tor_start_timeout = 15
       
     
     def _start_tor_service(self):
-        TorServiceManager.start_tor(12)
+        TorServiceManager.start_tor(self.tor_start_timeout)
 
     def get_my_servers(self, callback=None):
         self._enqueue(func=self._get_my_servers, callback= callback)

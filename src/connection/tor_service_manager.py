@@ -32,7 +32,7 @@ class TorServiceManager():
     # APPLICATION_ROOT = "/home/caiomaxx/Documentos/projetos/web_chat_with_tkinter"
     INSTANCES_PATH = "tor_service/tor_instances"
     TEMPLATE_TORRC_PATH = "tor_service/files/etc/tor/torrc"
-    proxy_id = None
+    proxy_process = None
     
     @classmethod
     def create_new_onion_server(cls, server_name ):
@@ -146,7 +146,8 @@ class TorServiceManager():
         try:
 
             process = subprocess.Popen([f"{executabel_path}", "-f", torcc_path])
-            
+            cls.proxy_process =process  
+
         except Exception as e:
             raise ConnectionError(
             f"Error! Trying to run tor proxy service process! check executable path: {executabel_path}"
@@ -158,18 +159,23 @@ class TorServiceManager():
             socket = proxy.connect(dest_host="8.8.8.8" , dest_port=53,timeout = timeout)
             socket.close()
         except TimeoutError as e:
-            raise TimeoutError(f"Tor proxy was unable to connect in {timeout} seconds") from e
+            raise TimeoutError((f"Tor proxy was unable to connect in {timeout} seconds; please restart the application!")) from e
         except Exception:
             raise
-        # except Exception as e:
-        #     raise ConnectionError("Error! Proxy service is not working") from e
-        cls.proxy_id = process.pid    
-
+        finally:
+            try:
+                cls.proxy_process.terminate()
+                cls.proxy_process.wait()
+            except:
+                pass
     
     
     @classmethod 
     def end_tor(cls):
-        subprocess.run(f"kill {cls.proxy_id}", shell= True)
+        try:
+            cls.proxy_process.terminate()
+        except:
+            pass
 
     @classmethod
     def check_server_exists(cls, server_name):
