@@ -147,8 +147,11 @@ class TorServiceManager():
 
             process = subprocess.Popen([f"{executabel_path}", "-f", torcc_path])
             cls.proxy_process =process  
+            # cls._kill_tor()
 
         except Exception as e:
+            cls._kill_tor()
+
             raise ConnectionError(
             f"Error! Trying to run tor proxy service process! check executable path: {executabel_path}"
             ) from e
@@ -159,23 +162,23 @@ class TorServiceManager():
             socket = proxy.connect(dest_host="8.8.8.8" , dest_port=53,timeout = timeout)
             socket.close()
         except TimeoutError as e:
+            cls._kill_tor()
             raise TimeoutError((f"Tor proxy was unable to connect in {timeout} seconds; please restart the application!")) from e
-        except Exception:
-            raise
-        finally:
-            try:
-                cls.proxy_process.terminate()
-                cls.proxy_process.wait()
-            except:
-                pass
-    
+        except Exception as e:
+            cls._kill_tor()
+            raise e
+
+    @classmethod
+    def _kill_tor(cls):
+        try:
+            cls.proxy_process.terminate()
+            cls.proxy_process.wait()
+        except:
+            pass
     
     @classmethod 
     def end_tor(cls):
-        try:
-            cls.proxy_process.terminate()
-        except:
-            pass
+        cls._kill_tor()
 
     @classmethod
     def check_server_exists(cls, server_name):

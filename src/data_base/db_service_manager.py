@@ -3,26 +3,33 @@ import  aiosqlite
 DYNAMIC_PORT_MIN = 49152
 DYNAMIC_PORT_MAX = 65535
 
-servers = {
-    "server_name",
-    "onion_hostname",
-    "local_server_port",
-    "onion_port"
-}
+# servers = {
+#     "server_name",
+#     "onion_hostname",
+#     "local_server_port",
+#     "onion_port"
+# }
 
 async def create_tables(db_path: str = "my.db"):
     """Create the servers table if it doesn't exist."""
     async with aiosqlite.connect(db_path) as conn:
-        await conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS servers (
-                server_name TEXT PRIMARY KEY,
-                onion_hostname TEXT NOT NULL,
-                local_server_port INTEGER NOT NULL,
-                onion_port INTEGER NOT NULL
-            )
-            """
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS servers (
+            server_name TEXT PRIMARY KEY,
+            onion_hostname TEXT PRIMARY KEY,
+            local_server_port INTEGER NOT NULL,
+            onion_port INTEGER NOT NULL
         )
+        """)
+
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS discovered_servers (
+            server_name TEXT NOT NULL,
+            onion_hostname TEXT PRIMARY KEY,
+            port INTEGER NOT NULL
+        )
+        """)
+
         await conn.commit()
 
 
@@ -39,6 +46,7 @@ async def save_new_server(server_name: str, local_port , onion_hostname, onion_p
         )
         await conn.commit()
 
+
 async def remove_server(server_name: str, db_path : str= "my.db"):
     """
     Remove a server record from the database
@@ -50,6 +58,29 @@ async def remove_server(server_name: str, db_path : str= "my.db"):
             (server_name,)
         )
         await conn.commit()
+
+
+async def save_discovered_server(server_name : str, onion_hostname : str ,port : int, db_path : str = "my.db"):
+    """
+    Stores a new discovered server
+    """
+
+    async with aiosqlite.connect(db_path) as conn:
+        await conn.execute(
+            "INSERT INTO discovered_servers (server_name, onion_hostname, port) VALUES (?,?,?)",
+            (server_name, onion_hostname ,port)
+        )
+        await conn.commit()
+
+
+async def list_all_discovered_servers(db_path : str = "my.db"):
+
+    async with aiosqlite.connect(db_path) as conn:
+        async with await conn.execute(
+            "SELECT * FROM discovered_servers"
+        ) as cursor:
+            res = await cursor.fetchall()
+            return res
 
 
 async def get_server_by_name(server_name: str, db_path: str = "my.db"):
@@ -83,14 +114,16 @@ async def list_all_ports(db_path: str = "my.db") -> list:
             return [int(r[0]) for r in rows if r[0] is not None]
         
 
-
-
+### Keeping for testing
 if __name__ == "__main__":
     async def op():
         await create_tables()
-        await save_new_server("teste1" ,122 ,  "doasdosadik.onion", 2121)
-        print(await get_server_by_name("teste1"))
-        print(await list_all_ports())
+        await save_discovered_server("descoberto" ,"dasdadsad.onion" , 123)
+        res = await list_all_discovered_servers()
+        print(res)
+        # await save_new_server("teste1" ,122 ,  "doasdosadik.onion", 2121)
+        # print(await get_server_by_name("teste1"))
+        # print(await list_all_ports())
         
     import asyncio
     asyncio.run(op())

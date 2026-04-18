@@ -55,6 +55,9 @@ class MenuController:
     def _get_my_servers(self):
         return TorServiceManager.find_local_servers()
     
+    def get_my_discovered_servers(self ,callback):
+        self._enqueue(func=self._get_my_discovered_servers,callback= callback)
+
     def get_notification(self, callback=None):
         self._enqueue(self._get_notification, callback = callback)
         
