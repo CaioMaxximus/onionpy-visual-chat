@@ -37,7 +37,6 @@ class MenuController:
         _get_my_servers
     """
 
-
     def __init__(self) -> None:
         self.function_queue = queue.Queue()
         self.notification_queue = queue.Queue()

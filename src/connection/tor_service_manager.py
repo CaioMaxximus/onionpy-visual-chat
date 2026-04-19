@@ -18,9 +18,8 @@ TOR_CONTROL_PORT = 9051
 class TorServiceManager():
 
     """
-        This class defines the methods to interact with the tor process.
-
-        It allows to add , remove and configure  onion servers.
+        This class defines the methods to start and interact with the tor process.
+        It allows to add , remove and configure onion servers.
     
     """
 

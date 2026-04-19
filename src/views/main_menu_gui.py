@@ -112,6 +112,7 @@ class MainMenuGUI:
 
             self.create_new_client_window(host, port)
 
+
     def get_notification_routine(self):
         self.controller.get_notification(self.handle_notification)
     

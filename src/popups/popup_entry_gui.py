@@ -1,12 +1,41 @@
 import customtkinter as ctk
 
 class PopUpEntryGui(ctk.CTkToplevel):
+
+    """
+
+        This class represents a pop-up window used to collect a personalized 
+        amount of data.
+         
+        Attributes
+        ---------
+        
+        master : ctk
+            the root tkinter object for the all aplication
+        labels : list(str)
+            the labels that appear in the interface, mapped for each input field
+        maps_of_inputs
+            the names used to represent each input field
+        entrys : list( ctk.CTkEntry)
+            stores the entry objects, used to collect the the fields data
+        
+        Methods
+        -------
+
+        generate_personalized_inputs:
+            creates the pairs Label-Input on the UI using in the label attribute
+        confirm:
+            collects all the data available in the inputs and destroys the window
+        
+    """
+
     def __init__(self, master, labels , maps_of_inputs):
         super().__init__(master)
 
         self.master = master
         self.labels = labels
         self.maps_of_inputs = maps_of_inputs
+        # insert a error in labels and maps_of_inputa are not with the same size
         self.entrys = []
         self.inputs_canvas = ctk.CTkScrollableFrame(self)
         self.inputs_canvas.pack(expand = True, fill = "both" , padx = 10, pady =10)
