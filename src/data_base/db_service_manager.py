@@ -118,7 +118,7 @@ async def list_all_ports(db_path: str = "my.db") -> list:
 if __name__ == "__main__":
     async def op():
         await create_tables()
-        await save_discovered_server("descoberto" ,"dasdadsad.onion" , 123)
+        await save_discovered_server("descdsadoberto" ,"dasdsadasadsad.onion" , 123)
         res = await list_all_discovered_servers()
         print(res)
         # await save_new_server("teste1" ,122 ,  "doasdosadik.onion", 2121)

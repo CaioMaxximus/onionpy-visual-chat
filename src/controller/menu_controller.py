@@ -57,6 +57,8 @@ class MenuController:
     def get_my_discovered_servers(self ,callback):
         self._enqueue(func=self._get_my_discovered_servers,callback= callback)
 
+
+
     def get_notification(self, callback=None):
         self._enqueue(self._get_notification, callback = callback)
         
@@ -102,6 +104,12 @@ class MenuController:
             self.function_queue.put_nowait((func, args, callback))
         except Exception:
             pass
+
+    ## This funciton will act this way, while the class have few async functions 
+    ## an it was designed to be sync, prob will change in the future
+
+    def _get_my_discovered_servers(self):
+        return asyncio.run(db.list_all_discovered_servers())
 
     
     def function_executer(self,func, args , callback ):

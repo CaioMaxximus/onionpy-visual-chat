@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from models.notification import  NotificationType
 from popups import PopUpNotificationGUI  , PopUpEntryGui
+from personalized_wigdets import ItemListView
 # HOST = '127.0.0.1'
 # PORT = 8080
 
@@ -77,16 +78,17 @@ class MainMenuGUI:
         self.bottow_frame.pack(fill="both")
 
         # use the correctly spelled callback name
-        self.my_servers_list = ElementList(self.bottow_frame, self.initiate_server_window)
+        self.my_servers_list = ItemListView(self.bottow_frame, self.initiate_server_window,
+                                            lambda e : e)
         self.my_servers_list.pack(side = "left", fill = "y" , padx=10, pady=10)
 
-        self.my_visited_servers_list = ElementList(self.bottow_frame,print)
+        self.my_visited_servers_list = ItemListView(self.bottow_frame,self.initiate_client_window,
+                                                    lambda data : (f"{data[0]} + {data[1]}"))
         self.my_visited_servers_list.pack(side = "right", fill = "y", padx=10, pady=10)
 
-        self.controller.get_my_servers(lambda servers_names: self.my_servers_list.set_items(servers_names) )
-        self.controller.get_my_servers(lambda servers_names: self.my_visited_servers_list.set_items(servers_names) )
+        self.controller.get_my_servers(lambda servers_names: self.my_servers_list.update_items(servers_names) )
+        self.controller.get_my_discovered_servers(lambda servers_info: self.my_visited_servers_list.update_items(servers_info) )
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
-
 
 
     def on_close(self):
@@ -132,7 +134,13 @@ class MainMenuGUI:
 
     def initiate_server_window(self, *args):
         self.server_gui_navigate(self.root, *args, mode=False)
+    
+    def initiate_client_window(self, server_info):
+        self.client_gui_navigate(self.root,0 ,server_info[1], server_info[2])
 
+
+
+## REMOVED
 class ElementList(ctk.CTkScrollableFrame):
 
     """
