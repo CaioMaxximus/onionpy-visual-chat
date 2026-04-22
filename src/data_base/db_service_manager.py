@@ -60,14 +60,14 @@ async def remove_server(server_name: str, db_path : str= "my.db"):
         await conn.commit()
 
 
-async def save_discovered_server(server_name : str, onion_hostname : str ,port : int, db_path : str = "my.db"):
+async def save_discovered_server_securely(server_name : str, onion_hostname : str ,port : int, db_path : str = "my.db"):
     """
     Stores a new discovered server
     """
 
     async with aiosqlite.connect(db_path) as conn:
         await conn.execute(
-            "INSERT INTO discovered_servers (server_name, onion_hostname, port) VALUES (?,?,?)",
+            "INSERT INTO discovered_servers (server_name, onion_hostname, port) VALUES (?,?,?) ON CONFLICT DO NOTHING",
             (server_name, onion_hostname ,port)
         )
         await conn.commit()
@@ -118,7 +118,7 @@ async def list_all_ports(db_path: str = "my.db") -> list:
 if __name__ == "__main__":
     async def op():
         await create_tables()
-        await save_discovered_server("descdsadoberto" ,"dasdsadasadsad.onion" , 123)
+        await save_discovered_server_securely("descdsadoberto" ,"dasdsadasadsad.onion" , 123)
         res = await list_all_discovered_servers()
         print(res)
         # await save_new_server("teste1" ,122 ,  "doasdosadik.onion", 2121)

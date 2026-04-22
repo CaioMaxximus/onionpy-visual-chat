@@ -3,6 +3,7 @@ import asyncio
 # from models.notification import Notification , NotificationType
 import threading
 from .basic_async_controller import BasicAsyncController
+from data_base import db_service_manager
 
 # 
 # Temporary
@@ -137,5 +138,7 @@ class ClientController(BasicAsyncController):
         await self.connection.run(self.HOST, self.PORT)
         await self.start_routines()
         self.connected = True
+        ## DEFINE A WAY TO NAME SERVER , FOR A WHILE, THE SAME NAME 
+        await db_service_manager.save_discovered_server_securely("NEW_CONNECTION",self.HOST ,self.PORT)
 
    
