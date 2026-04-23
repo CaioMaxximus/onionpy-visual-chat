@@ -1,4 +1,4 @@
-from customtkinter import CTkFrame , CTkLabel ,CTkScrollableFrame
+from customtkinter import CTkFrame , CTkLabel ,CTkScrollableFrame , CTkButton
 
 
 
@@ -19,6 +19,7 @@ class ConfigurationGUI(CTkFrame):
         self.height = 700
         self.width = 650
         self.build_interface()
+        self.controller.get_discovered_servers(lambda x :self.update_discovered_servers_list(x))
 
     def build_interface(self):
         #  frame 1 content
@@ -35,3 +36,30 @@ class ConfigurationGUI(CTkFrame):
         self.frame_2.pack(pady = 3.5, padx = 3.5, fill ="x")
         self.scroll_frame_discovered_server = CTkScrollableFrame(self.frame_2, label_text="Connections available")
         self.scroll_frame_discovered_server.pack(fill="both", padx=7, pady=7)
+    
+
+    def update_servers_list(self , servers_info):
+        for s in servers_info:
+            container = CTkFrame(self.scroll_frame_servers,height= 15)
+            container.pack(fil = "x",pady = 3.5, padx = 3.5)
+            info = CTkLabel(container,text= f"{s.name} - {(s.hostname)[0:35]}...")
+            info.pack(fill = "x",side = "left")
+            action = CTkButton(container, text= "-->" , command=lambda _ : print("clicou") )
+
+    def update_discovered_servers_list(self , servers_info):
+        for s in servers_info:
+            container = CTkFrame(self.scroll_frame_discovered_server,height= 15)
+            container.pack(fil = "x" ,pady = 3.5, padx = 3.5)
+            info = CTkLabel(container,text= f"{s.name} - {(s.hostname)[0:35]}...")
+            info.pack(fill = "x",side = "left")
+            action = CTkButton(container, text= "-->" , command=lambda x : print("clicou"),
+                               width= 20 )
+            action.pack(side = "right")
+
+# Trying later
+# class PopUpDialogItemList(CTkFrame):
+
+#     def __init__(self, parent):
+#         super().__init__(parent)
+    
+#     def build

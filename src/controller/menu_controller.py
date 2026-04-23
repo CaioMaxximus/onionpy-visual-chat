@@ -2,7 +2,7 @@ import threading
 import queue
 from models.notification import Notification , NotificationType
 from src.connection.tor_service_manager import TorServiceManager
-from data_base import db_service_manager as db
+from data_base import repository
 import asyncio
 
 class MenuController:
@@ -54,8 +54,8 @@ class MenuController:
     def _get_my_servers(self):
         return TorServiceManager.find_local_servers()
     
-    def get_my_discovered_servers(self ,callback):
-        self._enqueue(func=self._get_my_discovered_servers,callback= callback)
+    def get_discovered_servers(self ,callback):
+        self._enqueue(func=self._get_discovered_servers,callback= callback)
 
 
 
@@ -108,8 +108,8 @@ class MenuController:
     ## This funciton will act this way, while the class have few async functions 
     ## an it was designed to be sync, prob will change in the future
 
-    def _get_my_discovered_servers(self):
-        return asyncio.run(db.list_all_discovered_servers())
+    def _get_discovered_servers(self):
+        return asyncio.run(repository.get_all_discovered_servers())
 
     
     def function_executer(self,func, args , callback ):

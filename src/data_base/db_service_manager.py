@@ -72,7 +72,6 @@ async def save_discovered_server_securely(server_name : str, onion_hostname : st
         )
         await conn.commit()
 
-
 async def list_all_discovered_servers(db_path : str = "my.db"):
 
     async with aiosqlite.connect(db_path) as conn:
@@ -82,6 +81,14 @@ async def list_all_discovered_servers(db_path : str = "my.db"):
             res = await cursor.fetchall()
             return res
 
+async def list_all_servers(db_path : str = "my.db"):
+
+    async with aiosqlite.connect(db_path) as conn:
+        async with await conn.execute(
+            "SELECT * FROM servers"
+        ) as cursor:
+            res = await cursor.fetchall()
+            return res
 
 async def get_server_by_name(server_name: str, db_path: str = "my.db"):
     """
@@ -102,7 +109,10 @@ async def get_server_by_name(server_name: str, db_path: str = "my.db"):
 
 
 async def list_all_ports(db_path: str = "my.db") -> list:
-    """Return a list of all server_port values stored in the database."""
+    """
+        Return a list of all server_port values stored in the database.
+        The port used by the local servers and the ports used by the onion servers.
+    """
 
     async with aiosqlite.connect(db_path) as conn:
         async with conn.execute(

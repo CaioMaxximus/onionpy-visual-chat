@@ -90,14 +90,14 @@ class MainMenuGUI:
         self.my_servers_list.pack(side = "left", fill = "y" , padx=10, pady=10)
 
         self.my_visited_servers_list = ItemListView(self.bottow_frame,self.initiate_client_window,
-                                                    lambda data : (f"{data[0]} + {data[1]}"))
+                                                    lambda server : (f"{server.name} + {server.hostname}"))
         self.my_visited_servers_list.pack(side = "right", fill = "y", padx=10, pady=10)
 
         self.controller.get_my_servers(lambda servers_names: self.my_servers_list.update_items(servers_names) )
-        self.controller.get_my_discovered_servers(lambda servers_info: self.my_visited_servers_list.update_items(servers_info) )
+        self.controller.get_discovered_servers(lambda servers_info: self.my_visited_servers_list.update_items(servers_info) )
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
         self.config_view = ConfigurationGUI(self.root ,self.main_frame ,  self.controller)
-
+        # self.open_configarion()
 
     def on_close(self):
             self.controller.end_tor(callback = lambda _ : self.root.destroy())
@@ -144,7 +144,7 @@ class MainMenuGUI:
         self.server_gui_navigate(self.root, *args, mode=False)
     
     def initiate_client_window(self, server_info):
-        self.client_gui_navigate(self.root,0 ,server_info[1], server_info[2])
+        self.client_gui_navigate(self.root,0 ,server_info.hostname, server_info.port)
 
     def open_configarion(self):
         self.config_view.place(relx=0, rely=0, relwidth=1, relheight=1)
