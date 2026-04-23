@@ -2,6 +2,7 @@ import customtkinter as ctk
 from models.notification import  NotificationType
 from popups import PopUpNotificationGUI  , PopUpEntryGui
 from personalized_wigdets import ItemListView
+from views.configuration_gui import ConfigurationGUI
 # HOST = '127.0.0.1'
 # PORT = 8080
 
@@ -61,20 +62,26 @@ class MainMenuGUI:
         self.client_gui_navigate = client_gui_navigate
         self.server_gui_navigate = server_gui_navigate
 
+        self.main_frame = ctk.CTkFrame(root)
+        self.main_frame.pack(expand = True , fill="both")
 
+        self.top_frame = ctk.CTkFrame(self.main_frame)
+        self.top_frame.pack(fill= "x")
         # fixed text
-        self.label = ctk.CTkLabel(root, text="WELCOME! What do you want to do now?")
+        self.label = ctk.CTkLabel(self.top_frame, text="WELCOME! What do you want to do now?")
         self.label.pack(pady=30)
 
-        self.createServerBtn = ctk.CTkButton(root, text = "Create a new server",
+
+
+        self.createServerBtn = ctk.CTkButton(self.main_frame, text = "Create a new server",
                                              command= self.create_new_server)
         self.createServerBtn.pack(pady = 20)
 
-        self.enterServerBtn = ctk.CTkButton(root, text = "Enter in a new server",
+        self.enterServerBtn = ctk.CTkButton(self.main_frame, text = "Enter in a new server",
                                             command= self.create_new_client)
         self.enterServerBtn.pack(pady = 20)
         
-        self.bottow_frame = ctk.CTkFrame(self.root)
+        self.bottow_frame = ctk.CTkFrame(self.main_frame)
         self.bottow_frame.pack(fill="both")
 
         # use the correctly spelled callback name
@@ -89,6 +96,7 @@ class MainMenuGUI:
         self.controller.get_my_servers(lambda servers_names: self.my_servers_list.update_items(servers_names) )
         self.controller.get_my_discovered_servers(lambda servers_info: self.my_visited_servers_list.update_items(servers_info) )
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+        self.config_view = ConfigurationGUI(self.root ,self.main_frame ,  self.controller)
 
 
     def on_close(self):
@@ -138,6 +146,9 @@ class MainMenuGUI:
     def initiate_client_window(self, server_info):
         self.client_gui_navigate(self.root,0 ,server_info[1], server_info[2])
 
+    def open_configarion(self):
+        self.config_view.place(relx=0, rely=0, relwidth=1, relheight=1)
+        # config_view.tkraise()
 
 
 ## REMOVED
