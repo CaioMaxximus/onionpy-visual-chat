@@ -3,6 +3,9 @@ from models.notification import  NotificationType
 from popups import PopUpNotificationGUI  , PopUpEntryGui
 from personalized_wigdets import ItemListView
 from views.configuration_gui import ConfigurationGUI
+from PIL import Image
+from pathlib import Path
+
 # HOST = '127.0.0.1'
 # PORT = 8080
 
@@ -65,14 +68,36 @@ class MainMenuGUI:
         self.main_frame = ctk.CTkFrame(root)
         self.main_frame.pack(expand = True , fill="both")
 
+        BASE_DIR = Path(__file__).resolve().parent     
+        PROJECT_ROOT = BASE_DIR.parent                  
+
+        img_path = PROJECT_ROOT / "assets" / "engrenagem.png"
+
+        config_icon = ctk.CTkImage(light_image=(Image.open(img_path)),
+        size=(24, 24)
+        )
+
+        ## TOP FRAME
         self.top_frame = ctk.CTkFrame(self.main_frame)
         self.top_frame.pack(fill= "x")
-        # fixed text
+
         self.label = ctk.CTkLabel(self.top_frame, text="WELCOME! What do you want to do now?")
-        self.label.pack(pady=30)
+        self.label.pack(pady=30,side = "left")
+        
+        self.config_btn = ctk.CTkButton(
+            self.top_frame,
+            text="",
+            image=config_icon,
+            width=30,
+            height=30,
+            fg_color="transparent",
+            hover_color="#444",
+            command=lambda:self.open_configarion()
+        )
+        self.config_btn.pack(side = "right",pady = 30)
 
 
-
+        # MIDLLE FRAME
         self.createServerBtn = ctk.CTkButton(self.main_frame, text = "Create a new server",
                                              command= self.create_new_server)
         self.createServerBtn.pack(pady = 20)
