@@ -1,9 +1,8 @@
 # OnionPy Visual Chat
 
-
-This is a graphical application to host and use local onion web chats, 
-allowing the creation of N independent onion servers with no complicated setup required.
-
+A graphical application for hosting and connecting to onion-based chat services, 
+enabling the creation of multiple independent Tor hidden services with minimal setup.
+Built with CustomTkinter, asyncio, and the Tor control library Stem.
 
 
 ## Features
@@ -36,9 +35,16 @@ chmod +X onion_service_builder.sh
 ```
 
 ## Execute
+
+APP
 ```bash
-./onion_service_builder.sh
+./start_app.sh 
 ```
+TESTS
+```bash
+./run_tests.sh
+```
+
 
 ## Tests
 
