@@ -126,6 +126,7 @@ class ServerConnection():
     
     async def start_server(self ,port):
 
+        print(f"To ligado na porta {port}")
         self.messages_queue = asyncio.Queue()
         self.notification_queue = asyncio.Queue()
         # self.messages_to_send_queue = asyncio.Queue()

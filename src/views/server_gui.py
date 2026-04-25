@@ -41,6 +41,8 @@ class ServerGUI(BasicChatView):
     def _start_server(self): ## Temporary here
         print("coloquei na pilha uma funcao")
         self.running = True
+        print("server name no server guiu")
+        print(self.name)
         if self.creator_mode :
             self.controller.create_server(self.name , self._build_interface)
         else: 
@@ -53,9 +55,9 @@ class ServerGUI(BasicChatView):
         super().build_interface()
         self.onion_connecion = onion_connecion
         host_info = f"{onion_connecion.hostname}:{onion_connecion.onion_port}"
-        port_text = f"Serving on local port : {onion_connecion.local_port}"
+        port_text = f"Serving on local port : {onion_connecion.local_server_port}"
 
-        self.title(onion_connecion.server_name)
+        self.title(onion_connecion.name)
         self.top_info.configure(text=host_info)
         self.scroll_frame.configure(label_text=port_text)
 

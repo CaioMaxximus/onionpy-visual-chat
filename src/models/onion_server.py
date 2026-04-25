@@ -1,6 +1,6 @@
 class OnionServer():
 
-    def __init__(self , name , hostname ,local_server_port , onion_port ,password):
+    def __init__(self , name , hostname ,local_server_port , onion_port ,password = ""):
         self.name = name
         self.hostname = hostname
         self.local_server_port = local_server_port

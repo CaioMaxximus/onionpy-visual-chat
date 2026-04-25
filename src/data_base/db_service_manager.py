@@ -59,6 +59,19 @@ async def remove_server(server_name: str, db_path : str= "my.db"):
         )
         await conn.commit()
 
+async def remove_discovered_server(hostname: str, db_path : str= "my.db"):
+    """
+        Remove a discovered server record from the database
+    """
+
+    async with  aiosqlite.connect(db_path) as conn:
+        await conn.execute(
+            "DELETE FROM servers WHERE onion_hostname = ?",
+            (hostname,)
+        )
+        await conn.commit()
+
+
 
 async def save_discovered_server_securely(server_name : str, onion_hostname : str ,port : int, db_path : str = "my.db"):
     """
@@ -104,8 +117,7 @@ async def get_server_by_name(server_name: str, db_path: str = "my.db"):
             res = await cursor.fetchone()
             if res is None:
                 raise FileNotFoundError
-            return {"server_name": res["server_name"], "onion_hostname": res["onion_hostname"],
-                     "local_server_port": res["local_server_port"], "onion_port" : res["onion_port"]}
+            return res
 
 
 async def list_all_ports(db_path: str = "my.db") -> list:

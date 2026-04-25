@@ -3,7 +3,7 @@ import asyncio
 from src.models.notification import Notification , NotificationType
 import threading
 from src.connection import TorServiceManager
-from data_base import db_service_manager  as db
+from data_base import repository
 import random
 import socket
 from .basic_async_controller import BasicAsyncController
@@ -151,7 +151,7 @@ class ServerController(BasicAsyncController):
             self.notification_queue = asyncio.Queue()
             self.function_queue = asyncio.Queue()
             self.my_loop = asyncio.get_running_loop()
-            await db.create_tables()
+            await repository.create_tables()
             self.running =  True
             self.gui_loop.after(100,callback)
             self.main_routine = asyncio.create_task(self.dispatcher())
@@ -223,7 +223,7 @@ class ServerController(BasicAsyncController):
 
         rollback_operations.append(lambda : TorServiceManager.remove_onion_service(name))
         await self.notification_queue.put(Notification(NotificationType.WARNING , "Server directory created."))
-        used_ports = await db.list_all_ports() 
+        used_ports = await repository.list_all_ports() 
         local_port  = _generate_new_available_port(used_ports) # type: ignore
         used_ports.append(local_port)
         onion_port  = _generate_new_available_port(used_ports) # type: ignore
@@ -235,9 +235,9 @@ class ServerController(BasicAsyncController):
         onion_hostname  = TorServiceManager.start_onion_server(self.server_name, local_port , onion_port)
         rollback_operations.append(lambda : TorServiceManager.stop_onion_server(self.server_name))
         await self.notification_queue.put(Notification(NotificationType.SUCCESS , "Server started"))
-        await db.save_new_server(self.server_name,local_port , 
+        await repository.save_new_server(self.server_name,local_port , 
                             onion_hostname, onion_port)
-        rollback_operations.append(lambda : db.remove_server(self.server_name))
+        rollback_operations.append(lambda : repository.remove_server(self.server_name))
         onion_connection = OnionConnection(onion_hostname,onion_port,
                                             name,local_port) 
             
@@ -271,15 +271,17 @@ class ServerController(BasicAsyncController):
         """
 
         await self.notification_queue.put(Notification(NotificationType.WARNING , "Starting server.."))
-        server_info = await db.get_server_by_name(name)
-        await self.connection.start_server(server_info["local_server_port"]) # type: ignore
+        server_info = await repository.get_server_by_name(name)
+        await self.connection.start_server(server_info.local_server_port) # type: ignore
         await self.start_routines()
 
+        print("o seervidor local iniciou!!")
+
         onion_hostname = TorServiceManager.start_onion_server(self.server_name, 
-                                                                server_info["local_server_port"] , # type: ignore
-                                                                server_info["onion_port"]) # type: ignore
+                                                                server_info.local_server_port , # type: ignore
+                                                                server_info.onion_port) # type: ignore
         await self.notification_queue.put(Notification(NotificationType.SUCCESS , "Server started"))
 
-        onion_connection = OnionConnection(onion_hostname ,
-                                            server_info["onion_port"],name, server_info["local_server_port"])
-        return onion_connection
+        # onion_connection = OnionConnection(onion_hostname ,
+        #                                     server_info["onion_port"],name, server_info["local_server_port"])
+        return server_info

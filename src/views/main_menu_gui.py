@@ -111,14 +111,14 @@ class MainMenuGUI:
 
         # use the correctly spelled callback name
         self.my_servers_list = ItemListView(self.bottow_frame, self.initiate_server_window,
-                                            lambda e : e)
+                                            lambda server : server.name)
         self.my_servers_list.pack(side = "left", fill = "y" , padx=10, pady=10)
 
         self.my_visited_servers_list = ItemListView(self.bottow_frame,self.initiate_client_window,
                                                     lambda server : (f"{server.name} + {server.hostname}"))
         self.my_visited_servers_list.pack(side = "right", fill = "y", padx=10, pady=10)
 
-        self.controller.get_my_servers(lambda servers_names: self.my_servers_list.update_items(servers_names) )
+        self.controller.get_my_servers(lambda servers: self.my_servers_list.update_items(servers) )
         self.controller.get_discovered_servers(lambda servers_info: self.my_visited_servers_list.update_items(servers_info) )
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
         self.config_view = ConfigurationGUI(self.root ,self.main_frame ,  self.controller)
@@ -165,8 +165,8 @@ class MainMenuGUI:
     def create_new_client_window(self,host , port):
         self.client_gui_navigate(self.root , 0 , host ,port)
 
-    def initiate_server_window(self, *args):
-        self.server_gui_navigate(self.root, *args, mode=False)
+    def initiate_server_window(self, server):
+        self.server_gui_navigate(self.root, server.name, mode=False)
     
     def initiate_client_window(self, server_info):
         self.client_gui_navigate(self.root,0 ,server_info.hostname, server_info.port)

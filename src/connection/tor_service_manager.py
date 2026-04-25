@@ -81,6 +81,7 @@ class TorServiceManager():
 
     @classmethod
     def stop_onion_server(cls,server_name):
+        print(f"o onme do server é {server_name}")
         cls._stop_onion_server(server_name, cls.global_controller)
 
     @classmethod

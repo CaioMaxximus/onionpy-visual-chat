@@ -5,6 +5,8 @@ from src.connection.tor_service_manager import TorServiceManager
 from data_base import repository
 import asyncio
 
+
+#  This controller will become asynchronus
 class MenuController:
 
     """
@@ -52,7 +54,7 @@ class MenuController:
         self._enqueue(func=self._get_my_servers, callback= callback)
 
     def _get_my_servers(self):
-        return TorServiceManager.find_local_servers()
+        return asyncio.run(repository.get_all_servers())
     
     def get_discovered_servers(self ,callback):
         self._enqueue(func=self._get_discovered_servers,callback= callback)
