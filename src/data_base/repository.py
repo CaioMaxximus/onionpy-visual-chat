@@ -34,6 +34,7 @@ async def remove_server(server_name):
         await db.remove_server(server_name)
     except:
         raise ValueError(f"Error trying to remove server {server_name}")
+    print(f"o server {server_name} foi removido")
     
 async def remove_discovered_server(hostname):
     try:

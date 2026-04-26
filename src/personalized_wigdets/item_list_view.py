@@ -35,8 +35,8 @@ class ItemListView(ctk.CTkScrollableFrame):
         need to destroy all the wigdet
     """
 
-    def __init__(self, master, on_item_click, on_exibit_item , items=None):
-        super().__init__(master)
+    def __init__(self, master, text, on_item_click, on_exibit_item , items=None):
+        super().__init__(master,label_text= text)
         self.master = master
         self.on_item_click = on_item_click
         self.on_exibit_item = on_exibit_item

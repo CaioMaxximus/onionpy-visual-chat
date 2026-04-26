@@ -110,11 +110,11 @@ class MainMenuGUI:
         self.bottow_frame.pack(fill="both")
 
         # use the correctly spelled callback name
-        self.my_servers_list = ItemListView(self.bottow_frame, self.initiate_server_window,
+        self.my_servers_list = ItemListView(self.bottow_frame, "My servers", self.initiate_server_window, 
                                             lambda server : server.name)
         self.my_servers_list.pack(side = "left", fill = "y" , padx=10, pady=10)
 
-        self.my_visited_servers_list = ItemListView(self.bottow_frame,self.initiate_client_window,
+        self.my_visited_servers_list = ItemListView(self.bottow_frame,"My discovered servers", self.initiate_client_window,
                                                     lambda server : (f"{server.name} + {server.hostname}"))
         self.my_visited_servers_list.pack(side = "right", fill = "y", padx=10, pady=10)
 

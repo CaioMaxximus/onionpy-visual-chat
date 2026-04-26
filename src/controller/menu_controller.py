@@ -6,7 +6,7 @@ from data_base import repository
 import asyncio
 
 
-#  This controller will become asynchronus
+#  This controller will become asynchronus soon..
 class MenuController:
 
     """
@@ -53,12 +53,17 @@ class MenuController:
     def get_my_servers(self, callback=None):
         self._enqueue(func=self._get_my_servers, callback= callback)
 
+    def remove_server(self,server_name , callback = None):
+        self._enqueue(self._remove_server,server_name, callback = callback)
+
     def _get_my_servers(self):
         return asyncio.run(repository.get_all_servers())
+
+    def _remove_server(self, server_name):
+        asyncio.run(repository.remove_server(server_name))
     
     def get_discovered_servers(self ,callback):
         self._enqueue(func=self._get_discovered_servers,callback= callback)
-
 
 
     def get_notification(self, callback=None):
