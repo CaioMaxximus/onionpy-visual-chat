@@ -7,7 +7,7 @@ from customtkinter import (CTkFrame , CTkLabel ,
 class ConfigurationGUI(CTkFrame):
 
     """
-        Class represinting responsible to manage the stored servers and connectiio
+        Class  representing a view responsible to manage the stored servers and connections
 
     """
 
@@ -26,6 +26,10 @@ class ConfigurationGUI(CTkFrame):
 
     def build_interface(self):
         #  frame 1 content
+        top_frame = CTkFrame(self,height=40)
+        top_frame.pack(fill = "x")
+        back_to_menu_btn = CTkButton(top_frame,height=30 , width=35,text="←" , command= lambda : self.return_to_menu())
+        back_to_menu_btn.pack(side = "left",padx = 3.5 , pady = 4.5)
         self.frame_1 = CTkFrame(self,height = self.height // 2)
         self.frame_1.pack(pady = 3.5, padx = 3.5, fill ="x")
         self.servers_label = CTkLabel(self.frame_1, text = "MY SERVERS")
@@ -123,6 +127,10 @@ class ConfigurationGUI(CTkFrame):
             self.dialog_pop_up.destroy()
             self.dialog_pop_up = None
         self.controller.remove_server(server.name,lambda _ : update())
+    
+    def return_to_menu(self):
+        self.destroy()
+        # super().place_forget()
 
 # Trying later
 class PopUpDialogItemList(CTkToplevel):

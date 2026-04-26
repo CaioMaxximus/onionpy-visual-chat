@@ -121,7 +121,6 @@ class MainMenuGUI:
         self.controller.get_my_servers(lambda servers: self.my_servers_list.update_items(servers) )
         self.controller.get_discovered_servers(lambda servers_info: self.my_visited_servers_list.update_items(servers_info) )
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
-        self.config_view = ConfigurationGUI(self.root ,self.main_frame ,  self.controller)
         # self.open_configarion()
 
     def on_close(self):
@@ -172,6 +171,7 @@ class MainMenuGUI:
         self.client_gui_navigate(self.root,0 ,server_info.hostname, server_info.port)
 
     def open_configarion(self):
+        self.config_view = ConfigurationGUI(self.root ,self.main_frame ,  self.controller)
         self.config_view.place(relx=0, rely=0, relwidth=1, relheight=1)
         # config_view.tkraise()
 

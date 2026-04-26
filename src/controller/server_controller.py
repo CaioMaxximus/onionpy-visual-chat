@@ -10,6 +10,7 @@ from .basic_async_controller import BasicAsyncController
 import inspect
 # from threading import Thread
 from src.error.special_errors import ConnetionClosedError
+from models import OnionServer
 
 DYNAMIC_PORT_MIN = 49152
 DYNAMIC_PORT_MAX = 65535
@@ -238,10 +239,9 @@ class ServerController(BasicAsyncController):
         await repository.save_new_server(self.server_name,local_port , 
                             onion_hostname, onion_port)
         rollback_operations.append(lambda : repository.remove_server(self.server_name))
-        onion_connection = OnionConnection(onion_hostname,onion_port,
-                                            name,local_port) 
+        onion_server = OnionServer(name,onion_hostname,local_port,onion_port) 
             
-        return onion_connection
+        return onion_server
 
             
     async def _start_server(self,name) -> OnionConnection:
