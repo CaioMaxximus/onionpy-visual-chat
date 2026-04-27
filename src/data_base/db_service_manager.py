@@ -66,7 +66,7 @@ async def remove_discovered_server(hostname: str, db_path : str= "my.db"):
 
     async with  aiosqlite.connect(db_path) as conn:
         await conn.execute(
-            "DELETE FROM servers WHERE onion_hostname = ?",
+            "DELETE FROM discovered_servers WHERE onion_hostname = ?",
             (hostname,)
         )
         await conn.commit()

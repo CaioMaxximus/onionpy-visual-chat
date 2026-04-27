@@ -21,7 +21,7 @@ class ConfigurationGUI(CTkFrame):
         self.width = 650
         self.dialog_pop_up = None
         self.build_interface()
-        self.controller.get_my_servers(lambda x: self.update_servers_list(x))
+        self.controller.get_servers(lambda x: self.update_servers_list(x))
         self.controller.get_discovered_servers(lambda x :self.update_discovered_servers_list(x))
 
     def build_interface(self):
@@ -81,9 +81,9 @@ class ConfigurationGUI(CTkFrame):
             )
             port_info.pack(side="left", padx=(0, 6))
 
-            attributes = [("server name",s.name) , (s.hostname ,s.hostname) ,
+            attributes = [("server name",s.name) , ("hostname" ,s.hostname) ,
                            ("local server port" , s.local_server_port) ,("onion port" , s.onion_port)]
-            actions = [("red" ,"DELETE SERVER" , lambda item = s : self._remove_server(item))]
+            actions = [("red" ,"DELETE SERVER" , lambda item = s : self._remove_discovered_server(item))]
             action = CTkButton(
                 container,
                 text="→",
@@ -117,16 +117,33 @@ class ConfigurationGUI(CTkFrame):
             container.pack(fil = "x" ,pady = 3.5, padx = 3.5)
             info = CTkLabel(container,text= f"{s.name} - {(s.hostname)[0:35]}...")
             info.pack(fill = "x",side = "left")
-            action = CTkButton(container, text= "-->" , command=lambda x : print("clicou"),
-                               width= 20 )
-            action.pack(side = "right")
+            attributes = [("server name",s.name) , ("hostname" ,s.hostname) ,
+                           ("port" , s.port)]
+            actions = [("red" ,"DELETE CONNECTION" , lambda item = s : self._remove_discovered_server(item))]
+            action = CTkButton(
+                container,
+                text="→",
+                width=30,
+                height=28,
+                corner_radius=6,
+                fg_color="transparent",
+                hover_color="#555555",command=lambda item = s : self.open_dialog_box(item,attributes,actions))
+            action.pack(side="right", padx=6)
 
     def _remove_server(self, server):
         def update():
-            self.controller.get_my_servers(lambda x: self.update_servers_list(x))
+            self.controller.get_servers(lambda x: self.update_servers_list(x))
             self.dialog_pop_up.destroy()
             self.dialog_pop_up = None
         self.controller.remove_server(server.name,lambda _ : update())
+    
+
+    def _remove_discovered_server(self, server):
+        def update():
+            self.controller.get_discovered_servers(lambda x: self.update_discovered_servers_list(x))
+            self.dialog_pop_up.destroy()
+            self.dialog_pop_up = None
+        self.controller.remove_discovered_server(server.hostname,lambda _ : update())
     
     def return_to_menu(self):
         self.destroy()
@@ -158,7 +175,7 @@ class PopUpDialogItemList(CTkToplevel):
             self.item = CTkLabel(self.container,text=e[0])
             self.item.pack(side = "left")
             self.value = CTkLabel(self.container,text=e[1])
-            self.value.pack(side = "right")
+            self.value.pack(side = "right",padx = 3.5)
 
     def on_close(self):
         print("to fechando")

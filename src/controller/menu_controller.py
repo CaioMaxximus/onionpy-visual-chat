@@ -36,7 +36,7 @@ class MenuController:
         _start_tor_service:
             Synchronusly start the tor service responsible for create all the application 
             connections
-        _get_my_servers
+        _get_servers
     """
 
     def __init__(self) -> None:
@@ -50,13 +50,13 @@ class MenuController:
     def _start_tor_service(self):
         TorServiceManager.start_tor(self.tor_start_timeout)
 
-    def get_my_servers(self, callback=None):
-        self._enqueue(func=self._get_my_servers, callback= callback)
+    def get_servers(self, callback=None):
+        self._enqueue(func=self._get_servers, callback= callback)
 
     def remove_server(self,server_name , callback = None):
         self._enqueue(self._remove_server,server_name, callback = callback)
 
-    def _get_my_servers(self):
+    def _get_servers(self):
         return asyncio.run(repository.get_all_servers())
 
     def _remove_server(self, server_name):
@@ -65,7 +65,12 @@ class MenuController:
     def get_discovered_servers(self ,callback):
         self._enqueue(func=self._get_discovered_servers,callback= callback)
 
+    def remove_discovered_server(self, hostname,callback):
+        self._enqueue(self._remove_discovered_server,hostname,callback=callback)
 
+    def _remove_discovered_server(self,hostname):
+        asyncio.run(repository.remove_discovered_server(hostname))
+        
     def get_notification(self, callback=None):
         self._enqueue(self._get_notification, callback = callback)
         
