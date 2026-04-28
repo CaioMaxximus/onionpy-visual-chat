@@ -30,7 +30,7 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
 ```bash
 git clone https://github.com/CaioMaxximus/onion_py_chat.git
 cd web_chat_with_tkinter
-chmod +X onion_service_builder.sh
+chmod +X start_app.sh
 
 ```
 
@@ -87,11 +87,13 @@ TESTS
 │   ├── popup_entry_gui.py 
 │   └── popup_notification_gui.py 
 ├── views/
-│   ├── __init__.py 
-│   ├── basic_chat_view.py 
-│   ├── client_gui.py 
-│   ├── main_menu_gui.py 
-│   └── server_gui.py 
+    ├── __init__.py
+    ├── basic_chat_view.py 
+    ├── client_gui.py 
+    ├── configuration_gui.py
+    ├── main_menu_gui.py 
+    └── server_gui.py
+
 ├── __init__.py 
 ├── root.py
 ```
