@@ -59,8 +59,9 @@ class MainMenuGUI:
         self.root.geometry("630x630")
         self.root.title("ONION.PY VISUAL CHAT")
         self.controller = controller
-        self.controller.run(self.root)
-        self.get_notification_routine()
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+
+
         # self.start_screen()
         self.client_gui_navigate = client_gui_navigate
         self.server_gui_navigate = server_gui_navigate
@@ -117,10 +118,13 @@ class MainMenuGUI:
         self.my_visited_servers_list = ItemListView(self.bottow_frame,"My discovered servers", self.initiate_client_window,
                                                     lambda server : (f"{server.name} + {server.hostname}"))
         self.my_visited_servers_list.pack(side = "right", fill = "y", padx=10, pady=10)
+        self.controller.run(self.root,self.first_step)
 
+    def first_step(self):
         self.controller.get_servers(lambda servers: self.my_servers_list.update_items(servers) )
         self.controller.get_discovered_servers(lambda servers_info: self.my_visited_servers_list.update_items(servers_info) )
-        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+        self.get_notification_routine()
+
         # self.open_configarion()
 
     def on_close(self):

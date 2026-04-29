@@ -83,7 +83,7 @@ class ConfigurationGUI(CTkFrame):
 
             attributes = [("server name",s.name) , ("hostname" ,s.hostname) ,
                            ("local server port" , s.local_server_port) ,("onion port" , s.onion_port)]
-            actions = [("red" ,"DELETE SERVER" , lambda item = s : self._remove_discovered_server(item))]
+            actions = [("red" ,"DELETE SERVER" , lambda item = s : self._remove_server(item))]
             action = CTkButton(
                 container,
                 text="→",
