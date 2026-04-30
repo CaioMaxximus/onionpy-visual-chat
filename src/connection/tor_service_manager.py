@@ -211,39 +211,40 @@ class TorServiceManager():
 
 if __name__ == "__main__":
     t = TorServiceManager
-    try:
-        t.create_new_onion_server("server_test")
-    except Exception:
-        print("suave ja existe")
+    t.start_tor(10)
+    # try:
+    #     t.create_new_onion_server("server_test")
+    # except Exception:
+    #     print("suave ja existe")
     
-    async def exe():
-        try:
-            t.start_tor(8)
-            await asyncio.sleep(3)
-            # t.wait_for_socks()
+    # async def exe():
+    #     try:
+    #         t.start_tor(8)
+    #         await asyncio.sleep(3)
+    #         # t.wait_for_socks()
 
-            ad , cntrl = t.start_onion_server("server_test",5000,80, )
-            # print(is_port_open(5000))
-            print("inicou o server onion!!")
-            host = ad
-            await asyncio.sleep(4)
+    #         ad , cntrl = t.start_onion_server("server_test",5000,80, )
+    #         # print(is_port_open(5000))
+    #         print("inicou o server onion!!")
+    #         host = ad
+    #         await asyncio.sleep(4)
 
-            # # print("conectiou")
-            # # time.sleep(0.3)
-            response = asyncio.create_task(start_server_connection(
-            host,
-            80, "OI patrao!"))
-            await asyncio.sleep(25)
-            # # print(t.find_local_servers())
-            # t.end_tor()
-            # await asyncio.sleep(5)
-            t.stop_onion_server("server_test")
-            await start_server_connection(
-            host,80, "era pra tarr disconectado!")
-        except Exception:
-            raise
-        finally:
-            t.end_tor()
-    pass
+    #         # # print("conectiou")
+    #         # # time.sleep(0.3)
+    #         response = asyncio.create_task(start_server_connection(
+    #         host,
+    #         80, "OI patrao!"))
+    #         await asyncio.sleep(25)
+    #         # # print(t.find_local_servers())
+    #         # t.end_tor()
+    #         # await asyncio.sleep(5)
+    #         t.stop_onion_server("server_test")
+    #         await start_server_connection(
+    #         host,80, "era pra tarr disconectado!")
+    #     except Exception:
+    #         raise
+    #     finally:
+    #         t.end_tor()
+    # pass
 
-    asyncio.run(exe())
+    # asyncio.run(exe())

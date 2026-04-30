@@ -72,6 +72,12 @@ class MenuController:
     
     def _start_tor_service(self):
         TorServiceManager.start_tor(self.tor_start_timeout)
+    
+    def start_tables(self, callback):
+        self._enqueue(func = self._start_tables,callback=callback)
+    
+    async def _start_tables(self):
+        await repository.create_tables()
 
     def get_servers(self, callback=None):
         self._enqueue(func=self._get_servers, callback= callback)
@@ -147,12 +153,12 @@ class MenuController:
                 res = await asyncio.to_thread(func,*args) 
 
         except (ConnectionError, TimeoutError ,FileNotFoundError , RuntimeError) as e:
-            self.notification_queue.put(
+            await self.notification_queue.put(
                 Notification(NotificationType.ERROR, str(e))
             )
         except Exception as e :
             error_message = "An unexpected error occurred, please reestart the application."
-            self.notification_queue.put(
+            await self.notification_queue.put(
                 Notification(NotificationType.ERROR ,str(e) + f"\n {error_message}" )
             )
         else:

@@ -2,6 +2,7 @@ from data_base import db_service_manager as db
 from models import DiscoveredServer, OnionServer
 
 
+## Need to add proper erros management here
 
 async def save_new_server(server_name, local_port , 
                             onion_hostname, onion_port):
@@ -46,7 +47,7 @@ async def create_tables():
     try:
         await db.create_tables()
     except:
-        raise ValueError(f"Error trying to remove discovered server")
+        raise ValueError(f"Error in data scheme initialization")
     
 async def list_all_ports():
     return await db.list_all_ports()

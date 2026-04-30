@@ -16,7 +16,7 @@ async def create_tables(db_path: str = "my.db"):
         await conn.execute("""
         CREATE TABLE IF NOT EXISTS servers (
             server_name TEXT PRIMARY KEY,
-            onion_hostname TEXT PRIMARY KEY,
+            onion_hostname TEXT,
             local_server_port INTEGER NOT NULL,
             onion_port INTEGER NOT NULL
         )

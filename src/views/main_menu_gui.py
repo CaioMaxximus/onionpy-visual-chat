@@ -121,9 +121,12 @@ class MainMenuGUI:
         self.controller.run(self.root,self.first_step)
 
     def first_step(self):
-        self.controller.get_servers(lambda servers: self.my_servers_list.update_items(servers) )
-        self.controller.get_discovered_servers(lambda servers_info: self.my_visited_servers_list.update_items(servers_info) )
-        self.get_notification_routine()
+        def second_step():
+            self.controller.get_servers(lambda servers: self.my_servers_list.update_items(servers) )
+            self.controller.get_discovered_servers(lambda servers_info: self.my_visited_servers_list.update_items(servers_info) )
+            self.get_notification_routine()
+            
+        self.controller.start_tables(second_step)
 
         # self.open_configarion()
 
