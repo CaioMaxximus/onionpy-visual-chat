@@ -15,6 +15,8 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
 - Informative view with popup notifications about connection status and erros.
  ![Status](https://img.shields.io/badge/status-done-brightgreen)
 - Multithreaded asynchronous application providing a smooth and non-blocking interface.
+-![Status](https://img.shields.io/badge/status-done-brightgreen)
+- Option to manage the local servers and recent connections.
  ![Status](https://img.shields.io/badge/status-done-brightgreen)
 - Create servers with special requirements such as passwords and authentication keys.
  ![Status](https://img.shields.iclearo/badge/status-lacking-red)
