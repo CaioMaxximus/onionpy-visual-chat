@@ -47,7 +47,6 @@ TESTS
 ./run_tests.sh
 ```
 
-
 ## Tests
 
 - TorServiceManager ![Status](https://img.shields.io/badge/status-done-brightgreen)
