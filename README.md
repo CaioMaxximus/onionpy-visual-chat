@@ -47,6 +47,10 @@ TESTS
 ./run_tests.sh
 ```
 
+## Control flow architecture
+
+![control flow](visual_schemes/control_flow.png)
+
 ## Tests
 
 - TorServiceManager ![Status](https://img.shields.io/badge/status-done-brightgreen)
