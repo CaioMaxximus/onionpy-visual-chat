@@ -8,6 +8,10 @@ async def save_new_server(server_name, local_port ,
                             onion_hostname, onion_port):
     await db.save_new_server(server_name, local_port , 
                             onion_hostname, onion_port)
+    
+async def save_discovered_server( host , port,server_name = "new connetion" ):
+
+    await db.save_discovered_server_securely(server_name,host, port)
 
 async def get_all_discovered_servers():
     servers = await db.list_all_discovered_servers()

@@ -10,7 +10,6 @@ class ClientService():
         self.notification_bus = notification_bus
 
 
-
     async  def start(self, HOST ,  PORT):
         # self.message_queue = asyncio.Queue()
         # self.notification_queue = asyncio.Queue()
@@ -30,10 +29,10 @@ class ClientService():
     async def _start_client(self) -> None:
 
         await self.connection.run(self.HOST, self.PORT)
-        await self.start_routines()
+        # await self.start_routines()
         self.connected = True
         ## DEFINE A WAY TO NAME SERVER , FOR A WHILE, THE SAME NAME 
-        await self.database_service.save_discovered_server_securely("NEW_CONNECTION",self.HOST ,self.PORT)
+        await self.database_service.save_discovered_server(self.HOST, self.PORT)
 
     async def get_message(self):
         return await self.connection.get_message_in_queue()

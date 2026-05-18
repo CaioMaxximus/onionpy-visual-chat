@@ -159,6 +159,7 @@ class ServerConnection():
    
     @validate_connection_state
     async def connection_handler(self,reader, writer):
+        ## verify if the same source is connected and then block it
         async def local_listerner(reader, writer):
             self.my_connections.append(writer)
             while self._connected:

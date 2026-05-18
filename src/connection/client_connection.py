@@ -1,7 +1,7 @@
 import asyncio
 from python_socks.async_.asyncio import Proxy
 from python_socks import ProxyType
-from models.notification import Notification , NotificationType
+from src.models.notification import Notification , NotificationType
 import re
 
 
