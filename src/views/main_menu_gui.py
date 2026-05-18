@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from models.notification import  NotificationType
+from src.models.notification import  NotificationType
 from popups import PopUpNotificationGUI  , PopUpEntryGui
 from personalized_wigdets import ItemListView
 from views.configuration_gui import ConfigurationGUI
@@ -121,7 +121,7 @@ class MainMenuGUI:
         self.controller.run(self.root,self.first_step)
 
     def first_step(self):
-        def second_step():
+        def second_step(*args):
             self.controller.get_servers(lambda servers: self.my_servers_list.update_items(servers) )
             self.controller.get_discovered_servers(lambda servers_info: self.my_visited_servers_list.update_items(servers_info) )
             self.get_notification_routine()
@@ -177,6 +177,8 @@ class MainMenuGUI:
     def initiate_client_window(self, server_info):
         self.client_gui_navigate(self.root,0 ,server_info.hostname, server_info.port)
 
+
+    # i will move this to application coordinato
     def open_configarion(self):
         self.config_view = ConfigurationGUI(self.root ,self.main_frame ,  self.controller)
         self.config_view.place(relx=0, rely=0, relwidth=1, relheight=1)

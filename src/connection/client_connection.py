@@ -64,7 +64,7 @@ class ClientConnection():
     
     """
 
-    def __init__(self, pin = None):
+    def __init__(self, notification_bus ,pin = None):
         self.pin = pin
         self.HOST  = None 
         self.PORT = None
@@ -72,11 +72,17 @@ class ClientConnection():
         self.sock = None
         self.writer = None  
         self._connected = False
+        self.messages_queue = None
+        self.notification_bus= notification_bus
+        self.messages_to_send_queue = None
+        self.server_task =  asyncio.Task 
+
+    def initialize(self):
+       
+        self.notification_bus.start()
         self.messages_queue = asyncio.Queue()
         self.notification_queue= asyncio.Queue()
         self.messages_to_send_queue = asyncio.Queue()
-        self.server_task =  asyncio.Task 
-
 
     # This fucnitn will be moved for a proper class
     def validate_connection_state(func):
@@ -123,8 +129,7 @@ class ClientConnection():
 
         self.validate_onion_and_port(host, port)
 
-        self.messages_queue = asyncio.Queue()
-        self.notification_queue= asyncio.Queue()
+
 
         self.HOST = host
         self.PORT = int(port)
@@ -140,7 +145,7 @@ class ClientConnection():
             await self.server_task
         except asyncio.CancelledError :
             pass
-        await self.notification_queue.put(Notification(NotificationType.WARNING,
+        await self.notification_bus.send(Notification(NotificationType.WARNING,
                                           "Connection finished with the server."))
         
 
@@ -154,18 +159,18 @@ class ClientConnection():
                 if e.partial:
                     data = e.partial
                 else:
-                    await self.notification_queue.put(
+                    await self.notification_bus.send(
                         Notification(NotificationType.WARNING, "Server closed connection.")
                     )
                     break
             except:
-                await self.notification_queue.put(
+                await self.notification_bus.send(
                                             Notification(NotificationType.WARNING, f"""Unexpected error from server: {writer.get_extra_info('peername')}
                                                         closing connection..."""))
                 break
 
             if not data:
-                await self.notification_queue.put(
+                await self.notification_bus.send(
                     Notification(NotificationType.WARNING,"Connection closed by the server."))
                 break
             
@@ -217,7 +222,7 @@ class ClientConnection():
         try:
             await w.drain()
         except (ConnectionResetError , ConnectionRefusedError) as e: 
-            await self.notification_queue.put(
+            await self.notification_bus.send(
                 Notification(NotificationType.WARNING , 
                 "Unable to send the message"))
         
@@ -228,6 +233,6 @@ class ClientConnection():
         return msg
     
     async def get_notification_in_queue(self):
-        return await self.notification_queue.get()
+        return await self.notification_bus.consume()
     
     

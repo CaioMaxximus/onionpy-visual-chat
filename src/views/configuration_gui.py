@@ -145,6 +145,8 @@ class ConfigurationGUI(CTkFrame):
             self.dialog_pop_up = None
         self.controller.remove_discovered_server(server.hostname,lambda _ : update())
     
+
+    ## I should move this fucniton to coordinator
     def return_to_menu(self):
         self.destroy()
         # super().place_forget()

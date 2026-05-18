@@ -1,13 +1,11 @@
 import queue
 import asyncio
-from src.models.notification import Notification , NotificationType
 import threading
 from src.connection import TorServiceManager
 from data_base import repository
 import random
 import socket
 from .basic_async_controller import BasicAsyncController
-import inspect
 # from threading import Thread
 from src.error.special_errors import ConnetionClosedError
 from models import OnionServer
@@ -19,29 +17,9 @@ DYNAMIC_PORT_MAX = 65535
 # Temporary
 
 
-# create a class for this   
-def rollback(func):
-    async def inner_wrapper(self,*args , **kwargs):
-        rollback_operations = []
-        try:
-            return await func(self,rollback_operations ,*args ,**kwargs)
-        except Exception as e:
-            for op in reversed(rollback_operations):
-                    try :
-                        res = op
-                        if inspect.isawaitable(res):
-                            await res()
-                        else:
-                            res()
 
-                    except:
-                        pass
-            raise e
 
-            
-    return inner_wrapper
-
-## Move this class to his own file
+## discontinnued
 class OnionConnection():
     def __init__(self, onion_address, onion_port, server_name, local_port):
         self.hostname = onion_address
@@ -51,25 +29,7 @@ class OnionConnection():
         # self.id = id(self)
         # self.connected = False
 
-## put this funciotn in a utility module
-def _generate_new_available_port(used_ports: set[int]) -> int:
-    while True:
-        port = random.randint(DYNAMIC_PORT_MIN, DYNAMIC_PORT_MAX)
 
-        if port in used_ports:
-            continue
-
-        if _is_port_free(port):
-            return port
-
-## put this funciotn in a utility module
-def _is_port_free(port: int) -> bool:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        try:
-            s.bind(("127.0.0.1", port))
-            return True
-        except OSError:
-            return False
 
 
 class ServerController(BasicAsyncController):
@@ -103,8 +63,8 @@ class ServerController(BasicAsyncController):
 
     """
 
-    def __init__(self, connection , server_name):
-        super().__init__(connection)
+    def __init__(self, connection , server_name, notification_bus):
+        super().__init__(connection,notification_bus)
         self.server_name = server_name
 
 
@@ -148,9 +108,11 @@ class ServerController(BasicAsyncController):
         """
     
         async def start():
-            self.message_queue = asyncio.Queue()
-            self.notification_queue = asyncio.Queue()
+            # self.message_queue = asyncio.Queue()
+            # self.notification_queue = asyncio.Queue()
+            self.notification_bus.start()
             self.function_queue = asyncio.Queue()
+            await self.service.start()
             self.my_loop = asyncio.get_running_loop()
             await repository.create_tables()
             self.running =  True
@@ -163,10 +125,10 @@ class ServerController(BasicAsyncController):
             pass
 
     def start_server(self, name , callback):
-        self._enqueue(self._start_server, name ,callback = callback)
+        self._enqueue(self.service._start_server, name ,callback = callback)
     
     def create_server(self ,name , callback):
-        self._enqueue(self._create_server , name, callback = callback)
+        self._enqueue(self.service._create_server , name, callback = callback)
 
     def close_server(self ,callback):
         self._enqueue(func=self._close_server,callback=callback)
@@ -177,12 +139,12 @@ class ServerController(BasicAsyncController):
         )
     
     async def _close_server(self):
-        TorServiceManager.stop_onion_server(self.server_name)
-        await self.connection.close_server()
+        await self.service.close_server()
+
     
     async def _close_controller(self):
 
-        try: 
+        try:  
             await self._close_server()
         except ConnetionClosedError:
             pass
@@ -190,98 +152,4 @@ class ServerController(BasicAsyncController):
             await self.stop_routines()
     
 
-    @rollback        
-    async def _create_server(self ,rollback_operations, name):
-        
-        """
-            Establish the steps to create a new valid server, attaching a decorator rollback feature.
-
-            Parameters
-            ---------
-            rollback_operations : list
-                functions to be executed during the rollback process
-            name : str
-                name of the new server
-            Returns
-            -------
-            Onion_connection 
-                Object representing the created onion server connection.
-            ------
-            Exception
-                Propagates any exception raised during the setup process after
-                registering rollback steps.
-            Notes
-            -----
-            This method contains multiple side effects:
-            - Creates and remove onion services
-            - Starts and stops a local server
-            - Writes fundamental content to the databbase
-            - Emits notificaitons
-        """
-
-        onion_connection = None
-        TorServiceManager.create_new_onion_server(name)
-
-        rollback_operations.append(lambda : TorServiceManager.remove_onion_service(name))
-        await self.notification_queue.put(Notification(NotificationType.WARNING , "Server directory created."))
-        used_ports = await repository.list_all_ports() 
-        local_port  = _generate_new_available_port(used_ports) # type: ignore
-        used_ports.append(local_port)
-        onion_port  = _generate_new_available_port(used_ports) # type: ignore
-        await self.connection.start_server(local_port)
-        rollback_operations.append(lambda : self.connection.close_server())
-        # Move this for the start of the controller
-        await self.start_routines()
-        rollback_operations.append(self.stop_routines)
-        onion_hostname  = TorServiceManager.start_onion_server(self.server_name, local_port , onion_port)
-        rollback_operations.append(lambda : TorServiceManager.stop_onion_server(self.server_name))
-        await self.notification_queue.put(Notification(NotificationType.SUCCESS , "Server started"))
-        await repository.save_new_server(self.server_name,local_port , 
-                            onion_hostname, onion_port)
-        rollback_operations.append(lambda : repository.remove_server(self.server_name))
-        onion_server = OnionServer(name,onion_hostname,local_port,onion_port) 
-            
-        return onion_server
-
-            
-    async def _start_server(self,name) -> OnionConnection:
-        """
-            Establish the steps to start a new valid server, attaching a decorator rollback feature.
-
-            Parameters
-            ---------
-            rollback_operations : list
-                functions to be executed during the rollback process
-            name : str
-                name of the target server
-            Returns
-            -------
-            Onion_connection 
-                Object representing the started onion server connection.
-            ------
-            Exception
-                Propagates any exception raised during the setup process after
-                registering rollback steps.
-            Notes
-            -----
-            This method contains multiple side effects:
-            - Creates and remove onion services
-            - Starts and stops a local server
-            - Emits notificaitons
-        """
-
-        await self.notification_queue.put(Notification(NotificationType.WARNING , "Starting server.."))
-        server_info = await repository.get_server_by_name(name)
-        await self.connection.start_server(server_info.local_server_port) # type: ignore
-        await self.start_routines()
-
-        print("o seervidor local iniciou!!")
-
-        onion_hostname = TorServiceManager.start_onion_server(self.server_name, 
-                                                                server_info.local_server_port , # type: ignore
-                                                                server_info.onion_port) # type: ignore
-        await self.notification_queue.put(Notification(NotificationType.SUCCESS , "Server started"))
-
-        # onion_connection = OnionConnection(onion_hostname ,
-        #                                     server_info["onion_port"],name, server_info["local_server_port"])
-        return server_info
+   

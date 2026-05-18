@@ -1,19 +1,20 @@
 import asyncio
 from typing import Any, Callable, Optional, Tuple
-from models.notification import Notification , NotificationType
+from src.models import Notification , NotificationType
+from abc import ABC
 
 #Temporary location
 RETRYABLE_ERRORS = (TimeoutError , ConnectionError , ConnectionAbortedError)
 
 
-class BasicAsyncController():
+class BasicAsyncController(ABC):
 
     """
         This class acts as a asynchronous controller,a background thread
         with his own asyncio event loop.
 
         It works as a bridge  between the UI and the network layer and also as a event
-        dispacther, synchronizing the events with a function queue and data queues, 
+        dispacther, synchronizing the events wit h a function queue and data queues, 
         executing the callbacks and handling the exceptions.
 
         Responsibilities:
@@ -33,11 +34,12 @@ class BasicAsyncController():
 
     """
 
-    def __init__(self, connection):
-        self.connection = connection
+    def __init__(self, service,notification_bus):
+        self.service = service
+        self.notification_bus = notification_bus
 
-        self.message_queue : Optional[asyncio.Queue] 
-        self.notification_queue : Optional[asyncio.Queue] 
+        # self.message_queue : Optional[asyncio.Queue] 
+        # self.notification_queue : Optional[asyncio.Queue] 
         self.function_queue : Optional[asyncio.Queue] 
 
         self.HOST = None
@@ -47,8 +49,8 @@ class BasicAsyncController():
         self.retry_sleep_time = 0.8
 
         self.max_attempts_retry = 2
-        self.notification_routine: Optional[asyncio.Task]
-        self.message_routine: Optional[asyncio.Task] 
+        # self.notification_routine: Optional[asyncio.Task]
+        # self.message_routine: Optional[asyncio.Task] 
         self.main_routine: Optional[asyncio.Task] 
         # Python 3.9+
         self.all_running_tasks: dict[str, asyncio.Task] = {}
@@ -56,8 +58,8 @@ class BasicAsyncController():
         self.my_loop: Optional[asyncio.AbstractEventLoop]
         self.gui_loop: Optional[Any]
 
-        self.notification_routine = None
-        self.message_routine = None
+        # self.notification_routine = None
+        # self.message_routine = None
 
     async def dispatcher_executer(self,func : Callable ,args , callback : Callable):
         """Asynchronously execute a callable with retry logic and callback handling.
@@ -116,24 +118,24 @@ class BasicAsyncController():
                 try :
                     res = await func(*args)
                 except RETRYABLE_ERRORS as e:
-                    await self.notification_queue.put(
+                    await self.notification_bus.send(
                         Notification(NotificationType.WARNING, f"{str(e)}")
                     )
                     attempt +=1
                 
-                    # raise e ## just for test
+                    raise e ## just for test
                 except Exception as e:
-                    await self.notification_queue.put(
+                    await self.notification_bus.send(
                         Notification(NotificationType.ERROR, f"Error executing {func.__name__}: {str(e)}")
-                    )
+                    ) 
                     attempt =  self.max_attempts_retry
-                    # raise e ## just for test
+                    raise e ## just for test
 
                 else:
                     self._execute_callback( res , callback = callback)
                     break
             else:
-                await self.notification_queue.put(
+                await self.notification_bus.send(
                     Notification(NotificationType.INFO ,
                                                 f"Aborting execution of {func.__name__}:")
                 )
@@ -179,22 +181,22 @@ class BasicAsyncController():
         except Exception as e:
             raise e
 
-    async def _get_notification_on_connection_routine(self):
-        while self.running:
-            try :
-                notification = await self.connection.get_notification_in_queue()
-                await self.notification_queue.put(notification)
-            except asyncio.CancelledError:
-                pass
+    # async def _get_notification_on_connection_routine(self):
+    #     while self.running:
+    #         try :
+    #             notification = await self.connection.get_notification_in_queue()
+    #             await self.notification_queue.put(notification)
+    #         except asyncio.CancelledError:
+    #             pass
     
         
-    async def start_routines(self):
-        self.notification_routine = asyncio.create_task(
-            self._get_notification_on_connection_routine()
-        )
-        self.message_routine = asyncio.create_task(
-            self._get_messages_on_connection_routine()
-        )
+    # async def start_routines(self):
+    #     self.notification_routine = asyncio.create_task(
+    #         self._get_notification_on_connection_routine()
+    #     )
+    #     self.message_routine = asyncio.create_task(
+    #         self._get_messages_on_connection_routine()
+    #     )
     
 
     async def stop_routines(self) -> None:
@@ -203,16 +205,16 @@ class BasicAsyncController():
             self.running = False
 
             tasks: list[asyncio.Task] = []
-            for routine in (self.notification_routine, self.message_routine):
-                if routine is None:
-                    continue
-                routine.cancel()
-                try:
-                    await routine
-                except asyncio.CancelledError:
-                    pass
-                except Exception:
-                    pass
+            # for routine in (self.notification_routine, self.message_routine):
+            #     if routine is None:
+            #         continue
+            #     routine.cancel()
+            #     try:
+            #         await routine
+            #     except asyncio.CancelledError:
+            #         pass
+            #     except Exception:
+            #         pass
 
             tasks = self.all_running_tasks.values()
             for t in tasks:
@@ -227,7 +229,7 @@ class BasicAsyncController():
                     pass
 
 
-            for q in (self.message_queue, self.notification_queue, self.function_queue):
+            for q in ( self.function_queue):
                 if q is None:
                     continue
                 try:
@@ -251,20 +253,20 @@ class BasicAsyncController():
     
 
         
-    async def _get_messages_on_connection_routine(self):
-        while self.running:
-            try :
-                msg = await self.connection.get_message_in_queue()
-                await self.message_queue.put(msg)
-            except asyncio.CancelledError:
-                pass
+    # async def _get_messages_on_connection_routine(self):
+    #     while self.running:
+    #         try :
+    #             msg = await self.connection.get_message_in_queue()
+    #             await self.message_queue.put(msg)
+    #         except asyncio.CancelledError:
+    #             pass
 
     
     def send_message_to_web(self, message: str, callback) -> None:
         self._enqueue( self._send_message_to_web , message, callback = callback)
 
     async def _send_message_to_web(self, message):
-        await self.connection.send_message(message)
+        await self.service.send_message(message)
 
     def get_web_message(self, callback) -> None:
 
@@ -275,10 +277,10 @@ class BasicAsyncController():
         self._enqueue(self._get_notification, callback= callback)
 
     async def _get_notification(self) :
-        return await self.notification_queue.get()
+        return await self.notification_bus.consume()
 
     async def _get_web_message(self):
-        msg = await self.message_queue.get()
+        msg = await self.service.get_message()
         return msg
     
     

@@ -1,7 +1,9 @@
 from controller import ClientController , ServerController ,MenuController
-from connection import ClientConnection , ServerConnection
+from connection import ClientConnection , ServerConnection , TorServiceManager
 from views import MainMenuGUI , ClientGUI ,ServerGUI
-import queue
+from services import ClientService, ServerService
+from data_base import repository
+from infrastructure import NotificationBus
 
 class ApplicationCoordinator():
 
@@ -33,9 +35,11 @@ class ApplicationCoordinator():
     @classmethod
     def client_chat(cls, master, index, host  , port):
 
-        client_connection_instance = ClientConnection()
+        notification_bus = NotificationBus() 
+        client_connection_instance = ClientConnection(notification_bus)
+        client_service_instance = ClientService(client_connection_instance,repository,TorServiceManager,notification_bus)
         client_controller_instance = ClientController(
-            client_connection_instance)
+            client_service_instance,notification_bus)
         client_gui_instance = ClientGUI(
             master, 0 ,client_controller_instance , host ,port)
 
@@ -44,7 +48,9 @@ class ApplicationCoordinator():
     @classmethod
     def server_chat(cls,master,server_name, mode):
         # server_connection(server_name , )
-        server_connection = ServerConnection(server_name , "")
-        server_controller = ServerController(server_connection , server_name)
-        server_gui = ServerGUI(master, server_name,0,server_controller,mode)
+        notification_bus = NotificationBus() 
+        server_connection_instance = ServerConnection(server_name ,notification_bus, "")
+        server_service_instance = ServerService(server_connection_instance,repository,TorServiceManager,notification_bus)
+        server_controller_instance = ServerController(server_service_instance , server_name,notification_bus)
+        server_gui = ServerGUI(master, server_name,0,server_controller_instance,mode)
         return server_gui

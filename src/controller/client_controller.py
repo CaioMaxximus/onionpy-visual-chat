@@ -1,6 +1,5 @@
 # import queue
 import asyncio
-# from models.notification import Notification , NotificationType
 import threading
 from .basic_async_controller import BasicAsyncController
 from data_base import db_service_manager
@@ -28,7 +27,7 @@ class ClientController(BasicAsyncController):
 
         run(host , port,gui_root ,callback )
             Creates a new Thread and defines a event loop for the controller lifecycle
-        start_event_loop()
+        _start_event_loop()
             Start the event loop and iniate all the asynchronous queue
         _start_client
             Start the connection with a onion server
@@ -40,9 +39,9 @@ class ClientController(BasicAsyncController):
     """
 
     def __init__(self,
-                 connection,
+                 connection,notification_bus
                  ) -> None:
-        super().__init__(connection)
+        super().__init__(connection,notification_bus)
         self.connected = False
 
     def run(self, host: str, port: int, gui_root , callback) -> None:
@@ -68,16 +67,16 @@ class ClientController(BasicAsyncController):
         
         if not self.running:
             self.gui_loop = gui_root
-            self.HOST = host
-            self.PORT = port
+            # self.HOST = host
+            # self.PORT = port
             self.running = True
             thread = threading.Thread(
-                target = self.start_event_loop, 
-                args=(callback , ) ,daemon=True)
+                target = self._start_event_loop, 
+                args=(callback ,host , port  ) ,daemon=True)
             thread.start()
     
     ## This function can be moved for the superclass
-    def start_event_loop(self, callback):
+    def _start_event_loop(self, callback ,host , port):
 
         """
             Instanciate the asynchronous queues inside the event loop and create the main task
@@ -89,10 +88,14 @@ class ClientController(BasicAsyncController):
         """
       
         async def start():
-            self.message_queue = asyncio.Queue()
-            self.notification_queue = asyncio.Queue()
-            self.function_queue = asyncio.Queue()       
+            # self.message_queue = asyncio.Queue()
+            # self.notification_queue = asyncio.Queue()
+            self.function_queue = asyncio.Queue()  
+            self.notification_bus.start()
+     
             self.my_loop = asyncio.get_running_loop()
+            await self.service.start(host , port)
+
             self.gui_loop.after(100,callback)
             self.running =  True
             # await self.function_queue.put((self._start_connection_control, () , None))
@@ -111,34 +114,19 @@ class ClientController(BasicAsyncController):
            lambda : asyncio.create_task(self._close_controller())  # type: ignore
        )
     
-    def close_connection(self, callback):
-        self._enqueue(self._close_connection,(),callback)
-    
-    async def _close_connection(self):
-        if self.connected:
-            await self.connection.close_connection()
-            self.connected = False
-        else:
-            raise ConnectionError("The connection is already closed!")
-    
     async def _close_controller(self):
         
         try:
-            await self._close_connection()
-        except ConnectionError:
+            await self.service._close_connection()
+        except ConnectionError: 
             pass 
         finally:
             await self.stop_routines()
 
     def start_client(self,callback):
-        self._enqueue(self._start_client ,callback= callback)
-
-    async def _start_client(self) -> None:
-
-        await self.connection.run(self.HOST, self.PORT)
-        await self.start_routines()
-        self.connected = True
-        ## DEFINE A WAY TO NAME SERVER , FOR A WHILE, THE SAME NAME 
-        await db_service_manager.save_discovered_server_securely("NEW_CONNECTION",self.HOST ,self.PORT)
-
+        self._enqueue(self.service._start_client ,callback= callback)
+    
+    def close_connection(self, callback):
+        self._enqueue(self.service._close_connection,(),callback)
+    
    

@@ -1,7 +1,7 @@
 import asyncio
 import re
 # from connection.tor_service_manager import TorServiceManager
-from models.notification import Notification , NotificationType
+from src.models.notification import Notification , NotificationType
 from typing import Any, Callable
 from src.error.special_errors import ConnetionClosedError
 
@@ -72,7 +72,7 @@ class ServerConnection():
     """
 
 
-    def __init__(self, name  , pin = None):
+    def __init__(self, name  ,notification_bus, pin = None):
 
 
         self.users = []
@@ -84,9 +84,10 @@ class ServerConnection():
         self.HOST = "127.0.0.1"
         self.my_connections = []
         self._connected = False
+        self.notification_bus = notification_bus
         self.broadcast_queue : asyncio.Queue
         self.messages_queue: asyncio.Queue
-        self.notification_queue : asyncio.Queue
+        # self.notification_queue : asyncio.Queue
         
         self.server_task : asyncio.Task  
         self.check_messages_for_web_task : asyncio.Task
@@ -123,14 +124,15 @@ class ServerConnection():
         self.users.remove(user_id)
         self.local_black_list.append()
     
-    
+    def initialize(self):
+        self.messages_queue = asyncio.Queue()
+        # self.notification_queue = asyncio.Queue()
+        # self.messages_to_send_queue = asyncio.Queue()
+        self.broadcast_queue = asyncio.Queue()
+
     async def start_server(self ,port):
 
         print(f"To ligado na porta {port}")
-        self.messages_queue = asyncio.Queue()
-        self.notification_queue = asyncio.Queue()
-        # self.messages_to_send_queue = asyncio.Queue()
-        self.broadcast_queue = asyncio.Queue()
         self.PORT  = port
         self._connected = True
         await self.server_listener() 
@@ -148,7 +150,7 @@ class ServerConnection():
             except  asyncio.CancelledError as e :
                 raise e
             except Exception as e:
-                await self.notification_queue.put(Notification(
+                await self.notification_bus.send(Notification(
                     NotificationType.ERROR,f"FATAL ERROR: {e})"))
                 await asyncio.sleep(2)
                 ## this is responsibilty from controller
@@ -167,16 +169,16 @@ class ServerConnection():
                 except asyncio.exceptions.IncompleteReadError as e:
                     data = e.partial
                     if not data:
-                        await self.notification_queue.put(
+                        await self.notification_bus.send(
                             Notification(NotificationType.WARNING, f"User {writer.get_extra_info('peername')}"))
                         break
                 except:
-                    await self.notification_queue.put(
+                    await self.notification_bus.send(
                                                 Notification(NotificationType.WARNING, f"""Unexpected error from user: {writer.get_extra_info('peername')}
                                                              closing connection..."""))
                     break
                 if not data: ## this block might be unecessary..
-                    await self.notification_queue.put(
+                    await self.notification_bus.send(
                     Notification(NotificationType.WARNING,f"User {writer.get_extra_info('peername')}"))
                     break
 
@@ -209,7 +211,7 @@ class ServerConnection():
             local_port = sock.getsockname()[1]
             # update address/port and notify success
             self.onion_adress = f"{self.HOST}:{local_port}"
-            await self.notification_queue.put(
+            await self.notification_bus.send(
             Notification(NotificationType.SUCCESS, f"Server started on {self.HOST}:{local_port}")
             )
         except OSError as e:
@@ -235,7 +237,7 @@ class ServerConnection():
                 w.write(data_encoded)
                 await w.drain()
         except (ConnectionResetError , ConnectionRefusedError): 
-            await self.notification_queue.put(
+            await self.notification_bus.send(
                 Notification(NotificationType.INFO, f"Error sending message to {peername}"))
         except Exception as e:
             raise e
@@ -248,5 +250,5 @@ class ServerConnection():
     async def get_message_in_queue(self):
         return await self.messages_queue.get()
     
-    async def get_notification_in_queue(self):
-        return await self.notification_queue.get()
+    # async def get_notification_in_queue(self):
+    #     return await self.notification_queue.get()
