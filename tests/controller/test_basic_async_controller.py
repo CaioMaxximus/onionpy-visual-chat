@@ -13,12 +13,12 @@ class TestBasicAsyncController(unittest.IsolatedAsyncioTestCase):
 
 
     async def asyncSetUp(self) -> None:
-        self.controller = BasicAsyncController(connection= MagicMock())
+        self.controller = BasicAsyncController(service= MagicMock(), notification_bus= AsyncMock())
         self.controller.running = True
         moked_gui_loop = MagicMock()
         moked_gui_loop.after = self.mocked_gui_loop_after
         self.controller.gui_loop = moked_gui_loop
-        self.controller.notification_queue = asyncio.Queue()
+        # self.controller.notification_queue = asyncio.Queue()
         
         
 

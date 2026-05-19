@@ -1,5 +1,9 @@
 # OnionPy Visual Chat
 
+<p align="center">
+  <img src="src/assets/logo_onio_py.png" alt="Project Logo" width="200">
+</p>
+
 A graphical application for hosting and connecting to onion-based chat services, 
 enabling the creation of multiple independent Tor hidden services with minimal setup.
 Built with CustomTkinter, asyncio, and the Tor control library Stem.
