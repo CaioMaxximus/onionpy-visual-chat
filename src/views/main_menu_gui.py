@@ -55,35 +55,46 @@ class MainMenuGUI:
     def __init__(self,root , controller,
                  client_gui_navigate,server_gui_navigate):
         
+        BASE_DIR = Path(__file__).resolve().parent     
+        PROJECT_ROOT = BASE_DIR.parent     
+
         self.root = root
         self.root.geometry("630x630")
         self.root.title("ONION.PY VISUAL CHAT")
         self.controller = controller
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
-
         # self.start_screen()
         self.client_gui_navigate = client_gui_navigate
         self.server_gui_navigate = server_gui_navigate
 
-        self.main_frame = ctk.CTkFrame(root)
+        # set a purple background similar to the Tor symbol
+        self.main_frame = ctk.CTkFrame(root, fg_color="#6B2FB3")
         self.main_frame.pack(expand = True , fill="both")
+        
+        app_icon_img_path = PROJECT_ROOT / "assets" / "logo_onio_py.png"
+        config_icon_img_path = PROJECT_ROOT / "assets" / "engrenagem.png"
 
-        BASE_DIR = Path(__file__).resolve().parent     
-        PROJECT_ROOT = BASE_DIR.parent                  
-
-        img_path = PROJECT_ROOT / "assets" / "engrenagem.png"
-
-        config_icon = ctk.CTkImage(light_image=(Image.open(img_path)),
-        size=(24, 24)
+        config_icon = ctk.CTkImage(light_image=(Image.open(config_icon_img_path)),
+        size=(25, 25)
+        )
+        app_icon = ctk.CTkImage(light_image=(Image.open(app_icon_img_path)),
+        size=(100, 100)
         )
 
         ## TOP FRAME
         self.top_frame = ctk.CTkFrame(self.main_frame)
         self.top_frame.pack(fill= "x")
 
-        self.label = ctk.CTkLabel(self.top_frame, text="WELCOME! What do you want to do now?")
-        self.label.pack(pady=30,side = "left")
+        # self.label = ctk.CTkLabel(self.top_frame, text="WELCOME! What do you want to do now?")
+        # self.label.pack(pady=30,side = "left")
+
+        self.icon_app = ctk.CTkLabel(
+        master=self.top_frame, 
+        image=app_icon,  
+        text="",height=50, width= 50
+        )
+        self.icon_app.pack(pady=20)
         
         self.config_btn = ctk.CTkButton(
             self.top_frame,
@@ -91,20 +102,20 @@ class MainMenuGUI:
             image=config_icon,
             width=30,
             height=30,
-            fg_color="transparent",
+            fg_color="#6B2FB3",
             hover_color="#444",
             command=lambda:self.open_configarion()
         )
-        self.config_btn.pack(side = "right",pady = 30)
+        self.config_btn.pack(pady = 30)
 
 
         # MIDLLE FRAME
         self.createServerBtn = ctk.CTkButton(self.main_frame, text = "Create a new server",
-                                             command= self.create_new_server)
+                                             command= self.create_new_server,fg_color="#1F1D22")
         self.createServerBtn.pack(pady = 20)
 
         self.enterServerBtn = ctk.CTkButton(self.main_frame, text = "Enter in a new server",
-                                            command= self.create_new_client)
+                                            command= self.create_new_client,fg_color="#1F1D22")
         self.enterServerBtn.pack(pady = 20)
         
         self.bottow_frame = ctk.CTkFrame(self.main_frame)

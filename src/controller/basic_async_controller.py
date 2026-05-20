@@ -229,10 +229,8 @@ class BasicAsyncController(ABC):
                 except Exception:
                     pass
 
-
-            for q in ( self.function_queue):
-                if q is None:
-                    continue
+            q = self.function_queue
+            if q is not None:
                 try:
                     while True:
                         q.get_nowait()

@@ -85,12 +85,11 @@ class ServerConnection():
         self.my_connections = []
         self._connected = False
         self.notification_bus = notification_bus
-        self.broadcast_queue : asyncio.Queue
-        self.messages_queue: asyncio.Queue
+        self.broadcast_queue : asyncio.Queue = None
+        self.messages_queue: asyncio.Queue = None
         # self.notification_queue : asyncio.Queue
-        
         self.server_task : asyncio.Task  
-        self.check_messages_for_web_task : asyncio.Task
+        self.check_messages_for_web_task : asyncio.Task = None
         # self.broadcast_messages_task : asyncio.Task # removed
 
     ## move this to his own class

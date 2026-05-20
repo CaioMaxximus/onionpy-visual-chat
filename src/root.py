@@ -11,5 +11,3 @@ if __name__ == "__main__":
     root = ctk.CTk()
     ApplicationCoordinator.main_menu(root)
     root.mainloop()
-    # import sys
-    # print(sys.path)

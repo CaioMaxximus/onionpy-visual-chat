@@ -58,7 +58,7 @@ class ItemListView(ctk.CTkScrollableFrame):
                 height=15,
                 corner_radius=8,
                 command=lambda e=item: self.on_item_click(e),
-                text= self.on_exibit_item(item)
+                text= self.on_exibit_item(item),   fg_color="#6B2FB3"
             )
             btn.pack(fill="x")
             self.buttons[i] = btn
