@@ -69,7 +69,7 @@ class MainMenuGUI:
         self.server_gui_navigate = server_gui_navigate
 
         # set a purple background similar to the Tor symbol
-        self.main_frame = ctk.CTkFrame(root, fg_color="#6B2FB3")
+        self.main_frame = ctk.CTkFrame(root)
         self.main_frame.pack(expand = True , fill="both")
         
         app_icon_img_path = PROJECT_ROOT / "assets" / "logo_onio_py.png"
@@ -111,15 +111,18 @@ class MainMenuGUI:
 
         # MIDLLE FRAME
         self.createServerBtn = ctk.CTkButton(self.main_frame, text = "Create a new server",
-                                             command= self.create_new_server,fg_color="#1F1D22")
+                                             command= self.create_new_server, fg_color="#6B2FB3")
         self.createServerBtn.pack(pady = 20)
 
         self.enterServerBtn = ctk.CTkButton(self.main_frame, text = "Enter in a new server",
-                                            command= self.create_new_client,fg_color="#1F1D22")
+                                            command= self.create_new_client, fg_color="#6B2FB3")
         self.enterServerBtn.pack(pady = 20)
         
         self.bottow_frame = ctk.CTkFrame(self.main_frame)
         self.bottow_frame.pack(fill="both")
+
+        self.bottom_label = ctk.CTkLabel(self.bottow_frame,height=40,text="Start preloaded connections",fg_color="#6B2FB3")
+        self.bottom_label.pack(fill = "x",pady = 20)
 
         # use the correctly spelled callback name
         self.my_servers_list = ItemListView(self.bottow_frame, "My servers", self.initiate_server_window, 
