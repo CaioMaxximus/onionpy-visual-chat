@@ -14,7 +14,6 @@ from python_socks import ProxyType## Temporary!
 
 TOR_CONTROL_PORT = 9051
 
-
 class TorServiceManager():
 
     """
@@ -37,12 +36,13 @@ class TorServiceManager():
     def create_new_onion_server(cls, server_name ):
         if not cls.check_server_exists(server_name):
             cls._create_new_onion_server(server_name)
-        
+
         else:
             raise ValueError("Server name already exists!")
     
     @classmethod
     def _create_new_onion_server(cls, server_name ):
+        
         folder_instace_path = f"{cls.APPLICATION_ROOT}/{cls.INSTANCES_PATH}/instance_{server_name}"
         data_dir = f"{folder_instace_path}/data"
 
@@ -103,7 +103,6 @@ class TorServiceManager():
             raise FileNotFoundError(f"Path: {instances_path} to local isntances not found, check the directories.")
 
         return dirs_list
-
 
     @classmethod
     def wait_for_socks(cls,port=9050, timeout=30):
