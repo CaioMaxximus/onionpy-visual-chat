@@ -37,9 +37,6 @@ class BasicAsyncController(ABC):
     def __init__(self, service,notification_bus):
         self.service = service
         self.notification_bus = notification_bus
-
-        # self.message_queue : Optional[asyncio.Queue] 
-        # self.notification_queue : Optional[asyncio.Queue] 
         self.function_queue : Optional[asyncio.Queue] 
 
         self.HOST = None
@@ -49,17 +46,10 @@ class BasicAsyncController(ABC):
         self.retry_sleep_time = 0.8
 
         self.max_attempts_retry = 2
-        # self.notification_routine: Optional[asyncio.Task]
-        # self.message_routine: Optional[asyncio.Task] 
         self.main_routine: Optional[asyncio.Task] 
-        # Python 3.9+
         self.all_running_tasks: dict[str, asyncio.Task] = {}
-
         self.my_loop: Optional[asyncio.AbstractEventLoop]
         self.gui_loop: Optional[Any]
-
-        # self.notification_routine = None
-        # self.message_routine = None
 
     async def dispatcher_executer(self,func : Callable ,args , callback : Callable):
         """Asynchronously execute a callable with retry logic and callback handling.
@@ -116,13 +106,18 @@ class BasicAsyncController(ABC):
                 if attempt > 0:
                     await asyncio.sleep(self.retry_sleep_time * attempt)
                 try :
-                    res = await func(*args)
+                    res = await asyncio.wait_for(func(*args),25.0)
                 except RETRYABLE_ERRORS as e:
                     await self.notification_bus.send(
                         Notification(NotificationType.WARNING, f"{str(e)}")
                     )
                     attempt +=1
-                
+                except asyncio.TimeoutError:
+                    # await self.notification_bus.send(
+                    #     Notification(NotificationType.ERROR, f"Timeout executing {func.__name__}, action takes too long")
+                    # ) 
+                    attempt =  self.max_attempts_retry
+                    pass
                     # raise e ## just for test
                 except Exception as e:
                     await self.notification_bus.send(
@@ -164,12 +159,14 @@ class BasicAsyncController(ABC):
         Returns:
                 None
         """
+        try:
+            ## nedd to keep track of this tasks later
+            while self.running:
+                func, args ,  callback = await self.function_queue.get()
+                new_task = asyncio.create_task((self.dispatcher_executer(func , args ,  callback)))
+        except asyncio.CancelledError:
+            pass
 
-        ## nedd to keep track of this tasks later
-        while self.running:
-            func, args ,  callback = await self.function_queue.get()
-            new_task = asyncio.create_task((self.dispatcher_executer(func , args ,  callback)))
-    
     def _execute_callback(self,*args,callback = None):
         if callback is not None:
             self.gui_loop.after(10,callback,*args)
@@ -180,23 +177,6 @@ class BasicAsyncController(ABC):
             self.my_loop.call_soon_threadsafe(self.function_queue.put_nowait, (func, args, callback))
         except Exception as e:
             raise e
-
-    # async def _get_notification_on_connection_routine(self):
-    #     while self.running:
-    #         try :
-    #             notification = await self.connection.get_notification_in_queue()
-    #             await self.notification_queue.put(notification)
-    #         except asyncio.CancelledError:
-    #             pass
-    
-        
-    # async def start_routines(self):
-    #     self.notification_routine = asyncio.create_task(
-    #         self._get_notification_on_connection_routine()
-    #     )
-    #     self.message_routine = asyncio.create_task(
-    #         self._get_messages_on_connection_routine()
-    #     )
     
 
     async def stop_routines(self) -> None:
@@ -206,24 +186,12 @@ class BasicAsyncController(ABC):
             self.running = False
 
             tasks: list[asyncio.Task] = []
-            # for routine in (self.notification_routine, self.message_routine):
-            #     if routine is None:
-            #         continue
-            #     routine.cancel()
-            #     try:
-            #         await routine
-            #     except asyncio.CancelledError:
-            #         pass
-            #     except Exception:
-            #         pass
 
             tasks = self.all_running_tasks.values()
-            for t in tasks:
-                if not t.done():
-                    t.cancel()
+
             for t in tasks:
                 try:
-                    await t
+                    await t.cancel()
                 except asyncio.CancelledError:
                     pass
                 except Exception:
@@ -236,30 +204,13 @@ class BasicAsyncController(ABC):
                         q.get_nowait()
                 except asyncio.QueueEmpty:
                     pass
-
-            self.main_routine.cancel()
+            
             try:
-                await self.main_routine
+                await self.main_routine.cancel()
             except asyncio.CancelledError:
                 pass
             except Exception:
                 pass
-
-        # self.message_queue = None
-        # self.notification_queue = None
-        # self.function_queue = None
-        # print("encerrei as rotinas do controller")
-    
-
-        
-    # async def _get_messages_on_connection_routine(self):
-    #     while self.running:
-    #         try :
-    #             msg = await self.connection.get_message_in_queue()
-    #             await self.message_queue.put(msg)
-    #         except asyncio.CancelledError:
-    #             pass
-
     
     def send_message_to_web(self, message: str, callback) -> None:
         self._enqueue( self._send_message_to_web , message, callback = callback)

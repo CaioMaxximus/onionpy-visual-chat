@@ -1,14 +1,5 @@
 import  aiosqlite
 
-DYNAMIC_PORT_MIN = 49152
-DYNAMIC_PORT_MAX = 65535
-
-# servers = {
-#     "server_name",
-#     "onion_hostname",
-#     "local_server_port",
-#     "onion_port"
-# }
 
 async def create_tables(db_path: str = "my.db"):
     """Create the servers table if it doesn't exist."""

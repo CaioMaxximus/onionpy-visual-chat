@@ -10,26 +10,6 @@ from .basic_async_controller import BasicAsyncController
 from src.error.special_errors import ConnetionClosedError
 from models import OnionServer
 
-DYNAMIC_PORT_MIN = 49152
-DYNAMIC_PORT_MAX = 65535
-
-# 
-# Temporary
-
-
-
-
-## discontinnued
-class OnionConnection():
-    def __init__(self, onion_address, onion_port, server_name, local_port):
-        self.hostname = onion_address
-        self.onion_port = onion_port
-        self.server_name = server_name
-        self.local_port = local_port
-        # self.id = id(self)
-        # self.connected = False
-
-
 
 
 class ServerController(BasicAsyncController):

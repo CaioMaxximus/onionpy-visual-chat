@@ -170,8 +170,7 @@ class ServerService():
                                             server_info.onion_port) # type: ignore
         await self.notification_bus.send(Notification(NotificationType.SUCCESS , "Server started"))
 
-        # onion_connection = OnionConnection(onion_hostname ,
-        #                                     server_info["onion_port"],name, server_info["local_server_port"])
+       
         return server_info
 
     async def close_server(self):
