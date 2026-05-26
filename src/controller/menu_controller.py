@@ -89,6 +89,7 @@ class MenuController:
         return await repository.get_all_servers()
 
     async def _remove_server(self, server_name):
+       TorServiceManager.remove_onion_service(server_name)
        await repository.remove_server(server_name)
     
     def get_discovered_servers(self ,callback):

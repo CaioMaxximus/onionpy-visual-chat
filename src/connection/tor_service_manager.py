@@ -81,7 +81,9 @@ class TorServiceManager():
 
     @classmethod
     def stop_onion_server(cls,server_name):
-        print(f"o onme do server é {server_name}")
+        if not cls.check_server_exists(server_name):
+            raise ValueError("Server {server_name} not found!")
+
         cls._stop_onion_server(server_name, cls.global_controller)
 
     @classmethod
@@ -93,6 +95,7 @@ class TorServiceManager():
             res = ctrl.remove_hidden_service(data_dir)
             print(res , "*********" * 20)
     
+    # This will be used to cross-check with the sql database
     @classmethod
     def find_local_servers(cls):
         instances_path = f"{cls.APPLICATION_ROOT}/{cls.INSTANCES_PATH}"
@@ -120,9 +123,10 @@ class TorServiceManager():
     def remove_onion_service(cls,name):
         
 
-        path = f"{cls.APPLICATION_ROOT}/{cls.INSTANCES_PATH}/instance_{name}"
         if not cls.check_server_exists(name):
             raise FileNotFoundError(f"Cant find {name} server directory")
+        path = f"{cls.APPLICATION_ROOT}/{cls.INSTANCES_PATH}/instance_{name}"
+
         app_root = Path(cls.APPLICATION_ROOT).resolve()
         try:
             instance_resolved = Path(path).resolve()
@@ -131,6 +135,7 @@ class TorServiceManager():
             raise ValueError("Refusing to remove directory outside APPLICATION_ROOT")
 
         try:
+            print(instance_resolved)
             shutil.rmtree(instance_resolved)
         except Exception as e:
             raise RuntimeError(f"Failed to remove directory {app_root}") from e
