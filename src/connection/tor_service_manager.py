@@ -1,9 +1,8 @@
 import os
 import subprocess
 from pathlib import Path
-import socket
 from python_socks.sync import Proxy
-from python_socks._types import ProxyType
+# from python_socks._types import ProxyType
 from stem.control import Controller
 import time
 import socket
@@ -159,12 +158,17 @@ class TorServiceManager():
             raise ConnectionError(
             f"Error! Trying to run tor proxy service process! check executable path: {executabel_path}"
             ) from e
-        cls.wait_for_socks()
+        try:
+            cls.wait_for_socks()
+        except TimeoutError:
+            cls._kill_tor()
+            raise TimeoutError("Tor process dindt wake in time!")
+        
         try :
             proxy = Proxy(proxy_type= ProxyType.SOCKS5,
                             host= "127.0.0.1" , port = 9050, rdns=True)
-            socket = proxy.connect(dest_host="8.8.8.8" , dest_port=53,timeout = timeout)
-            socket.close()
+            local_socekt = proxy.connect(dest_host="8.8.8.8" , dest_port=53,timeout = timeout)
+            local_socekt.close()
         except TimeoutError as e:
             cls._kill_tor()
             raise TimeoutError((f"Tor proxy was unable to connect in {timeout} seconds; please restart the application!")) from e
@@ -177,7 +181,7 @@ class TorServiceManager():
         try:
             cls.proxy_process.terminate()
             cls.proxy_process.wait()
-        except:
+        except Exception as e:
             pass
     
     @classmethod 
