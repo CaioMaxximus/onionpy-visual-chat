@@ -106,25 +106,25 @@ class BasicAsyncController(ABC):
                 if attempt > 0:
                     await asyncio.sleep(self.retry_sleep_time * attempt)
                 try :
-                    res = await asyncio.wait_for(func(*args),25.0)
+                    res = await (func(*args))
                 except RETRYABLE_ERRORS as e:
                     await self.notification_bus.send(
                         Notification(NotificationType.WARNING, f"{str(e)}")
                     )
                     attempt +=1
-                except asyncio.TimeoutError:
-                    # await self.notification_bus.send(
-                    #     Notification(NotificationType.ERROR, f"Timeout executing {func.__name__}, action takes too long")
-                    # ) 
-                    attempt =  self.max_attempts_retry
-                    pass
+                # except asyncio.TimeoutError:
+                #     # await self.notification_bus.send(
+                #     #     Notification(NotificationType.ERROR, f"Timeout executing {func.__name__}, action takes too long")
+                #     # ) 
+                #     attempt =  self.max_attempts_retry
+                #     pass
                     # raise e ## just for test
                 except Exception as e:
                     await self.notification_bus.send(
                         Notification(NotificationType.ERROR, f"Error executing {func.__name__}: {str(e)}")
                     ) 
                     attempt =  self.max_attempts_retry
-                    # raise e ## just for test
+                    raise e ## just for test
 
                 else:
                     self._execute_callback( res , callback = callback)

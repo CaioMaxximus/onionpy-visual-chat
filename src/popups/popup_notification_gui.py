@@ -1,5 +1,5 @@
 from customtkinter import CTkToplevel , CTkLabel, CTkButton
-from models import Notification , NotificationType
+from src.models import Notification , NotificationType
 
 class PopUpNotificationGUI(CTkToplevel):
 
@@ -31,13 +31,16 @@ class PopUpNotificationGUI(CTkToplevel):
     
 
     def change_notification_type(self, notification_type):
-        if notification_type == NotificationType.SUCCESS:
+
+        text_color = "white"
+        bg = "#aec0b2"
+        if notification_type is  NotificationType.SUCCESS:
             bg = "#28a745"   # verde
             text_color = "white"
-        # elif notification_type == NotificationType.INFO:
-        #     bg = "#0d6efd"   # azul
-        #     text_color = "white"
-        elif notification_type == NotificationType.WARNING:
+        elif notification_type is NotificationType.INFO:
+            bg = "#0d6efd"   # azul
+            text_color = "white"
+        elif notification_type is NotificationType.WARNING:
             bg = "#ffc107"   # amarelo
             text_color = "black"
         else:
@@ -50,17 +53,19 @@ class PopUpNotificationGUI(CTkToplevel):
 
         try:
             self.configure(fg_color=bg)
-        except Exception:
-            self.configure(bg=bg)
+        except:
+            pass
+        
+        # try:
+        #     self.configure(fg_color=bg)
+        # except Exception:
+        #     print("deu")
+        #     self.configure(bg=bg)
 
         try:
-            self.message_label.configure(fg_color=bg, text_color=text_color)
+            self.message_label.configure(text_color=text_color)
         except Exception:
-            try:
-                self.message_label.configure(text_color=text_color)
-            except Exception:
-                pass
-
+            pass
         
     def change_buttons_state(self) -> None:
         self.disable_button = not self.disable_button

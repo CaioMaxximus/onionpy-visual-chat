@@ -159,6 +159,7 @@ class ServerConnection():
     @validate_connection_state
     async def connection_handler(self,reader, writer):
         ## verify if the same source is connected and then block it
+        await self.notification_bus.send(Notification(NotificationType.INFO, f"""New user connected: {writer.get_extra_info('peername')}"""))
         async def local_listerner(reader, writer):
             self.my_connections.append(writer)
             while self._connected:
