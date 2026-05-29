@@ -27,7 +27,6 @@ class TestBasicAsyncController(unittest.IsolatedAsyncioTestCase):
         exe_function = AsyncMock(return_value="ok")
         exe_function.configure_mock(__name__="mocked_exec")
 
-
         await self.controller.dispatcher_executer(exe_function ,
                                                          ("payload",) , cb_function)
 
@@ -37,10 +36,7 @@ class TestBasicAsyncController(unittest.IsolatedAsyncioTestCase):
     async def test_dispatcher_schedule(self):
         exe_function = AsyncMock(return_value="ok")
         exe_function.configure_mock(__name__="mocked_exec")
-
-
         await self.controller.dispatcher_executer(exe_function , ("payload",) , None)
-
 
         exe_function.assert_called_once_with("payload")
 

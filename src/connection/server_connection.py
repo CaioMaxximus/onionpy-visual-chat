@@ -4,6 +4,8 @@ import re
 from src.models.notification import Notification , NotificationType
 from typing import Any, Callable
 from src.error.special_errors import ConnetionClosedError
+import traceback
+
 
 ## Temporary
 
@@ -94,6 +96,7 @@ class ServerConnection():
 
     ## move this to his own class
     def validate_connection_state(func : Callable) -> Callable:
+
         async def inner_wrapper(self ,*args, **kwargs):
             if self._connected:
                 return await func(self,*args, **kwargs)
@@ -101,22 +104,6 @@ class ServerConnection():
                 raise ConnetionClosedError("The connection didnt start yet!")
         return inner_wrapper
     
-
-    @validate_connection_state    
-    async def close_server(self):
-        self._connected = False
-        try:
-            self.check_messages_for_web_task.cancel()
-            await self.check_messages_for_web_task
-        except asyncio.CancelledError:
-            pass
-
-        for writer in self.my_connections:
-            writer.close()
-            await writer.wait_closed()
-
-        self.server.close()
-        await self.server.wait_closed()
 
     #to implement
     def delete_user(self, user_id):
@@ -133,12 +120,12 @@ class ServerConnection():
 
         print(f"To ligado na porta {port}")
         self.PORT  = port
-        self._connected = True
         await self.server_listener() 
 
 
     @validate_connection_state    
     async def check_messages_for_web(self):
+
         while self._connected:
             try:
                 last_message = await self.broadcast_queue.get()
@@ -195,34 +182,32 @@ class ServerConnection():
         await local_listerner(reader , writer)
     
 
-    @validate_connection_state
+    # @validate_connection_state
     async def server_listener(self):
    
         # async def serve(server):
         #     async with server:
         #         await server.serve_forever()
 
-        server = None
         try:
             server = await asyncio.start_server(self.connection_handler, self.HOST, 
                                                 self.PORT,reuse_address = True)
             sock = server.sockets[0]
             self.server = server
-
             local_port = sock.getsockname()[1]
-            # update address/port and notify success
             self.onion_adress = f"{self.HOST}:{local_port}"
-            await self.notification_bus.send(
-            Notification(NotificationType.SUCCESS, f"Server started on {self.HOST}:{local_port}")
-            )
+
         except OSError as e:
             raise OSError(f"Failed to start server on {self.HOST}:{self.PORT}: {e}") from e
         except Exception as e:
             raise RuntimeError(f"Unexpected error while starting the server: {e}") from e
-        
+        else:
+            await self.notification_bus.send(
+            Notification(NotificationType.SUCCESS, f"Server started on {self.HOST}:{local_port}")
+            )
         self._connected = True
         self.check_messages_for_web_task = asyncio.create_task(self.check_messages_for_web())
-
+        
 
     @validate_connection_state            
     async def broadcast_message(self, message , w):
@@ -247,6 +232,24 @@ class ServerConnection():
     async def send_message(self,message):
         await self.broadcast_queue.put(message)
         
+
+    
+    @validate_connection_state    
+    async def close_server(self):
+        self._connected = False
+        try:
+            self.check_messages_for_web_task.cancel()
+            await self.check_messages_for_web_task
+        except asyncio.CancelledError:
+            pass
+
+        for writer in self.my_connections:
+            writer.close()
+            await writer.wait_closed()
+
+        self.server.close()
+        await self.server.wait_closed()
+
     # @validate_connection_state
     async def get_message_in_queue(self):
         return await self.messages_queue.get()

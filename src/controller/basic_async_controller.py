@@ -124,7 +124,7 @@ class BasicAsyncController(ABC):
                         Notification(NotificationType.ERROR, f"Error executing {func.__name__}: {str(e)}")
                     ) 
                     attempt =  self.max_attempts_retry
-                    raise e ## just for test
+                    # raise e ## just for test
 
                 else:
                     self._execute_callback( res , callback = callback)
