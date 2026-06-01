@@ -188,6 +188,7 @@ class ServerConnection():
         # async def serve(server):
         #     async with server:
         #         await server.serve_forever()
+        print("chamei o server listener")
 
         try:
             server = await asyncio.start_server(self.connection_handler, self.HOST, 
@@ -198,13 +199,14 @@ class ServerConnection():
             self.onion_adress = f"{self.HOST}:{local_port}"
 
         except OSError as e:
-            raise OSError(f"Failed to start server on {self.HOST}:{self.PORT}: {e}") from e
+            raise OSError(f"Failed to start server on {self.HOST}:{self.PORT}") from e
         except Exception as e:
-            raise RuntimeError(f"Unexpected error while starting the server: {e}") from e
+            raise RuntimeError(f"Unexpected error while starting the server") from e
         else:
             await self.notification_bus.send(
             Notification(NotificationType.SUCCESS, f"Server started on {self.HOST}:{local_port}")
             )
+            print("eu chamei o bus")
         self._connected = True
         self.check_messages_for_web_task = asyncio.create_task(self.check_messages_for_web())
         

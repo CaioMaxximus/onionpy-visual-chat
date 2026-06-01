@@ -164,7 +164,16 @@ class BasicAsyncController(ABC):
             while self.running:
                 func, args ,  callback = await self.function_queue.get()
                 new_task = asyncio.create_task((self.dispatcher_executer(func , args ,  callback)))
+                self.all_running_tasks[new_task] = new_task
+                new_task.add_done_callback(self._remove_finished_task)
+                
         except asyncio.CancelledError:
+            pass
+
+    def _remove_finished_task(self, task):
+        try:
+            del self.all_running_tasks[task]
+        except:
             pass
 
     def _execute_callback(self,*args,callback = None):
@@ -173,10 +182,8 @@ class BasicAsyncController(ABC):
 
     
     def _enqueue(self, func : Callable, *args, callback=None):
-        try:
-            self.my_loop.call_soon_threadsafe(self.function_queue.put_nowait, (func, args, callback))
-        except Exception as e:
-            raise e
+        self.my_loop.call_soon_threadsafe(self.function_queue.put_nowait, (func, args, callback))
+      
     
 
     async def stop_routines(self) -> None:
@@ -190,12 +197,9 @@ class BasicAsyncController(ABC):
             tasks = self.all_running_tasks.values()
 
             for t in tasks:
-                try:
-                    await t.cancel()
-                except asyncio.CancelledError:
-                    pass
-                except Exception:
-                    pass
+                t.cancel()
+
+            await asyncio.gather(*tasks, return_exceptions=True)
 
             q = self.function_queue
             if q is not None:

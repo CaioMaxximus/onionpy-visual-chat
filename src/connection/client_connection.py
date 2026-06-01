@@ -3,6 +3,8 @@ from python_socks.async_.asyncio import Proxy
 from python_socks import ProxyType
 from src.models.notification import Notification , NotificationType
 import re
+from typing import Any, Callable ,Optional
+
 
 
 ## Temporary
@@ -74,15 +76,13 @@ class ClientConnection():
         self._connected = False
         self.messages_queue = None
         self.notification_bus= notification_bus
-        self.messages_to_send_queue = None
-        self.server_task =  asyncio.Task 
+        self.server_task =  Optional[asyncio.Task]
 
     def initialize(self):
        
         self.notification_bus.start()
         self.messages_queue = asyncio.Queue()
         self.notification_queue= asyncio.Queue()
-        self.messages_to_send_queue = asyncio.Queue()
 
     # This fucnitn will be moved for a proper class
     def validate_connection_state(func):
