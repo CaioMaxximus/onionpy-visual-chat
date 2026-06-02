@@ -178,7 +178,12 @@ class BasicAsyncController(ABC):
 
     def _execute_callback(self,*args,callback = None):
         if callback is not None:
-            self.gui_loop.after(10,callback,*args)
+            try:
+                self.gui_loop.after(10,callback,*args)
+            except AttributeError:
+                raise AttributeError(f"Event loop is None, unable to callback {callback}")
+            except Exception as e:
+                raise RuntimeError("Unexpected error") from e
 
     
     def _enqueue(self, func : Callable, *args, callback=None):

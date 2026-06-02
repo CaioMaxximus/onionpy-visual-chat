@@ -39,9 +39,9 @@ class ClientController(BasicAsyncController):
     """
 
     def __init__(self,
-                 connection,notification_bus
+                 service,notification_bus
                  ) -> None:
-        super().__init__(connection,notification_bus)
+        super().__init__(service,notification_bus)
         self.connected = False
 
     def run(self, host: str, port: int, gui_root , callback) -> None:
