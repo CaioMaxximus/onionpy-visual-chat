@@ -140,10 +140,13 @@ class ClientConnection():
         ## NEED TO WORK TO CLOSE WEB CONNECTION
         ## AND GARATEE THE END OF ALL PENDING TASKS
         self._connected = False
-        self.server_task.cancel()
         try:
+            self.server_task.cancel()
             await self.server_task
         except asyncio.CancelledError :
+            pass
+        except:
+            ## logg here
             pass
         await self.notification_bus.send(Notification(NotificationType.WARNING,
                                           "Connection finished with the server."))
@@ -155,35 +158,53 @@ class ClientConnection():
         while self._connected:
             try:
                 data = await reader.readuntil(separator=b'\0')
+
             except asyncio.IncompleteReadError as e:
                 if e.partial:
                     data = e.partial
+                    self._connected = False
                 else:
                     await self.notification_bus.send(
                         Notification(NotificationType.WARNING, "Server closed connection.")
                     )
                     break
+            except asyncio.LimitOverrunError as e:
+                await self.notification_bus.send( Notification(NotificationType.ERROR, 
+                    f"Message too large (> than {e.consumed} bytes)"))
+                break
+
             except:
                 await self.notification_bus.send(
                                             Notification(NotificationType.WARNING, f"""Unexpected error from server: {writer.get_extra_info('peername')}
                                                         closing connection..."""))
                 break
 
-            if not data:
+            try:
+                message = data.decode().strip()
+                msg_info = {
+                    "entry": message,
+                    "author_name": writer.get_extra_info('peername'), 
+                    "owner": False
+                }
+            except UnicodeDecodeError as e:
                 await self.notification_bus.send(
-                    Notification(NotificationType.WARNING,"Connection closed by the server."))
+                    Notification(NotificationType.ERROR, 
+                        f"Failed to decode message  {str(e)}"))
                 break
-            
-            message = data.decode().strip()
-            msg_info = {
-                "entry": message,
-                "author_name": (writer.get_extra_info('peername')), 
-                "owner": False
-            }
+            except ValueError as e:
+                await self.notification_bus.send(
+                    Notification(NotificationType.ERROR, 
+                        f"Invalid message format f{str(e)}"))
+                break
+            except Exception as e:
+                await self.notification_bus.send(
+                    Notification(NotificationType.ERROR, 
+                        f"Unexpected error decoding message {str(e)}"))
+                break
+            else:
+                await self.messages_queue.put(msg_info)
 
-
-
-            await self.messages_queue.put(msg_info)
+        await self.close_connection()
 
     async def start_connection(self):
 
@@ -214,8 +235,10 @@ class ClientConnection():
         
     @validate_connection_state
     async def send_message(self, message):
-        data = message["entry"]
-        data_encoded = (data + "\n").encode()
+        
+        data = message["entry"].replace("\x00", "")
+        print(f"mensagem que o cliente vai mandar : {data}")
+        data_encoded = (data + "\n\0").encode()
         w = self.writer
 
         w.write(data_encoded)

@@ -84,13 +84,13 @@ class ServerConnection():
         self.onion_adress = ""
         self.PORT = None
         self.HOST = "127.0.0.1"
-        self.my_connections = []
+        self.my_connections = set()
         self._connected = False
         self.notification_bus = notification_bus
         self.broadcast_queue : asyncio.Queue = None
         self.messages_queue: asyncio.Queue = None
         # self.notification_queue : asyncio.Queue
-        self.server_task : asyncio.Task  
+        # self.server_task : asyncio.Task  
         self.check_messages_for_web_task : asyncio.Task = None
         # self.broadcast_messages_task : asyncio.Task # removed
 
@@ -147,40 +147,59 @@ class ServerConnection():
     async def connection_handler(self,reader, writer):
         ## verify if the same source is connected and then block it
         await self.notification_bus.send(Notification(NotificationType.INFO, f"""New user connected: {writer.get_extra_info('peername')}"""))
-        async def local_listerner(reader, writer):
-            self.my_connections.append(writer)
-            while self._connected:
-                try:
+        self.my_connections.add(writer)
+        while self._connected:
+            try:
+                data = await reader.readuntil(separator=b'\0')
 
-                    data = await reader.readuntil(separator=b'\0')
-
-                except asyncio.exceptions.IncompleteReadError as e:
-                    data = e.partial
-                    if not data:
-                        await self.notification_bus.send(
-                            Notification(NotificationType.WARNING, f"User {writer.get_extra_info('peername')}"))
-                        break
-                except:
+            except asyncio.exceptions.IncompleteReadError as e:
+                data = e.partial
+                if not data:
                     await self.notification_bus.send(
-                                                Notification(NotificationType.WARNING, f"""Unexpected error from user: {writer.get_extra_info('peername')}
-                                                             closing connection..."""))
+                        Notification(NotificationType.WARNING, f"User {writer.get_extra_info('peername')}"))
                     break
-                if not data: ## this block might be unecessary..
-                    await self.notification_bus.send(
-                    Notification(NotificationType.WARNING,f"User {writer.get_extra_info('peername')}"))
-                    break
-
+            except asyncio.LimitOverrunError as e:
+                await self.notification_bus.send( Notification(NotificationType.ERROR, 
+                    f"Message too large (> than {e.consumed} bytes)"))
+                break
+            except:
+                await self.notification_bus.send(
+                                            Notification(NotificationType.WARNING, f"""Unexpected error from user: {writer.get_extra_info('peername')}
+                                                            closing connection..."""))
+                break
+            if not data: ## this block might be unecessary..
+                await self.notification_bus.send(
+                Notification(NotificationType.WARNING,f"User {writer.get_extra_info('peername')}"))
+                break
+            try:
                 message = data.decode().strip()
                 msg_info = {
                     "entry": message,
                     "author_name": writer.get_extra_info('peername'), 
                     "owner": False
                 }
+            except UnicodeDecodeError as e:
+                await self.notification_bus.send(
+                    Notification(NotificationType.ERROR, 
+                        f"Failed to decode message from {writer.get_extra_info('peername')}: {str(e)}"))
+                break
+            except ValueError as e:
+                await self.notification_bus.send(
+                    Notification(NotificationType.ERROR, 
+                        f"Invalid message format from {writer.get_extra_info('peername')}: {str(e)}"))
+                break
+            except Exception as e:
+                await self.notification_bus.send(
+                    Notification(NotificationType.ERROR, 
+                        f"Unexpected error decoding message from {writer.get_extra_info('peername')}: {str(e)}"))
+                break
+            else:
                 await self.messages_queue.put(msg_info)
                 await self.broadcast_queue.put(msg_info)
 
-        await local_listerner(reader , writer)
-    
+        if writer in self.my_connections: ## If the server  not ends before this
+            self.my_connections.remove(writer)
+
 
     # @validate_connection_state
     async def server_listener(self):
@@ -213,7 +232,9 @@ class ServerConnection():
 
     @validate_connection_state            
     async def broadcast_message(self, message , w):
-        data = message["entry"]
+
+        print(f"mensagem que o server recebeu : {message['entry']}")
+
         data = message["entry"].replace("\x00", "")
         data_encoded = (data + "\n\0").encode()
 
@@ -245,9 +266,13 @@ class ServerConnection():
         except asyncio.CancelledError:
             pass
 
-        for writer in self.my_connections:
-            writer.close()
-            await writer.wait_closed()
+        while self.my_connections:
+            try:
+                writer = self.my_connections.pop()
+                writer.close()
+                await writer.wait_closed()
+            except:
+                pass
 
         self.server.close()
         await self.server.wait_closed()

@@ -19,11 +19,12 @@ class ClientService():
 
 
     async def _close_connection(self) -> None:
-        if self.connected:
+        if self.connection._connected:
             await self.connection.close_connection()
-            self.connected = False
         else:
             raise ConnectionError("The connection is already closed!")
+        self.connected = False
+        
    
 
     async def _start_client(self) -> None:
