@@ -1,10 +1,10 @@
 import asyncio
 import re
 # from connection.tor_service_manager import TorServiceManager
-from src.models.notification import Notification , NotificationType
+from src.models import Notification , NotificationType
 from typing import Any, Callable
-from src.error.special_errors import ConnetionClosedError
 import traceback
+from decorators import validate_connection_state
 
 
 ## Temporary
@@ -95,14 +95,7 @@ class ServerConnection():
         # self.broadcast_messages_task : asyncio.Task # removed
 
     ## move this to his own class
-    def validate_connection_state(func : Callable) -> Callable:
 
-        async def inner_wrapper(self ,*args, **kwargs):
-            if self._connected:
-                return await func(self,*args, **kwargs)
-            else:
-                raise ConnetionClosedError("The connection didnt start yet!")
-        return inner_wrapper
     
 
     #to implement
@@ -158,7 +151,7 @@ class ServerConnection():
                     await self.notification_bus.send(
                         Notification(NotificationType.WARNING, f"User {writer.get_extra_info('peername')}"))
                     break
-            except asyncio.LimitOverrunError as e:
+            except asyncio.exceptions.LimitOverrunError as e:
                 await self.notification_bus.send( Notification(NotificationType.ERROR, 
                     f"Message too large (> than {e.consumed} bytes)"))
                 break
@@ -172,7 +165,7 @@ class ServerConnection():
                 Notification(NotificationType.WARNING,f"User {writer.get_extra_info('peername')}"))
                 break
             try:
-                message = data.decode().strip()
+                message = data.decode().rstrip('\x00').strip()
                 msg_info = {
                     "entry": message,
                     "author_name": writer.get_extra_info('peername'), 

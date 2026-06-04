@@ -1,9 +1,10 @@
 import asyncio
 from python_socks.async_.asyncio import Proxy
 from python_socks import ProxyType
-from src.models.notification import Notification , NotificationType
+from src.models import Notification , NotificationType
 import re
 from typing import Any, Callable ,Optional
+from decorators import validate_connection_state
 
 
 
@@ -84,20 +85,8 @@ class ClientConnection():
         self.messages_queue = asyncio.Queue()
         self.notification_queue= asyncio.Queue()
 
-    # This fucnitn will be moved for a proper class
-    def validate_connection_state(func):
-        async def inner_wrapper(self ,*args, **kwargs):
-            try:
-                if self._connected:
-                    return await func(self,*args, **kwargs)
-                else:
-                    raise ValueError("The connection didnt start yet!")
-            except Exception as e:
-                raise e
-        return inner_wrapper
     
     import re
-
 
     def validate_onion_and_port(self ,host: str, port: int):
 
