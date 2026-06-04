@@ -2,7 +2,7 @@ from src.connection import ServerConnection
 import unittest
 from unittest.mock import patch , MagicMock ,AsyncMock
 from src.error.special_errors import ConnetionClosedError
-
+import asyncio
 
 
 class TestServerConnection(unittest.IsolatedAsyncioTestCase):
@@ -11,6 +11,7 @@ class TestServerConnection(unittest.IsolatedAsyncioTestCase):
         not_bus = MagicMock()
         self.inst = ServerConnection("test",not_bus, "")
         self.inst.PORT = 80
+        self.inst.notification_bus.send = AsyncMock()
 
 
     def mock_server_listener(self,task_mock , server_mock):
@@ -18,7 +19,6 @@ class TestServerConnection(unittest.IsolatedAsyncioTestCase):
         self.inst.check_messages_for_web = MagicMock()
         task_mock.return_value = True
         server_mock.return_value = AsyncMock()
-        self.inst.notification_bus.send = AsyncMock()
         
 
     async def test_raises_error_if_connection_didnt_start_yet(self):
@@ -76,4 +76,60 @@ class TestServerConnection(unittest.IsolatedAsyncioTestCase):
         self.mock_server_listener(task_mock , server_mock)
         await self.inst.server_listener()
         self.inst.notification_bus.send.assert_called_once()
+
+
+    async def test_connection_handler_dont_break_in_invalid_messages_with_excessive_size(self):
+        
+        self.inst._connected = True
+        mocked_reader = AsyncMock()
+        mocked_writer = MagicMock()
+        mocked_reader.readuntil.side_effect = asyncio.exceptions.LimitOverrunError
+
+        await self.inst.connection_handler(mocked_reader, mocked_writer)
+
+        self.assertEqual(self.inst.notification_bus.send.call_count , 2)
+        self.assertEqual(len(self.inst.my_connections) , 0)
+
+    async def test_connection_handler_dont_break_with_an_incompleted_input(self):
+
+        self.inst._connected = True
+        mocked_reader = AsyncMock()
+        mocked_writer = MagicMock()
+        incompleted_exception = asyncio.exceptions.IncompleteReadError(MagicMock() , MagicMock())
+        incompleted_exception.partial =  None
+        mocked_reader.readuntil.side_effect = incompleted_exception
+
+
+        await self.inst.connection_handler(mocked_reader, mocked_writer)
+
+        self.assertEqual(self.inst.notification_bus.send.call_count , 2)
+        self.assertEqual(len(self.inst.my_connections) , 0)
+
     
+    async def test_connection_handler_dont_break_with_an_incompleted_input_with_partial_data(self):
+
+        self.inst._connected = True
+        mocked_reader = AsyncMock()
+        mocked_writer = MagicMock()
+        incompleted_exception = asyncio.exceptions.IncompleteReadError(MagicMock() , MagicMock())
+        incompleted_exception.partial =  "xxx"
+        mocked_reader.readuntil.side_effect = [incompleted_exception, ValueError]
+
+        await self.inst.connection_handler(mocked_reader, mocked_writer)
+
+        self.assertEqual(self.inst.notification_bus.send.call_count , 2)
+        self.assertEqual(len(self.inst.my_connections) , 0)
+
+    async def test_connection_handler_dont_break_with_bad_formed_input(self):
+
+        self.inst._connected = True
+        mocked_reader = AsyncMock()
+        mocked_writer = MagicMock()
+        mocked_data = MagicMock()
+        mocked_data.decode.side_effect = UnicodeDecodeError
+        mocked_reader.readuntil.return_value = mocked_data
+
+        await self.inst.connection_handler(mocked_reader, mocked_writer)
+
+        self.assertEqual(self.inst.notification_bus.send.call_count , 2)
+        self.assertEqual(len(self.inst.my_connections) , 0)
