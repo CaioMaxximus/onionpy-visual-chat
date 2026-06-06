@@ -58,7 +58,6 @@ class TestServerConnection(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(str(oserror.exception) ,"Failed to start server on 127.0.0.1:80")
 
              
-
     @patch("src.connection.server_connection.asyncio.start_server",new_callable=AsyncMock)
     @patch("src.connection.server_connection.asyncio.create_task")
     async def test_server_listener_raises_specialized_RuntimeError_error(self,task_mock , server_mock):
@@ -133,3 +132,22 @@ class TestServerConnection(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(self.inst.notification_bus.send.call_count , 2)
         self.assertEqual(len(self.inst.my_connections) , 0)
+
+    
+    async def test_close_server_finish_connection_even_if_check_messages_for_web_task__rises_exception(self):
+        
+        self.inst._connected = True
+        writer_mock = AsyncMock()
+        server_mock = AsyncMock()
+        server_mock.close = MagicMock()
+        server_mock.wait_closed = AsyncMock()
+        self.my_connections = [writer_mock]
+        self.inst.server = server_mock
+        self.inst.check_messages_for_web_task = MagicMock()
+        self.inst.check_messages_for_web_task.cancel.side_effect = asyncio.CancelledError
+
+        await self.inst.close_server()
+
+        self.assertEqual(len(self.inst.my_connections),0)
+        server_mock.close.assert_called_once()
+        server_mock.wait_closed.assert_called_once()

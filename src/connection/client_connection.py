@@ -197,7 +197,6 @@ class ClientConnection():
 
     async def start_connection(self):
 
-        print("Entrou para iniciar uma conexao!!")
 
         try:
             self.proxy = Proxy(proxy_type= ProxyType.SOCKS5,
@@ -226,7 +225,6 @@ class ClientConnection():
     async def send_message(self, message):
         
         data = message["entry"].replace("\x00", "")
-        print(f"mensagem que o cliente vai mandar : {data}")
         data_encoded = (data + "\n\0").encode()
         w = self.writer
 

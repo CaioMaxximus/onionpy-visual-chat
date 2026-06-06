@@ -111,7 +111,6 @@ class ServerConnection():
 
     async def start_server(self ,port):
 
-        print(f"To ligado na porta {port}")
         self.PORT  = port
         await self.server_listener() 
 
@@ -171,6 +170,7 @@ class ServerConnection():
                     "author_name": writer.get_extra_info('peername'), 
                     "owner": False
                 }
+
             except UnicodeDecodeError as e:
                 await self.notification_bus.send(
                     Notification(NotificationType.ERROR, 
@@ -194,13 +194,8 @@ class ServerConnection():
             self.my_connections.remove(writer)
 
 
-    # @validate_connection_state
     async def server_listener(self):
    
-        # async def serve(server):
-        #     async with server:
-        #         await server.serve_forever()
-        print("chamei o server listener")
 
         try:
             server = await asyncio.start_server(self.connection_handler, self.HOST, 
@@ -218,7 +213,6 @@ class ServerConnection():
             await self.notification_bus.send(
             Notification(NotificationType.SUCCESS, f"Server started on {self.HOST}:{local_port}")
             )
-            print("eu chamei o bus")
         self._connected = True
         self.check_messages_for_web_task = asyncio.create_task(self.check_messages_for_web())
         
@@ -226,7 +220,6 @@ class ServerConnection():
     @validate_connection_state            
     async def broadcast_message(self, message , w):
 
-        print(f"mensagem que o server recebeu : {message['entry']}")
 
         data = message["entry"].replace("\x00", "")
         data_encoded = (data + "\n\0").encode()

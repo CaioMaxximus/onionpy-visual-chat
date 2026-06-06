@@ -99,12 +99,9 @@ class ConfigurationGUI(CTkFrame):
 
     ## There is a vusal bug here , a new object is created but the pop up window is the same
     def open_dialog_box(self, item, attributes, actions):
-        print(f"abri o dialog box do intem {item.name}")
         if self.dialog_pop_up is not None:
-            print("Tem uma janela ativa")
             self.dialog_pop_up.on_close()
             self.dialog_pop_up = None
-        print("insatanciando a janela")
         self.dialog_pop_up = PopUpDialogItemList(self,item,attributes,actions)
         
         
@@ -156,8 +153,6 @@ class PopUpDialogItemList(CTkToplevel):
 
     def __init__(self, parent, element , attributes, actions):
         super().__init__(parent)
-        print(element.name)
-        print(attributes)
         self.width = 350
         self.height = 350
         self.geometry(f"{self.height}x{self.width}")

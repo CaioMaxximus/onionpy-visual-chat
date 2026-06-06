@@ -103,7 +103,6 @@ class MenuController:
 
     async def _remove_discovered_server(self,hostname):
         await repository.remove_discovered_server(hostname)
-        print("")
         
     def get_notification(self, callback=None):
         self._enqueue(self._get_notification, callback = callback)
@@ -147,10 +146,8 @@ class MenuController:
         try:
             print(func.__name__)
             if inspect.iscoroutinefunction(func):
-                print("é assinc")
                 res = await func(*args)
             else:
-                print("n é assinc")
                 res = await asyncio.to_thread(func,*args) 
 
         except (ConnectionError, TimeoutError ,FileNotFoundError , RuntimeError) as e:
@@ -163,8 +160,6 @@ class MenuController:
                 Notification(NotificationType.ERROR ,str(e) + f"\n {error_message}" )
             )
         else:
-            print(res)
-            print("vou chamar o callback")
             self._execute_callback(callback , res)
     
     async def function_dispatcher(self):

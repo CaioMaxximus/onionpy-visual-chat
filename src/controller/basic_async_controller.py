@@ -100,7 +100,6 @@ class BasicAsyncController(ABC):
         """
 
         attempt = 0
-        # print(f" ATTENTION !! {func.__name__}")
         while self.running:
             if attempt < self.max_attempts_retry:
                 if attempt > 0:

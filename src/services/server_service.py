@@ -163,7 +163,6 @@ class ServerService():
         await self.connection.start_server(server_info.local_server_port) # type: ignore
         # await self.start_routines()
 
-        print("o seervidor local iniciou!!")
 
         self.tor_service.start_onion_server(self.server_name, 
                                             server_info.local_server_port , # type: ignore
