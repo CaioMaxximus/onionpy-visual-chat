@@ -154,6 +154,14 @@ class TestServerConnection(unittest.IsolatedAsyncioTestCase):
     
     async def test_close_server_finish_connection_even_if_a_writer_rises_exception(self):
 
+
+        class AwaitableMock(AsyncMock):
+            def __await__(self):
+                return self().__await__()
+            
+            def cancel(self):
+                return None
+                
         self.inst._connected = True
         writer_mock1 = AsyncMock()
         writer_mock2 = AsyncMock()
@@ -163,8 +171,9 @@ class TestServerConnection(unittest.IsolatedAsyncioTestCase):
         server_mock.wait_closed = AsyncMock()
         self.my_connections = [writer_mock1,writer_mock2]
         self.inst.server = server_mock
-        self.inst.check_messages_for_web_task = MagicMock()
-        self.inst.check_messages_for_web_task.wait_closed = AsyncMock()
+        self.inst.check_messages_for_web_task = AwaitableMock()
+        # self.inst.check_messages_for_web_task.return_value = AsyncMock()
+        # self.inst.check_messages_for_web_task.wait_closed = AsyncMock()
 
         await self.inst.close_server()
 
