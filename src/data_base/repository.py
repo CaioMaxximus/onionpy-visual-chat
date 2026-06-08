@@ -37,19 +37,19 @@ async def get_server_by_name(name):
 async def remove_server(server_name):
     try:
         await db.remove_server(server_name)
-    except:
+    except Exception:
         raise ValueError(f"Error trying to remove server {server_name}")
     
 async def remove_discovered_server(hostname):
     try:
         await db.remove_discovered_server(hostname)
-    except:
+    except Exception:
         raise ValueError(f"Error trying to remove discovered server {hostname}")
     
 async def create_tables():
     try:
         await db.create_tables()
-    except:
+    except Exception:
         raise ValueError(f"Error in data scheme initialization")
     
 async def list_all_ports():

@@ -154,7 +154,7 @@ class ServerConnection():
                 await self.notification_bus.send( Notification(NotificationType.ERROR, 
                     f"Message too large (> than {e.consumed} bytes)"))
                 break
-            except:
+            except Exception:
                 await self.notification_bus.send(
                                             Notification(NotificationType.WARNING, f"""Unexpected error from user: {writer.get_extra_info('peername')}
                                                             closing connection..."""))
@@ -234,8 +234,10 @@ class ServerConnection():
         except (ConnectionResetError , ConnectionRefusedError): 
             await self.notification_bus.send(
                 Notification(NotificationType.INFO, f"Error sending message to {peername}"))
-        except Exception as e:
-            raise e
+        except Exception:
+            # raise e
+            # logg here
+            pass
     
     @validate_connection_state    
     async def send_message(self,message):
@@ -252,16 +254,22 @@ class ServerConnection():
         except asyncio.CancelledError:
             pass
 
-        while self.my_connections:
+        async def close_connection(writer):
             try:
-                writer = self.my_connections.pop()
                 writer.close()
                 await writer.wait_closed()
-            except:
+            except Exception:
                 pass
 
-        self.server.close()
-        await self.server.wait_closed()
+        if self.my_connections:
+            writer_tasks = [close_connection(w) for w in self.my_connections]
+            await asyncio.gather(*writer_tasks, return_exceptions=True)
+            self.my_connections.clear()
+        try:
+            self.server.close()
+            await self.server.wait_closed()
+        except Exception:
+            pass
 
     # @validate_connection_state
     async def get_message_in_queue(self):

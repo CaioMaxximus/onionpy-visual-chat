@@ -53,7 +53,7 @@ class PopUpNotificationGUI(CTkToplevel):
 
         try:
             self.configure(fg_color=bg)
-        except:
+        except Exception:
             pass
         
         # try:

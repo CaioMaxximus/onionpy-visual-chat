@@ -172,7 +172,7 @@ class BasicAsyncController(ABC):
     def _remove_finished_task(self, task):
         try:
             del self.all_running_tasks[task]
-        except:
+        except Exception:
             pass
 
     def _execute_callback(self,*args,callback = None):

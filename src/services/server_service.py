@@ -23,7 +23,7 @@ def rollback(func):
                         else:
                             res()
 
-                    except:
+                    except Exception:
                         pass
             raise e
 
@@ -66,7 +66,6 @@ class ServerService():
         # self.HOST = HOST
         # self.port = PORT
         self.connection.initialize()
-        pass
 
 
     async def _close_connection(self) -> None:

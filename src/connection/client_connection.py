@@ -134,7 +134,7 @@ class ClientConnection():
             await self.server_task
         except asyncio.CancelledError :
             pass
-        except:
+        except Exception:
             ## logg here
             pass
         await self.notification_bus.send(Notification(NotificationType.WARNING,
@@ -162,7 +162,7 @@ class ClientConnection():
                     f"Message too large (> than {e.consumed} bytes)"))
                 break
 
-            except:
+            except Exception:
                 await self.notification_bus.send(
                                             Notification(NotificationType.WARNING, f"""Unexpected error from server: {writer.get_extra_info('peername')}
                                                         closing connection..."""))

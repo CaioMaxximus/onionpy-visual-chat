@@ -39,11 +39,13 @@ class MenuController:
         _get_servers
     """
 
-    def __init__(self) -> None:
+    def __init__(self, service, notification_bus) -> None:
         self.gui_loop = None
         self.running = False
         self.tor_start_timeout = 15
         self.my_loop = None
+        self.service = service
+        self.notification_bus = notification_bus
 
     def run(self, gui_loop ,callback) -> None:
     
@@ -56,11 +58,10 @@ class MenuController:
 
         async def start():
             self.function_queue = asyncio.Queue()
-            self.notification_queue = asyncio.Queue()
             self.running = True
             self.my_loop = asyncio.get_running_loop()
             self._enqueue(self._start_tor_service)
-
+            self.notification_bus.start()
             self.main_routine = asyncio.create_task(self.function_dispatcher())
             self.gui_loop.after(100,callback)
             await self.main_routine
@@ -70,14 +71,14 @@ class MenuController:
         except asyncio.CancelledError:
             pass
     
-    def _start_tor_service(self):
-        TorServiceManager.start_tor(self.tor_start_timeout)
+    async def _start_tor_service(self):
+        await self.service.start_tor_service(self.tor_start_timeout)
     
     def start_tables(self, callback):
         self._enqueue(func = self._start_tables,callback=callback)
     
     async def _start_tables(self):
-        await repository.create_tables()
+        await self.service.start_tables()
 
     def get_servers(self, callback=None):
         self._enqueue(func=self._get_servers, callback= callback)
@@ -86,11 +87,10 @@ class MenuController:
         self._enqueue(self._remove_server,server_name, callback = callback)
 
     async def _get_servers(self):
-        return await repository.get_all_servers()
+        return await self.service.get_servers()
 
     async def _remove_server(self, server_name):
-       TorServiceManager.remove_onion_service(server_name)
-       await repository.remove_server(server_name)
+       await self.service.remove_server(server_name)
     
     def get_discovered_servers(self ,callback):
         self._enqueue(func=self._get_discovered_servers,callback= callback)
@@ -102,16 +102,17 @@ class MenuController:
         return await repository.get_all_discovered_servers()
 
     async def _remove_discovered_server(self,hostname):
-        await repository.remove_discovered_server(hostname)
+        await self.service.remove_discovered_server(hostname)
         
     def get_notification(self, callback=None):
         self._enqueue(self._get_notification, callback = callback)
         
+    async def _create_new_onion_server(self, server_name):
+        await self.service.create_new_onion_server(server_name)
+
     def create_new_onion_server(self, server_name, callback=None):
-        self._enqueue(
-            (lambda: TorServiceManager.create_new_onion_server(server_name),
-             (), callback)
-        )
+        self._enqueue(self._create_new_onion_server, server_name, callback)
+        
 
     def _execute_callback(self,callback , res):
         if callback is not None:
@@ -122,16 +123,21 @@ class MenuController:
             self.thread.join()
 
     def start_proxy(self,  callback=None):
-        self._enqueue(
-             TorServiceManager.start_tor ,8)
+        self._enqueue(self._start_proxy , callback= callback)
+        
+    async def _start_proxy(self):
+        await self.service.start_proxy()
         
     def end_tor(self, callback = None):
-        self._enqueue(
-            TorServiceManager.end_tor,callback = callback)
+        self._enqueue( self._end_tor , callback = callback)
+
+    async def _end_tor(self):
+        await self.service.end_tor()
 
     async def _get_notification(self):
         
-        return await self.notification_queue.get()
+        return await self.notification_bus.consume()
+
 
     def _enqueue(self, func, *args, callback=None):
         try:
@@ -145,20 +151,19 @@ class MenuController:
     async def function_executer(self,func, args , callback):
         try:
             print(func.__name__)
-            if inspect.iscoroutinefunction(func):
-                res = await func(*args)
-            else:
-                res = await asyncio.to_thread(func,*args) 
+            res = await func(*args)
 
         except (ConnectionError, TimeoutError ,FileNotFoundError , RuntimeError) as e:
-            await self.notification_queue.put(
+            await self.notification_bus.send(
                 Notification(NotificationType.ERROR, str(e))
             )
+            raise e
         except Exception as e :
-            error_message = "An unexpected error occurred, please reestart the application."
-            await self.notification_queue.put(
+            error_message = f"An unexpected error occurred during {func.__name__} execution, please reestart the application."
+            await self.notification_bus.send(
                 Notification(NotificationType.ERROR ,str(e) + f"\n {error_message}" )
             )
+            raise e
         else:
             self._execute_callback(callback , res)
     

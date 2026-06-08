@@ -1,7 +1,7 @@
 from controller import ClientController , ServerController ,MenuController
 from connection import ClientConnection , ServerConnection , TorServiceManager
 from views import MainMenuGUI , ClientGUI ,ServerGUI
-from services import ClientService, ServerService
+from services import ClientService, ServerService , MenuService
 from data_base import repository
 from infrastructure import NotificationBus
 
@@ -26,7 +26,10 @@ class ApplicationCoordinator():
     @classmethod
     def main_menu(cls, root):
 
-        menu_controller_instance = MenuController()
+        notificaiton_bus = NotificationBus()
+        tor_service_instance = TorServiceManager()
+        menu_service = MenuService(notificaiton_bus,tor_service_instance,repository)
+        menu_controller_instance = MenuController(menu_service ,notificaiton_bus)
         main_menu_gui_instance = MainMenuGUI(
             root,menu_controller_instance ,cls.client_chat , cls.server_chat)
 
