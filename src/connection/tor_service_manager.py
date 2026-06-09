@@ -46,7 +46,7 @@ class TorServiceManager():
         data_dir = f"{folder_instace_path}/data"
 
         os.makedirs(data_dir, exist_ok= True)
-        subprocess.run(f"chmod 700 {data_dir}" ,shell= True,)
+        subprocess.run(["chmod", "700", data_dir]) 
 
     @classmethod   
     def start_onion_server(cls,server_name, local_port, onion_port):
