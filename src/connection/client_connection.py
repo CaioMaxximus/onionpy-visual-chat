@@ -66,7 +66,7 @@ class ClientConnection():
     
     """
 
-    def __init__(self, notification_bus ,pin = None):
+    def __init__(self, notification_bus : Notification,pin = None):
         self.pin = pin
         self.HOST  = None 
         self.PORT = None

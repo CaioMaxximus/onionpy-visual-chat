@@ -19,7 +19,7 @@ class BasicChatView(ctk.CTkToplevel):
 
         master : ctk
             the root tkinter object for the all aplication
-        controller : BasicAsyncController
+        controller : BaseAsyncController
             Handles communication with the network layer and retrieve messages and 
             notifications
         message_queue : Queue

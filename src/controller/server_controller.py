@@ -5,14 +5,14 @@ from src.connection import TorServiceManager
 from data_base import repository
 import random
 import socket
-from .basic_async_controller import BasicAsyncController
+from .base_async_controller import BaseAsyncController
 # from threading import Thread
 from src.error.special_errors import ConnetionClosedError
 from models import OnionServer
 
 
 
-class ServerController(BasicAsyncController):
+class ServerController(BaseAsyncController):
 
     """
         This class defines a controller for the server UI, working as Bridge/Dispatcher 

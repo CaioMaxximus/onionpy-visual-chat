@@ -7,7 +7,7 @@ from abc import ABC
 RETRYABLE_ERRORS = (TimeoutError , ConnectionError , ConnectionAbortedError)
 
 
-class BasicAsyncController(ABC):
+class BaseAsyncController(ABC):
 
     """
         This class acts as a asynchronous controller,a background thread
