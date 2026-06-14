@@ -1,19 +1,19 @@
 import asyncio
 import unittest 
-from src.controller import BasicAsyncController
+from src.controller import BaseAsyncController
 from unittest.mock import MagicMock  , AsyncMock
 
 
 
 
-class TestBasicAsyncController(unittest.IsolatedAsyncioTestCase):
+class TestBaseAsyncController(unittest.IsolatedAsyncioTestCase):
 
     def mocked_gui_loop_after(self,time , callback ,*args):
         callback(*args)
 
 
     async def asyncSetUp(self) -> None:
-        self.controller = BasicAsyncController(service= MagicMock(), notification_bus= AsyncMock())
+        self.controller = BaseAsyncController(service= MagicMock(), notification_bus= AsyncMock())
         self.controller.running = True
         moked_gui_loop = MagicMock()
         moked_gui_loop.after = self.mocked_gui_loop_after
