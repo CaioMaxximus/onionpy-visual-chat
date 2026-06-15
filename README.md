@@ -22,8 +22,10 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
 -![Status](https://img.shields.io/badge/status-done-brightgreen)
 - Option to manage the local servers and recent connections.
  ![Status](https://img.shields.io/badge/status-done-brightgreen)
-- Create servers with special requirements such as passwords and authentication keys.
- ![Status](https://img.shields.iclearo/badge/status-lacking-red)
+- Create servers with special requirements such as passwords.
+ ![Status](https://img.shields.io/badge/status-doing-yellow)
+ - Keep the local credentials proper encripited and safe. 
+ ![Status](https://img.shields.io/badge/status-doing-yellow)
 - Options to mute certain users connected to you server.
  ![Status](https://img.shields.io/badge/status-lacking-red)
 
@@ -60,7 +62,7 @@ TESTS
 - server_connection ![Status](https://img.shields.io/badge/status-done-brightgreen)
 - client_controller ![Status](https://img.shields.io/badge/status-lacking-red)
 - basic_async_controller ![Status](https://img.shields.io/badge/status-done-brightgreen)
-- menu_controller ![Status](https://img.shields.io/badge/statusldone-brightgreen)
+- menu_controller ![Status](https://img.shields.io/badge/status-done-brightgreen)
 - server_controller ![Status](https://img.shields.io/badge/status-lacking-red)
 
 ## Project Structure
