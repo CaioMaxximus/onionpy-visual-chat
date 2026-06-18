@@ -4,6 +4,7 @@ from src.models import Notification , NotificationType
 from models import OnionServer
 import random
 import socket
+from src.infrastructure.encryptor import encrypt_data
 
 DYNAMIC_PORT_MIN = 49152
 DYNAMIC_PORT_MAX = 65535
@@ -60,7 +61,7 @@ class ServerService():
 
 
 
-    async  def start(self):
+    async def start(self):
         # self.message_queue = asyncio.Queue()
         # self.notification_queue = asyncio.Queue()
         # self.HOST = HOST
@@ -77,7 +78,7 @@ class ServerService():
    
 
     @rollback        
-    async def _create_server(self ,rollback_operations, name):
+    async def _create_server(self ,rollback_operations, name, password):
         
         """
             Establish the steps to create a new valid server, attaching a decorator rollback feature.
@@ -105,6 +106,8 @@ class ServerService():
             - Emits notificaitons
         """
 
+        encript_pass = await encrypt_data(password)
+
         onion_connection = None
         self.tor_service.create_new_onion_server(name)
         self.server_name = name
@@ -115,7 +118,7 @@ class ServerService():
         local_port  = _generate_new_available_port(used_ports) # type: ignore
         used_ports.append(local_port)
         onion_port  = _generate_new_available_port(used_ports) # type: ignore
-        await self.connection.start_server(local_port)
+        await self.connection.start_server(local_port,encript_pass)
         rollback_operations.append(lambda : self.connection.close_server())
         # Move this for the start of the controller
         # await self.start_routines()
@@ -124,14 +127,14 @@ class ServerService():
         rollback_operations.append(lambda : self.tor_service.stop_onion_server(self.server_name))
         await self.notification_bus.send(Notification(NotificationType.SUCCESS , "Server started"))
         await self.database_service.save_new_server(self.server_name,local_port , 
-                            onion_hostname, onion_port)
+                            onion_hostname, onion_port, encript_pass)
         rollback_operations.append(lambda : self.database_service.remove_server(self.server_name))
-        onion_server = OnionServer(name,onion_hostname,local_port,onion_port) 
+        onion_server = OnionServer(name,onion_hostname,local_port,onion_port,encript_pass) 
             
         return onion_server
 
             
-    async def _start_server(self,name) -> OnionServer:
+    async def _start_server(self,name,password) -> OnionServer:
         """
             Establish the steps to start a new valid server, attaching a decorator rollback feature.
 
@@ -159,7 +162,7 @@ class ServerService():
         self.server_name = name
         await self.notification_bus.send(Notification(NotificationType.WARNING , "Starting server.."))
         server_info = await self.database_service.get_server_by_name(name)
-        await self.connection.start_server(server_info.local_server_port) # type: ignore
+        await self.connection.start_server(server_info.local_server_port ,password) # type: ignore
         # await self.start_routines()
 
 

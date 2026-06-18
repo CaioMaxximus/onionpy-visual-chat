@@ -5,6 +5,7 @@ from src.models import Notification , NotificationType
 import re
 from typing import Any, Callable ,Optional
 from decorators import validate_connection_state
+from infrastructure import client_connection_handshake
 
 
 
@@ -28,7 +29,7 @@ class ClientConnection():
         Attributes
         ----------
 
-        pin (not implement yet!): str
+        password (not implement yet!): str
             Credential used to connect with the server
         HOST : str
             Hostname of the server
@@ -66,8 +67,8 @@ class ClientConnection():
     
     """
 
-    def __init__(self, notification_bus : Notification,pin = None):
-        self.pin = pin
+    def __init__(self, notification_bus : Notification,password = None):
+        self.password = password
         self.HOST  = None 
         self.PORT = None
         self.proxy_port = 9050
@@ -139,7 +140,16 @@ class ClientConnection():
 
     @validate_connection_state
     async def connection_handler(self,reader, writer):
+
+        await self.notification_bus.send(Notification(NotificationType.INFO, "Starting handshake"))
         self.writer = writer
+        print("vai comecar o handshake")
+        handshake_data = client_connection_handshake("user novo" ,self.password)
+        print(handshake_data)
+        self.writer .write(handshake_data)
+        await self.writer.drain()
+        
+
         while self._connected:
             try:
                 data = await reader.readuntil(separator=b'\0')
@@ -207,15 +217,14 @@ class ClientConnection():
         try :
             reader,writer = await asyncio.open_connection( 
                 sock = self.sock)
-            self._connected = True
         except TimeoutError:
             raise RuntimeError(f"Connection timeout trying to connect to server {self.HOST}:{self.PORT}")
         except ConnectionError as e:
             raise ConnectionError(f"Error! Unable to connect to server {self.HOST}:{self.PORT}") from e
         else:
-            # self.messages_checker_task = asyncio.create_task(self.check_messages_for_web())
+
+            self._connected = True
             self.server_task = asyncio.create_task(self.connection_handler(reader,writer))
-        # await self.end_connection()
         
     @validate_connection_state
     async def send_message(self, message):

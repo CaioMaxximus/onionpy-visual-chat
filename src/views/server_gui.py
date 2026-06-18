@@ -25,7 +25,7 @@ class ServerGUI(BasicChatView):
 
     """
 
-    def __init__(self ,master, name ,index,controller  ,creator_mode = False ):
+    def __init__(self ,master, name ,index,controller  ,creator_mode = False,password = "" ):
         super().__init__(master , controller)
 
 
@@ -34,6 +34,7 @@ class ServerGUI(BasicChatView):
         self.name = name
         self.creator_mode = creator_mode
         self.title("Server Onion conneciton")
+        self.password = password
 
 
         self.controller.run(self.master , lambda : self._start_server())
@@ -44,9 +45,9 @@ class ServerGUI(BasicChatView):
         print("server name no server guiu")
         print(self.name)
         if self.creator_mode :
-            self.controller.create_server(self.name , self._build_interface)
+            self.controller.create_server(self.name,self.password , self._build_interface)
         else: 
-            self.controller.start_server(self.name, self._build_interface)
+            self.controller.start_server(self.name,self.password,  self._build_interface)
         # to notifications schedule must be already active to the server initialization
         self.start_routines() 
 

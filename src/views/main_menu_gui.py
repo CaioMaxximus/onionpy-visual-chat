@@ -132,15 +132,15 @@ class MainMenuGUI:
         self.my_visited_servers_list = ItemListView(self.bottow_frame,"My discovered servers", self.initiate_client_window,
                                                     lambda server : (f"{server.name} + {server.hostname}"))
         self.my_visited_servers_list.pack(side = "right", fill = "y", padx=10, pady=10)
-        self.controller.run(self.root,self.first_step)
+        self.controller.run(self.root,self.create_tables)
 
-    def first_step(self):
-        def second_step(*args):
+    def create_tables(self):
+        def fecth_local_data(*args):
             self.controller.get_servers(lambda servers: self.my_servers_list.update_items(servers) )
             self.controller.get_discovered_servers(lambda servers_info: self.my_visited_servers_list.update_items(servers_info) )
             self.get_notification_routine()
             
-        self.controller.start_tables(second_step)
+        self.controller.start_tables(fecth_local_data)
 
         # self.open_configarion()
 
@@ -150,22 +150,28 @@ class MainMenuGUI:
 
     def create_new_server(self):
 
-        pop_w = PopUpEntryGui(self.root, ["Define a name for the new server"], ["server_name"])
+        pop_w = PopUpEntryGui(self.root,
+                               ["Define a name for the new server",
+                                 "Insert a password if you want to create a strict acess server, otherwise, leave it blank"]
+                              , ["server_name", "password"])
         self.root.wait_window(pop_w)
         server_name = pop_w.registered_values["server_name"]
-        self.create_new_server_window(server_name)
+        password = pop_w.registered_values["password"]
+        self.create_new_server_window(server_name , password)
     
     def create_new_client(self):
         pop_w = PopUpEntryGui(self.root,
-                              ["Enter the Server Adress" ,"Enter the onion port"],
-                              ["onion_adress" ,"onion_port"])
+                              ["Enter the Server Adress" ,"Enter the onion port", "Insert a password if the server has strict acess"],
+                              ["onion_adress" ,"onion_port" , "password"])
         self.root.wait_window(pop_w)
         if pop_w.done:
             host = pop_w.registered_values["onion_adress"]
             port = pop_w.registered_values["onion_port"]
             port = port if port.strip(" ") != ""  else "-1"
+            password = pop_w.registered_values["password"].strip(" ")
 
-            self.create_new_client_window(host, port)
+
+            self.create_new_client_window(host, port,password)
 
 
     def get_notification_routine(self):
@@ -179,17 +185,21 @@ class MainMenuGUI:
         self.root.after(10 , self.get_notification_routine)
 
 
-    def create_new_server_window(self , server_name):
-        self.server_gui_navigate(self.root , server_name ,mode = True)
+    def create_new_server_window(self , server_name, password):
+        self.server_gui_navigate(self.root , server_name ,mode = True,password = password)
 
-    def create_new_client_window(self,host , port):
-        self.client_gui_navigate(self.root , 0 , host ,port)
+    def create_new_client_window(self,host , port, password):
+        self.client_gui_navigate(self.root , 0 , host ,port,password)
 
     def initiate_server_window(self, server):
-        self.server_gui_navigate(self.root, server.name, mode=False)
+        self.server_gui_navigate(self.root, server.name, mode=False,password = server.password)
     
     def initiate_client_window(self, server_info):
-        self.client_gui_navigate(self.root,0 ,server_info.hostname, server_info.port)
+        pop_w = PopUpEntryGui(self.root,
+                              ["Insert the password if the server has strict acess otherwise leave it blank"],
+                              ["password"])
+        self.root.wait_window(pop_w)
+        self.client_gui_navigate(self.root,0 ,server_info.hostname, server_info.port, password = pop_w.registered_values["password"])
 
 
     # i will move this to application coordinato

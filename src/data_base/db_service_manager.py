@@ -1,7 +1,13 @@
 import  aiosqlite
+from pathlib import Path    
+
+ACTUAL_PATH = Path(__file__).resolve()
+
+PARENT = ACTUAL_PATH.parent.parent.parent
+my_db = PARENT  / "my.db"
 
 
-async def create_tables(db_path: str = "my.db"):
+async def create_tables(db_path: str = my_db):
     """Create the servers table if it doesn't exist."""
     async with aiosqlite.connect(db_path) as conn:
         await conn.execute("""
@@ -9,7 +15,8 @@ async def create_tables(db_path: str = "my.db"):
             server_name TEXT PRIMARY KEY,
             onion_hostname TEXT,
             local_server_port INTEGER NOT NULL,
-            onion_port INTEGER NOT NULL
+            onion_port INTEGER NOT NULL,
+            password TEXT NOT NULL
         )
         """)
 
@@ -24,20 +31,22 @@ async def create_tables(db_path: str = "my.db"):
         await conn.commit()
 
 
-async def save_new_server(server_name: str, local_port , onion_hostname, onion_port: int, db_path: str = "my.db") -> None:
+async def save_new_server(server_name: str, local_port , onion_hostname, onion_port: int,  password : str = "",db_path: str = my_db) -> None:
     """
     Insert or replace a server record.
     server_name is the primary key; this will upsert the entry.
     """
+    print(db_path)
+    print("==========")
     async with aiosqlite.connect(db_path) as conn:
         await conn.execute(
-            "INSERT OR REPLACE INTO servers (server_name, onion_hostname, local_server_port ,onion_port ) VALUES (?, ?, ?,?)",
-            (server_name, onion_hostname, local_port ,onion_port)
+            "INSERT OR REPLACE INTO servers (server_name, onion_hostname, local_server_port ,onion_port, password) VALUES (?, ?, ?,? ,?)",
+            (server_name, onion_hostname, local_port ,onion_port, password)
         )
         await conn.commit()
 
 
-async def remove_server(server_name: str, db_path : str= "my.db"):
+async def remove_server(server_name: str, db_path : str= my_db):
     """
     Remove a server record from the database
     """
@@ -49,7 +58,7 @@ async def remove_server(server_name: str, db_path : str= "my.db"):
         )
         await conn.commit()
 
-async def remove_discovered_server(hostname: str, db_path : str= "my.db"):
+async def remove_discovered_server(hostname: str, db_path : str= my_db):
     """
         Remove a discovered server record from the database
     """
@@ -63,7 +72,7 @@ async def remove_discovered_server(hostname: str, db_path : str= "my.db"):
 
 
 
-async def save_discovered_server_securely(server_name : str, onion_hostname : str ,port : int, db_path : str = "my.db"):
+async def save_discovered_server_securely(server_name : str, onion_hostname : str ,port : int, db_path : str = my_db):
     """
     Stores a new discovered server
     """
@@ -75,7 +84,7 @@ async def save_discovered_server_securely(server_name : str, onion_hostname : st
         )
         await conn.commit()
 
-async def list_all_discovered_servers(db_path : str = "my.db"):
+async def list_all_discovered_servers(db_path : str = my_db):
 
     async with aiosqlite.connect(db_path) as conn:
         async with await conn.execute(
@@ -84,7 +93,7 @@ async def list_all_discovered_servers(db_path : str = "my.db"):
             res = await cursor.fetchall()
             return res
 
-async def list_all_servers(db_path : str = "my.db"):
+async def list_all_servers(db_path : str = my_db):
 
     async with aiosqlite.connect(db_path) as conn:
         async with await conn.execute(
@@ -93,7 +102,7 @@ async def list_all_servers(db_path : str = "my.db"):
             res = await cursor.fetchall()
             return res
 
-async def get_server_by_name(server_name: str, db_path: str = "my.db"):
+async def get_server_by_name(server_name: str, db_path: str = my_db):
     """
     Retrieve a server by server_name.
     Returns a dict with keys: server_name, onion_hostname, server_port or None if not found.
@@ -101,7 +110,7 @@ async def get_server_by_name(server_name: str, db_path: str = "my.db"):
     async with aiosqlite.connect(db_path) as conn:
         conn.row_factory = aiosqlite.Row
         async with conn.execute(
-            "SELECT server_name, onion_hostname, local_server_port ,  onion_port FROM servers WHERE server_name = ?",
+            "SELECT server_name, onion_hostname, local_server_port ,  onion_port , password FROM servers WHERE server_name = ?",
             (server_name,),
         ) as cursor:
             res = await cursor.fetchone()
@@ -110,7 +119,7 @@ async def get_server_by_name(server_name: str, db_path: str = "my.db"):
             return res
 
 
-async def list_all_ports(db_path: str = "my.db") -> list:
+async def list_all_ports(db_path: str = my_db) -> list:
     """
         Return a list of all server_port values stored in the database.
         The port used by the local servers and the ports used by the onion servers.

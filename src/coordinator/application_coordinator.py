@@ -36,10 +36,10 @@ class ApplicationCoordinator():
         return main_menu_gui_instance
     
     @classmethod
-    def client_chat(cls, master, index, host  , port):
+    def client_chat(cls, master, index, host  , port, password = "123"):
 
         notification_bus = NotificationBus() 
-        client_connection_instance = ClientConnection(notification_bus)
+        client_connection_instance = ClientConnection(notification_bus,password)
         client_service_instance = ClientService(client_connection_instance,repository,TorServiceManager,notification_bus)
         client_controller_instance = ClientController(
             client_service_instance,notification_bus)
@@ -49,11 +49,11 @@ class ApplicationCoordinator():
         return client_gui_instance
     
     @classmethod
-    def server_chat(cls,master,server_name, mode):
+    def server_chat(cls,master,server_name, mode,password = ""):
         # server_connection(server_name , )
         notification_bus = NotificationBus() 
-        server_connection_instance = ServerConnection(server_name ,notification_bus, "")
+        server_connection_instance = ServerConnection(server_name ,notification_bus)
         server_service_instance = ServerService(server_connection_instance,repository,TorServiceManager,notification_bus)
         server_controller_instance = ServerController(server_service_instance , server_name,notification_bus)
-        server_gui = ServerGUI(master, server_name,0,server_controller_instance,mode)
+        server_gui = ServerGUI(master, server_name,0,server_controller_instance,mode, password= password)
         return server_gui

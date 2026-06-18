@@ -104,11 +104,11 @@ class ServerController(BaseAsyncController):
         except asyncio.CancelledError:
             pass
 
-    def start_server(self, name , callback):
-        self._enqueue(self.service._start_server, name ,callback = callback)
+    def start_server(self, name ,password, callback):
+        self._enqueue(self.service._start_server, name ,password ,callback = callback)
     
-    def create_server(self ,name , callback):
-        self._enqueue(self.service._create_server , name, callback = callback)
+    def create_server(self ,name , password ,callback):
+        self._enqueue(self.service._create_server , name, password, callback = callback)
 
     def close_server(self ,callback):
         self._enqueue(func=self._close_server,callback=callback)

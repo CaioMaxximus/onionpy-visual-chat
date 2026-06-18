@@ -5,9 +5,9 @@ from models import DiscoveredServer, OnionServer
 ## Need to add proper erros management here
 
 async def save_new_server(server_name, local_port , 
-                            onion_hostname, onion_port):
+                            onion_hostname, onion_port , password):
     await db.save_new_server(server_name, local_port , 
-                            onion_hostname, onion_port)
+                            onion_hostname, onion_port,password)
     
 async def save_discovered_server( host , port,server_name = "new connetion" ):
 
@@ -27,12 +27,12 @@ async def get_all_servers():
 
     for s in servers:
         exit_.append(OnionServer(name=s[0], hostname=s[1],local_server_port=s[2],
-                                 onion_port=s[3],password= ""))
+                                 onion_port=s[3],password= s[4]))
     return exit_
 async def get_server_by_name(name):
     res =  await db.get_server_by_name(name)
     return OnionServer(res["server_name"] ,res["onion_hostname"],
-                       res["local_server_port"] ,res["onion_port"] )
+                       res["local_server_port"] ,res["onion_port"]  , res["password"])
 
 async def remove_server(server_name):
     try:

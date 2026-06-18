@@ -5,6 +5,7 @@ from src.models import Notification , NotificationType
 from typing import Any, Callable
 import traceback
 from decorators import validate_connection_state
+from infrastructure import server_connection_handshake
 
 
 ## Temporary
@@ -27,7 +28,7 @@ class ServerConnection():
             (Not implemented yet)
         name : str
             Server connection name
-        pin : str
+        password : str
             (Not implemented yet)
         onion_adress : str
             Complete onion server representation
@@ -73,12 +74,12 @@ class ServerConnection():
     """
 
 
-    def __init__(self, name  ,notification_bus, pin = None):
+    def __init__(self, name  ,notification_bus):
 
 
         self.users = []
         self.name = name
-        self.pin = pin
+        self.password = None
 
         self.onion_adress = ""
         self.PORT = None
@@ -108,9 +109,10 @@ class ServerConnection():
         # self.messages_to_send_queue = asyncio.Queue()
         self.broadcast_queue = asyncio.Queue()
 
-    async def start_server(self ,port):
+    async def start_server(self ,port,password):
 
         self.PORT  = port
+        self.password = password
         await self.server_listener() 
 
 
@@ -124,6 +126,7 @@ class ServerConnection():
                 await asyncio.gather(*[
                     self.broadcast_message(last_message, w) for w in self.my_connections
                 ])
+            ## isso aq lanca uma ecxxcecao quamndo a apçicacao é fechada
             except  asyncio.CancelledError as e :
                 raise e
             except Exception as e:
@@ -137,7 +140,15 @@ class ServerConnection():
     @validate_connection_state
     async def connection_handler(self,reader, writer):
         ## verify if the same source is connected and then block it
-        await self.notification_bus.send(Notification(NotificationType.INFO, f"""New user connected: {writer.get_extra_info('peername')}"""))
+        try:
+            handshake_data = await reader.readuntil(separator=b'\0')
+            await server_connection_handshake(handshake_data, self.password)
+        except Exception:
+            await self.notification_bus.send(Notification(NotificationType.INFO, f"""handshake failed"""))
+            return
+            
+        else:
+            await self.notification_bus.send(Notification(NotificationType.INFO, f"""New user connected: {writer.get_extra_info('peername')}"""))
         self.my_connections.add(writer)
         while self._connected:
             try:
@@ -149,6 +160,7 @@ class ServerConnection():
                     await self.notification_bus.send(
                         Notification(NotificationType.WARNING, f"User {writer.get_extra_info('peername')}"))
                     break
+
             except asyncio.exceptions.LimitOverrunError as e:
                 await self.notification_bus.send( Notification(NotificationType.ERROR, 
                     f"Message too large (> than {e.consumed} bytes)"))
