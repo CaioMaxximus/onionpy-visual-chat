@@ -9,7 +9,7 @@ class TestServerConnection(unittest.IsolatedAsyncioTestCase):
 
     async def asyncSetUp(self):
         not_bus = MagicMock()
-        self.inst = ServerConnection("test",not_bus, "")
+        self.inst = ServerConnection("test",not_bus)
         self.inst.PORT = 80
         self.inst.notification_bus.send = AsyncMock()
 

@@ -1,5 +1,5 @@
 venv/
-visual_schemes/
+drawnio/
 arquivos_de_teste/
 tor_sevice/
 test_stem/
@@ -9,5 +9,7 @@ root/controller/__pycache__
 rebuild_commits.sh
 __pycache__/
 **/__pycache__/
+tests/__pycache__
 *.pyc
+.vscode
 tarefas_a_executar.txt
