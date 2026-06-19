@@ -31,7 +31,8 @@ class PopUpEntryGui(ctk.CTkToplevel):
 
     def __init__(self, master, labels , maps_of_inputs):
         super().__init__(master)
-
+        self.width = 270
+        self.geometry(f"{self.width}x{self.width}")
         self.master = master
         self.labels = labels
         self.maps_of_inputs = maps_of_inputs
@@ -47,7 +48,7 @@ class PopUpEntryGui(ctk.CTkToplevel):
 
     def generate_personalized_inputs(self):
         for label_text in self.labels:
-            label = ctk.CTkLabel(self.inputs_canvas,text = label_text)
+            label = ctk.CTkLabel(self.inputs_canvas,text = label_text,wraplength=int(self.width * 0.85))
             label.pack(pady = 3)
             input_ = ctk.CTkEntry(self.inputs_canvas )
             input_.pack(pady = 5)

@@ -8,8 +8,6 @@ class HandShake():
         self.id = id
         self.password = password
     
-    
-
 
 async def server_connection_handshake(message,password):
         
