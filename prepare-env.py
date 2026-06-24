@@ -3,6 +3,7 @@ from pathlib import Path
 import subprocess
 import sys
 import zipfile
+import threading
 
 ctk.set_appearance_mode("System")  
 ctk.set_default_color_theme("blue")  
@@ -12,9 +13,11 @@ class App(ctk.CTk):
         super().__init__()
         self.BASE_PATH = Path(__file__).parent.resolve()
         self.title("SET-UP ONIONPY")
-        self.geometry("400x300")
+        self.geometry("400x400")
         self.resizable(False, False)
         self.download_daemon = False
+        self.status_queue = []
+        self.not_runnig  = True
 
 
         self.container_top = ctk.CTkFrame(self,width = 350)
@@ -27,7 +30,7 @@ class App(ctk.CTk):
             self.container_top,  width = 20,text= "",
             fg_color= "white", 
             hover_color="green",
-            command=self.desativar_campo
+            command=self.deactivate_field
         )
         self.btn_deactivate.pack(side = "left",expand = True)
 
@@ -43,7 +46,7 @@ class App(ctk.CTk):
             self.container_bottom, width = 20,text= "",
             fg_color= "white", 
             hover_color="green",
-            command=self.ativar_campo
+            command=self.activate_field
         )
         self.btn_activate.pack(side = "left")
 
@@ -56,12 +59,33 @@ class App(ctk.CTk):
             self, width = 50,text= "CONFIRM",
             fg_color= "green", 
             hover_color="red",
-            command=self.setup_enviroment
+            command=self.start_setup_enviroment
         )
         self.confirm_btn.pack(pady = 15)
 
 
-    def ativar_campo(self):
+        self.info_field = ctk.CTkLabel(self, wraplength=280, height=50,text="")
+        self.info_field.pack(expand = True)
+
+    def set_status_text(self, text):
+        def schedule():
+            if not self.status_queue:
+                self.not_runnig = True
+                return
+            # print("chamei o schedule")
+
+            new_sattus = self.status_queue.pop(0)
+            self.info_field.configure(text = new_sattus)
+            self.after(900 , schedule)
+        if self.not_runnig:
+            self.status_queue.append(text)
+            self.not_runnig = False
+            schedule()        
+        else:
+            self.status_queue.append(text)
+        
+
+    def activate_field(self):
 
         self.entry.configure(state="normal")
         self.entry.focus()
@@ -71,22 +95,36 @@ class App(ctk.CTk):
         self.download_daemon = False
 
 
-    def desativar_campo(self):
+    def deactivate_field(self):
 
         self.entry.delete(0, "end")
         self.entry.configure(state="disabled")
         self.btn_activate.configure(fg_color = "white")
         self.btn_deactivate.configure(fg_color = "green")
         self.download_daemon = True
-    
+
+    def start_setup_enviroment(self):
+
+        self.deactivate_all_fields()
+        thread = threading.Thread(target=self.setup_enviroment)
+        thread.start()
+
+    def deactivate_all_fields(self):
+        self.entry.configure(state="disabled")
+        self.btn_activate.configure(state="disabled")
+        self.btn_deactivate.configure(state="disabled")
+
+
+
+
+
     def setup_enviroment(self):
 
 
-        
         tor_files =  self.BASE_PATH / "tor_service/files"
         tor_instances =  self.BASE_PATH / "tor_service/tor_instances"
         tor_path = ""
-
+        self.set_status_text("Starting setup!")
         if tor_files.exists():
             ## Popup de confirmacao de remover
             pass
@@ -94,6 +132,8 @@ class App(ctk.CTk):
             tor_files.mkdir(parents= True,exist_ok=True)
         
         if self.download_daemon:
+            self.set_status_text("Downloading tor daemon")
+
             apt_command = ["apt", "download" , "tor"]
             tor_service_folder = self.BASE_PATH / "tor_service"
 
@@ -104,6 +144,9 @@ class App(ctk.CTk):
                 )
             except Exception as e:
                 raise e
+            else:
+                self.set_status_text("Tor daemon downlaod sucecced")
+
             
             tor_daemon_file = ""
             for file in tor_service_folder.iterdir():
@@ -122,7 +165,7 @@ class App(ctk.CTk):
             except Exception:
                 pass
             else:
-
+                self.set_status_text("Tor daemon unpack sucecced")
                 tor_path = str(unpacked_daemon_path/ "usr/bin/tor")
                         
         else:
@@ -132,7 +175,13 @@ class App(ctk.CTk):
         with open(self.BASE_PATH / "tor_daemon_path.txt", "w", encoding = "utf-8") as f:
 
             f.write(str(tor_path))
+        self.set_status_text("Tor file path created successfully")
+
         tor_instances.mkdir(parents= True,exist_ok=True)
+        self.set_status_text("Tor instances folder creation sucecced")
+        self.set_status_text("Everything Done")
+
+
 
         # tor_instances = self.BASE_PATH / "tor_service/tor_instances"
         # tor_instances.mkdir()
