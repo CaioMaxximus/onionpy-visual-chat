@@ -175,7 +175,19 @@ class App(ctk.CTk):
         with open(self.BASE_PATH / "tor_daemon_path.txt", "w", encoding = "utf-8") as f:
 
             f.write(str(tor_path))
+
         self.set_status_text("Tor file path created successfully")
+
+        config = [
+        "SocksPort 9050\n",
+        "ControlPort 9051\n"
+        ]
+
+        with open(self.BASE_PATH / "tor_service/torrc", "w", encoding = "utf-8") as f:
+
+            f.writelines(config)
+
+        self.set_status_text("Torcc file created")
 
         tor_instances.mkdir(parents= True,exist_ok=True)
         self.set_status_text("Tor instances folder creation sucecced")
