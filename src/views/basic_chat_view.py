@@ -95,10 +95,23 @@ class BasicChatView(ctk.CTkToplevel):
         self.running = False
         self.winfo_toplevel().destroy()
 
+    def copy_to_clipboard(self,content):
+        print("=====")
+        # print(self.clipboard_get())
+        self.clipboard_clear()
+        # print(self.clipboard_get())
+        self.clipboard_append(content
+        )
+        # print(self.clipboard_get())
+
+
     def  build_interface(self):
 
         self.top_info = ctk.CTkLabel(self,text= "Numero de usuarios ativos : 0")
         self.top_info.pack(pady = 3)
+
+        self.copy_btn = ctk.CTkButton(self, text = "copy", width= int(self.width * 0.10) )
+        self.copy_btn.pack()
 
         self.scroll_frame = ctk.CTkScrollableFrame(self, label_text="Lista de elementos")
         self.scroll_frame.pack(expand=True, fill="both", padx=10, pady=10)

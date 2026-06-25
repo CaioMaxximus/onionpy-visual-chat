@@ -53,10 +53,12 @@ class ServerGUI(BasicChatView):
 
 
     def _build_interface(self, onion_connecion):
+
         super().build_interface()
         self.onion_connecion = onion_connecion
         host_info = f"{onion_connecion.hostname}:{onion_connecion.onion_port}"
         port_text = f"Serving on local port : {onion_connecion.local_server_port}"
+        self.copy_btn.configure(command =  lambda x = onion_connecion.hostname : self.copy_to_clipboard(x))
 
         self.title(onion_connecion.name)
         self.top_info.configure(text=host_info)
