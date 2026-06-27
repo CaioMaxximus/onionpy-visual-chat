@@ -4,7 +4,7 @@
   <img src="src/assets/logo_onio_py.png" alt="Project Logo" width="200">
 </p>
 
-A graphical application for hosting and connecting to onion-based chat services, 
+A graphical application for hosting and connecting to onion-based chat stateless servers P2P, 
 enabling the creation of multiple independent Tor hidden services with minimal setup.
 Built with CustomTkinter, asyncio, and the Tor control library Stem.
 
@@ -31,7 +31,6 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
  ![Status](https://img.shields.io/badge/status--done-green)
 
 
-
 ## Requirements
 - Python 3.8+
 - Dependencies listed in `requirements.txt`
@@ -39,15 +38,13 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
 ## Install
 ```bash
 git clone https://github.com/CaioMaxximus/onion_py_chat.git
-cd web_chat_with_tkinter
-chmod +X start_app.sh
-
+make install
 ```
 ## Execute
 
 APP
 ```bash
-./start_app.sh 
+make run
 ```
 TESTS
 ```bash
