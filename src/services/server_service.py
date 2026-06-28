@@ -5,6 +5,7 @@ from models import OnionServer
 import random
 import socket
 from src.infrastructure.encryptor import encrypt_data
+import re
 
 DYNAMIC_PORT_MIN = 49152
 DYNAMIC_PORT_MAX = 65535
@@ -49,6 +50,7 @@ def _is_port_free(port: int) -> bool:
             return True
         except OSError:
             return False
+        
 class ServerService():
 
     def __init__(self, connection, database_service, tor_service, notification_bus):
@@ -58,6 +60,7 @@ class ServerService():
         self.notification_bus = notification_bus
         self.connected = False
         self.server_name = None
+        self.name_regex = r"^[A-Za-z0-9_ ]{6,30}$"
 
 
 
@@ -76,6 +79,14 @@ class ServerService():
         else:
             raise ConnectionError("The connection is already closed!")
    
+    def _verify_valid_server_name(self,name) -> str:
+        
+        name = name.strip()
+        if re.fullmatch(self.name_regex,name):
+            return name
+        else:
+            raise ValueError("Invalid server name format!")
+
 
     @rollback        
     async def _create_server(self ,rollback_operations, name, password):
@@ -105,7 +116,7 @@ class ServerService():
             - Writes fundamental content to the databbase
             - Emits notificaitons
         """
-
+        name = self._verify_valid_server_name(name)
         encript_pass = await encrypt_data(password)
 
         onion_connection = None

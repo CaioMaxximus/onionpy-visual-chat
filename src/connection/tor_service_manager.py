@@ -66,9 +66,11 @@ class TorServiceManager():
         try:
             with controller.from_port(port = TOR_CONTROL_PORT) as ctrl:
                 ctrl.authenticate()
+
                 result = ctrl.create_hidden_service(data_dir,onion_port , target_port =local_port)
-                # if not result:
-                #     raise ConnectionError("Error starting onion service")
+
+                if not result:
+                    raise ConnectionError("Error starting onion service")
             with open(hostname_path, "r", encoding="utf-8") as f:
                 adrr = f.read().strip()
         except FileNotFoundError as e:

@@ -150,6 +150,7 @@ class ServerConnection():
         else:
             await self.notification_bus.send(Notification(NotificationType.INFO, f"""New user connected: {writer.get_extra_info('peername')}"""))
         self.my_connections.add(writer)
+        
         while self._connected:
             try:
                 data = await reader.readuntil(separator=b'\0')
