@@ -11,8 +11,9 @@ class BasicChatView(ctk.CTkToplevel):
     
     """
         Base class for a chat interface.
-        Provides core functions to send messages, and handle incomming data 
-        from the asynchronous controller.
+        Provides core functions to send messages, handle incomming data 
+        from the asynchronous controller and deals with the notications
+        pop-ups.
     
         Attributes
         -------
@@ -66,7 +67,7 @@ class BasicChatView(ctk.CTkToplevel):
         self.notifications_queue = queue.Queue()
         self.protocol("WM_DELETE_WINDOW", self.on_close)
         self.destroyed = False
-
+        self.multiple_lines  = False
 
 
         self.width = 750
@@ -77,7 +78,7 @@ class BasicChatView(ctk.CTkToplevel):
 
 
         
-    def on_close(self):
+    def on_close(self) -> None:
 
         """
             Close the controller and the window itself
@@ -95,35 +96,49 @@ class BasicChatView(ctk.CTkToplevel):
         self.running = False
         self.winfo_toplevel().destroy()
 
-    def copy_to_clipboard(self,content):
-        print("=====")
-        # print(self.clipboard_get())
+    def copy_to_clipboard(self,content) -> None:
         self.clipboard_clear()
-        # print(self.clipboard_get())
-        self.clipboard_append(content
-        )
-        # print(self.clipboard_get())
+        self.clipboard_append(content)
 
 
-    def  build_interface(self):
+    def  build_interface(self) -> None:
 
-        self.top_info = ctk.CTkLabel(self,text= "Numero de usuarios ativos : 0")
+        self.top_info = ctk.CTkLabel(self,text= "Total active users : 0")
         self.top_info.pack(pady = 3)
 
         self.copy_btn = ctk.CTkButton(self, text = "copy", width= int(self.width * 0.10) )
         self.copy_btn.pack()
 
-        self.scroll_frame = ctk.CTkScrollableFrame(self, label_text="Lista de elementos")
+        self.scroll_frame = ctk.CTkScrollableFrame(self, label_text="")
         self.scroll_frame.pack(expand=True, fill="both", padx=10, pady=10)
 
         self.insert_message_btn = ctk.CTkButton(self, text = "enter", command= self.add_my_message
                                                 , width= min(int(self.width * 0.45),175 ))
         self.insert_message_btn.pack(side = "bottom" , pady = 5)
 
-        self.message_entry_bottom =  ctk.CTkTextbox(self, font = ("Elvetica" ,12), 
+        ## Text Input area
+        self.input_frame = ctk.CTkFrame(self, width=self.winfo_width())
+        self.input_frame.pack(side = "bottom")
+        self.message_entry_bottom =  ctk.CTkTextbox(self.input_frame, font = ("Elvetica" ,12), 
                                                   width=  max(int(self.width * 0.65),200 ),
                                                   height= int(self.height * 0.15))
         self.message_entry_bottom.pack(side = "bottom" , pady = 5)
+        self.multiple_lines_btn = ctk.CTkButton(self.input_frame,width=15,height=15 ,text= "",fg_color= "white",
+                                                hover_color=None,
+                                                command= self.change_multiple_line_input)
+        self.multiple_lines_btn.pack(side = "right",pady = 5,padx = 5)
+
+        self.message_entry_bottom.bind("<Return>", self.handle_enter_press)                                          
+
+    def change_multiple_line_input(self):
+
+        if self.multiple_lines:
+            self.multiple_lines_btn.configure(fg_color = "white")
+        else:
+            self.multiple_lines_btn.configure(fg_color = "green")
+
+
+        self.multiple_lines = not(self.multiple_lines)
 
 
     def start_routines(self):
@@ -221,6 +236,10 @@ class BasicChatView(ctk.CTkToplevel):
         finally:  
             if not self.destroyed : self.master.after(10 , self.handle_notification)
 
+    def handle_enter_press(self,event):
+        if not self.multiple_lines:
+            self.add_my_message()
+
     def handle_message(self):
         try:
             next_message = self.message_queue.get(block=False)
@@ -240,6 +259,7 @@ class BasicChatView(ctk.CTkToplevel):
             self.scroll_frame,
             author_name,
             content=entry,
+            width= int(self.width * 0.8),
             callback= print,
             fg_color=("#2b2b2b" if not owner else "#006969"),
             corner_radius=10
@@ -255,8 +275,12 @@ class BasicChatView(ctk.CTkToplevel):
 
 
     def add_my_message(self):
+        print("enviar mensagem")
         last_message = self.message_entry_bottom.get("1.0", "end-1c") + '\0'
         self.message_entry_bottom.delete("1.0", "end") 
+        
+        if last_message.strip() == "":
+            return
         
         msg= {"entry" : last_message,
                              "author_name" : " " , "owner" :  True }

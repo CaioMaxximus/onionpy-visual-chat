@@ -3,7 +3,7 @@ from popups import PopUpChoiceGUI
 
 class MessageFrame(CTkFrame):
 
-    def __init__(self, master,user , content ,callback,*args, **kwargs):
+    def __init__(self, master,user , content ,width ,callback,*args, **kwargs):
         super().__init__(master,*args ,**kwargs)
         
         label1 = CTkLabel(self, text=f"UserName: {user}", font=("Arial", 10, "bold"))
@@ -17,7 +17,7 @@ class MessageFrame(CTkFrame):
             font=("Arial", 15),
             justify="left",
             anchor = "w",
-            wraplength=400  
+            wraplength= width * 0.9
         )
         label2.pack(anchor="w", padx=10, pady=(0, 10), fill="x")
         self.user_name = user
