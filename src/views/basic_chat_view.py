@@ -130,18 +130,17 @@ class BasicChatView(ctk.CTkToplevel):
 
         self.message_entry_bottom.bind("<Return>", self.handle_enter_press)                                          
 
-    def change_multiple_line_input(self):
+    def change_multiple_line_input(self) -> None:
 
         if self.multiple_lines:
             self.multiple_lines_btn.configure(fg_color = "white")
         else:
             self.multiple_lines_btn.configure(fg_color = "green")
 
-
         self.multiple_lines = not(self.multiple_lines)
 
 
-    def start_routines(self):
+    def start_routines(self) -> None:
         self.master.after(1000,self.get_message_routine)
         self.master.after(1000,self.get_notification_routine)
         self.master.after(1000,self.handle_notification)
@@ -150,10 +149,8 @@ class BasicChatView(ctk.CTkToplevel):
         # self.stop_thread_event = threading.Event()
 
     ## ROUTINES AREA
-    
-    ## a funcao so e chamda quando um item foi retornado do controller
-    ## o controlle ropera em asyncio ent pode esperar pela fila 
-    def get_notification_routine(self):
+
+    def get_notification_routine(self) -> None:
 
         """
             Retrieves notifications from the controller asynchronously.
@@ -173,9 +170,8 @@ class BasicChatView(ctk.CTkToplevel):
         if not self.destroyed: 
             self.controller.get_notification(put_in_queue) 
 
-    ## a funcao so e chamda quando um item foi retornado do controller
-    ## o controlle ropera em asyncio ent pode esperar pela fila
-    def get_message_routine(self):
+ 
+    def get_message_routine(self) -> None:
 
         """
             Retrieves messages from the controller asynchronously.
@@ -195,7 +191,7 @@ class BasicChatView(ctk.CTkToplevel):
     
 
 
-    def handle_notification(self):
+    def handle_notification(self) -> None:
 
         """
             This methond schedule himself with the Tkinter
@@ -236,7 +232,7 @@ class BasicChatView(ctk.CTkToplevel):
         finally:  
             if not self.destroyed : self.master.after(10 , self.handle_notification)
 
-    def handle_enter_press(self,event):
+    def handle_enter_press(self,event) -> None:
         if not self.multiple_lines:
             self.add_my_message()
 
@@ -250,7 +246,7 @@ class BasicChatView(ctk.CTkToplevel):
             if not self.destroyed : self.master.after(50 , self.handle_message)
 
 
-    def add_message_on_gui(self , entry = "", author_name = " " , owner =  False ):
+    def add_message_on_gui(self , entry = "", author_name = " " , owner =  False ) -> None:
     
         author_name = "you" if owner else author_name
         side_gap = self.width * 0.1
@@ -274,8 +270,8 @@ class BasicChatView(ctk.CTkToplevel):
         self.after(90 , self.scroll_to_bottom)
 
 
-    def add_my_message(self):
-        print("enviar mensagem")
+    def add_my_message(self) -> None:
+
         last_message = self.message_entry_bottom.get("1.0", "end-1c") + '\0'
         self.message_entry_bottom.delete("1.0", "end") 
         
@@ -288,5 +284,5 @@ class BasicChatView(ctk.CTkToplevel):
         self.controller.send_message_to_web(msg , None)
         self.message_queue.put(msg)
 
-    def scroll_to_bottom(self):
+    def scroll_to_bottom(self) -> None:
         self.scroll_frame._parent_canvas.yview_moveto(1.0)

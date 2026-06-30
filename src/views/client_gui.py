@@ -1,15 +1,4 @@
-import customtkinter as ctk
-# import  queue
-# import threading
-# import time
-# import random
-# from components.message_frame import  MessageFrame
-from popups import PopUpEntryGui
-# from models.notification import NotificationType
 from .basic_chat_view import BasicChatView
-
-# HOST = '127.0.0.1'
-# PORT = 8080
 
 class ClientGUI(BasicChatView):
 

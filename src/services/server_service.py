@@ -189,6 +189,7 @@ class ServerService():
         
         await self.connection.close_server()
         self.tor_service.stop_onion_server(self.server_name)
+        await self.notification_bus.send(Notification(NotificationType.SUCCESS , "Server Closed!"))
         
     
     async def get_message(self):

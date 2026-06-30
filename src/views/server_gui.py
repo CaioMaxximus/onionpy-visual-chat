@@ -39,11 +39,9 @@ class ServerGUI(BasicChatView):
 
         self.controller.run(self.master , lambda : self._start_server())
     
-    def _start_server(self): ## Temporary here
-        print("coloquei na pilha uma funcao")
+    def _start_server(self) -> None: 
+
         self.running = True
-        print("server name no server guiu")
-        print(self.name)
         if self.creator_mode :
             self.controller.create_server(self.name,self.password , self._build_interface)
         else: 
@@ -52,7 +50,7 @@ class ServerGUI(BasicChatView):
         self.start_routines() 
 
 
-    def _build_interface(self, onion_connecion):
+    def _build_interface(self, onion_connecion) -> None:
 
         super().build_interface()
         self.onion_connecion = onion_connecion
@@ -68,5 +66,5 @@ class ServerGUI(BasicChatView):
                                        command= self.end_server)
         end_server_btn.pack(side ="top")
 
-    def end_server(self):
-        self.controller.close_server(lambda b: print("server closed!!")) ## add pop up
+    def end_server(self) -> None:
+        self.controller.close_server() ## add pop up
