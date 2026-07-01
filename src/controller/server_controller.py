@@ -48,7 +48,7 @@ class ServerController(BaseAsyncController):
         self.server_name = server_name
 
 
-    def run(self, gui_root , callback) -> None:
+    def run(self, gui_root , callback = None) -> None:
 
         """
             Start point for the Thread, after the start, the lifecyle of the controller is 
@@ -75,7 +75,7 @@ class ServerController(BaseAsyncController):
             thread.start()
             
      ## This function can be moved for the superclass partially
-    def start_event_loop(self ,callback):
+    def start_event_loop(self ,callback = None):
 
         """
             Instanciate the asynchronous queues inside the event loop,
@@ -104,13 +104,13 @@ class ServerController(BaseAsyncController):
         except asyncio.CancelledError:
             pass
 
-    def start_server(self, name ,password, callback):
+    def start_server(self, name ,password, callback = None):
         self._enqueue(self.service._start_server, name ,password ,callback = callback)
     
-    def create_server(self ,name , password ,callback):
+    def create_server(self ,name , password ,callback = None):
         self._enqueue(self.service._create_server , name, password, callback = callback)
 
-    def close_server(self ,callback):
+    def close_server(self ,callback = None):
         self._enqueue(func=self._close_server,callback=callback)
 
     def close_controller(self):
