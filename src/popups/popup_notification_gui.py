@@ -30,7 +30,7 @@ class PopUpNotificationGUI(CTkToplevel):
 
     
 
-    def change_notification_type(self, notification_type):
+    def change_notification_type(self, notification_type) -> None:
 
         text_color = "white"
         bg = "#aec0b2"
@@ -55,12 +55,7 @@ class PopUpNotificationGUI(CTkToplevel):
             self.configure(fg_color=bg)
         except Exception:
             pass
-        
-        # try:
-        #     self.configure(fg_color=bg)
-        # except Exception:
-        #     print("deu")
-        #     self.configure(bg=bg)
+    
 
         try:
             self.message_label.configure(text_color=text_color)

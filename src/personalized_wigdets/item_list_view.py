@@ -45,7 +45,7 @@ class ItemListView(ctk.CTkScrollableFrame):
 
         self.render_items()
 
-    def render_items(self):
+    def render_items(self) -> None:
 
         for btn in self.buttons.values():
             btn.destroy()
@@ -63,6 +63,6 @@ class ItemListView(ctk.CTkScrollableFrame):
             btn.pack(fill="x")
             self.buttons[i] = btn
 
-    def update_items(self, items):
+    def update_items(self, items) -> None:
         self.items = items
         self.render_items()
