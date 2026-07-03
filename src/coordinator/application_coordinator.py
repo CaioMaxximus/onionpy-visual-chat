@@ -1,9 +1,9 @@
-from controller import ClientController , ServerController ,MenuController
-from connection import ClientConnection , ServerConnection , TorServiceManager
-from views import MainMenuGUI , ClientGUI ,ServerGUI
-from services import ClientService, ServerService , MenuService
-from data_base import repository
-from infrastructure import NotificationBus
+from src.controller import ClientController , ServerController ,MenuController
+from src.connection import ClientConnection , ServerConnection , TorServiceManager
+from src.views import MainMenuGUI , ClientGUI ,ServerGUI
+from src.services import ClientService, ServerService , MenuService
+from src.data_base import repository
+from src.infrastructure import NotificationBus
 
 class ApplicationCoordinator():
 

@@ -136,10 +136,18 @@ class TorServiceManager():
             raise ValueError("Refusing to remove directory outside APPLICATION_ROOT")
 
         try:
-            print(instance_resolved)
+            
             shutil.rmtree(instance_resolved)
+        except FileNotFoundError as e:
+            
+            ## log here
+            pass
+        except PermissionError as e:
+            
+            raise RuntimeError(f"The application is unauthorized to remove the server folder; verify your credentials.")
         except Exception as e:
-            raise RuntimeError(f"Failed to remove directory {app_root}") from e
+            ## log here
+            pass 
 
         return
 

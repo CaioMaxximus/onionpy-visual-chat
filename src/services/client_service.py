@@ -1,4 +1,8 @@
 import asyncio
+import re
+## Temporary
+class InvalidOnionHost(Exception): pass
+class InvalidPort(Exception): pass
 
 class ClientService():
 
@@ -25,10 +29,36 @@ class ClientService():
             raise ConnectionError("The connection is already closed!")
         self.connected = False
         
+    def validate_onion_and_port(self ,host: str, port: int):
+
+        host = host.strip().lower()
+
+        if not host.endswith(".onion"):
+            raise InvalidOnionHost("Hostname must end with '.onion'.")
+
+        name = host[:-6]  # remove ".onion"
+
+        # v3: 56 chars base32 (a-z2-7)
+        if len(name) != 56:
+            raise InvalidOnionHost("Invalid Onion name, it must have 56 characters")
+
+        if not re.fullmatch(r"[a-z2-7]+", name):
+            raise InvalidOnionHost("Invalid Onion name: it must be base32 [a-z2-7].")
+
+        try:
+            port = int(port)
+            
+        except (TypeError, ValueError):
+            raise InvalidPort("Port number must be an Integer")
+
+        if not (1 <= port <= 65535):
+            raise InvalidPort("Invalid interval number for the port (1–65535).")
+
    
 
     async def _start_client(self) -> None:
-
+        
+        self.validate_onion_and_port(self.HOST, self.PORT)
         await self.connection.run(self.HOST, self.PORT)
         # await self.start_routines()
         self.connected = True

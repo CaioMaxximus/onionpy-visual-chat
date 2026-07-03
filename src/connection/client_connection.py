@@ -2,16 +2,11 @@ import asyncio
 from python_socks.async_.asyncio import Proxy
 from python_socks import ProxyType
 from src.models import Notification , NotificationType
-import re
 from typing import Any, Callable ,Optional
 from decorators import validate_connection_state
 from infrastructure import client_connection_handshake
 
 
-
-## Temporary
-class InvalidOnionHost(Exception): pass
-class InvalidPort(Exception): pass
 
 
 ## This will use an interface
@@ -35,7 +30,7 @@ class ClientConnection():
             Hostname of the server
         PORT : int
             Server open port for the connection
-        proxy_port : int (default = 9050)
+        PROXY_PORT : int (default = 9050)
             Port to connect to tor proxy
         sock : Proxy.socket.socket
             Socket that defines the connection
@@ -71,7 +66,7 @@ class ClientConnection():
         self.password = password
         self.HOST  = None 
         self.PORT = None
-        self.proxy_port = 9050
+        self.PROXY_PORT = 9050
         self.sock = None
         self.writer = None  
         self._connected = False
@@ -85,35 +80,10 @@ class ClientConnection():
         self.messages_queue = asyncio.Queue()
 
 
-    def validate_onion_and_port(self ,host: str, port: int):
-
-        host = host.strip().lower()
-
-        if not host.endswith(".onion"):
-            raise InvalidOnionHost("Hostname must end with '.onion'.")
-
-        name = host[:-6]  # remove ".onion"
-
-        # v3: 56 chars base32 (a-z2-7)
-        if len(name) != 56:
-            raise InvalidOnionHost("Invalid Onion name, it must have 56 characters")
-
-        if not re.fullmatch(r"[a-z2-7]+", name):
-            raise InvalidOnionHost("Invalid Onion name: it must be base32 [a-z2-7].")
-
-        try:
-            port = int(port)
-            
-        except (TypeError, ValueError):
-            raise InvalidPort("Port number must be an Integer")
-
-        if not (1 <= port <= 65535):
-            raise InvalidPort("Invalid interval number for the port (1–65535).")
 
     
     async def run(self, host: str, port: int ) -> None:
 
-        self.validate_onion_and_port(host, port)
 
         self.HOST = host
         self.PORT = int(port)
@@ -141,13 +111,10 @@ class ClientConnection():
 
         await self.notification_bus.send(Notification(NotificationType.INFO, "Starting handshake"))
         self.writer = writer
-        print("vai comecar o handshake")
         handshake_data = client_connection_handshake("user novo" ,self.password)
-
         self.writer .write(handshake_data)
         await self.writer.drain()
         
-
         while self._connected:
             try:
                 data = await reader.readuntil(separator=b'\0')
@@ -201,10 +168,9 @@ class ClientConnection():
 
     async def start_connection(self):
 
-
         try:
             self.proxy = Proxy(proxy_type= ProxyType.SOCKS5,
-                            host= "127.0.0.1" , port = self.proxy_port, rdns=True)
+                            host= "127.0.0.1" , port = self.PROXY_PORT, rdns=True)
             self.sock  = await self.proxy.connect(dest_host = self.HOST,dest_port= self.PORT,timeout=10
             )   
         except TimeoutError as e:
@@ -240,7 +206,6 @@ class ClientConnection():
                 "Unable to send the message"))
         
 
-    # @validate_connection_state
     async def get_message_in_queue(self):
         msg = await self.messages_queue.get()
         return msg

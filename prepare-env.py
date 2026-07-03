@@ -17,7 +17,7 @@ class App(ctk.CTk):
         self.resizable(False, False)
         self.download_daemon = False
         self.status_queue = []
-        self.not_runnig  = True
+        self.not_running  = True
 
 
         self.container_top = ctk.CTkFrame(self,width = 350)
@@ -70,16 +70,16 @@ class App(ctk.CTk):
     def set_status_text(self, text):
         def schedule():
             if not self.status_queue:
-                self.not_runnig = True
+                self.not_running = True
                 return
             # print("chamei o schedule")
 
             new_sattus = self.status_queue.pop(0)
             self.info_field.configure(text = new_sattus)
             self.after(900 , schedule)
-        if self.not_runnig:
+        if self.not_running:
             self.status_queue.append(text)
-            self.not_runnig = False
+            self.not_running = False
             schedule()        
         else:
             self.status_queue.append(text)
