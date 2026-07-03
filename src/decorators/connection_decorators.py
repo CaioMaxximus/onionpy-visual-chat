@@ -1,6 +1,6 @@
 import functools
 from typing import Any, Callable
-from src.error.special_errors import ConnetionClosedError
+from src.error.special_errors import ConnectionClosedError
 
 
 def validate_connection_state(func : Callable) -> Callable:
@@ -10,5 +10,5 @@ def validate_connection_state(func : Callable) -> Callable:
         if self._connected:
             return await func(self,*args, **kwargs)
         else:
-            raise ConnetionClosedError("The connection didnt start yet!")
+            raise ConnectionClosedError("The connection didnt start yet!")
     return inner_wrapper

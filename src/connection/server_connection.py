@@ -131,7 +131,7 @@ class ServerConnection():
                 raise e
             except Exception as e:
                 await self.notification_bus.send(Notification(
-                    NotificationType.ERROR,f"FATAL ERROR: {e})"))
+                    NotificationType.ERROR,f"FATAL ERROR: {e}"))
                 await asyncio.sleep(2)
                 ## this is responsibilty from controller
                 # asyncio.create_task(self.close_server()) 

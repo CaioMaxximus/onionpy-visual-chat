@@ -150,9 +150,14 @@ class MainMenuGUI:
 
     def create_new_server(self):
 
+        password_label_message = "Insert the password if the server has strict acess otherwise leave it blank.\n " \
+        "Minimum of 8 characters," \
+        " at least 1 uppercase letter, " \
+        "1 lowercase letter, 1 number, and 1 special character; any blank space after or before will be removed!"
+
         pop_w = PopUpEntryGui(self.root,
                                ["Define a name for the new server",
-                                 "Insert a password if you want to create a strict acess server, otherwise, leave it blank"]
+                                 password_label_message]
                               , ["server_name", "password"])
         self.root.wait_window(pop_w)
         server_name = pop_w.registered_values["server_name"]
@@ -195,6 +200,7 @@ class MainMenuGUI:
         self.server_gui_navigate(self.root, server.name, mode=False,password = server.password)
     
     def initiate_client_window(self, server_info):
+        
         pop_w = PopUpEntryGui(self.root,
                               ["Insert the password if the server has strict acess otherwise leave it blank"],
                               ["password"])

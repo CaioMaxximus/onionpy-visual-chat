@@ -1,7 +1,7 @@
 import asyncio
 import inspect
 from src.models import Notification , NotificationType
-from models import OnionServer
+from src.models import OnionServer
 import random
 import socket
 from src.infrastructure.encryptor import encrypt_data
@@ -61,6 +61,7 @@ class ServerService():
         self.connected = False
         self.server_name = None
         self.name_regex = r"^[A-Za-z0-9_ ]{6,30}$"
+        self.password_regex = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
 
 
 
@@ -86,6 +87,18 @@ class ServerService():
             return name
         else:
             raise ValueError("Invalid server name format!")
+    
+    def _verify_valid_password(self, password):
+        
+        password = password.strip()
+        if  password == "":
+            return
+        if re.match(self.password_regex, password):
+            return 
+        else:
+            raise ValueError("Invalid password format; " \
+            "minimum of 8 characters, at least 1 uppercase letter, " \
+            "1 lowercase letter, 1 number, and 1 special character")
 
 
     @rollback        
@@ -117,6 +130,7 @@ class ServerService():
             - Emits notificaitons
         """
         name = self._verify_valid_server_name(name)
+        self._verify_valid_password(name)
         encript_pass = await encrypt_data(password)
 
         onion_connection = None

@@ -46,10 +46,10 @@ class BaseAsyncController(ABC):
         self.retry_sleep_time = 0.8
 
         self.max_attempts_retry = 2
-        self.main_routine: Optional[asyncio.Task] 
+        self.main_routine: Optional[asyncio.Task]  = None
         self.all_running_tasks: dict[str, asyncio.Task] = {}
-        self.my_loop: Optional[asyncio.AbstractEventLoop]
-        self.gui_loop: Optional[Any]
+        self.my_loop: Optional[asyncio.AbstractEventLoop] = None
+        self.gui_loop: Optional[Any] = None
 
     async def dispatcher_executer(self,func : Callable ,args , callback : Callable):
         """Asynchronously execute a callable with retry logic and callback handling.
@@ -129,10 +129,10 @@ class BaseAsyncController(ABC):
                     self._execute_callback( res , callback = callback)
                     break
             else:
-                await self.notification_bus.send(
-                    Notification(NotificationType.INFO ,
-                                                f"Aborting execution of {func.__name__}:")
-                )
+                # await self.notification_bus.send(
+                #     Notification(NotificationType.INFO ,
+                #                                 f"Aborting execution of {func.__name__}:")
+                # )
                 break
 
 

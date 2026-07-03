@@ -7,8 +7,8 @@ import random
 import socket
 from .base_async_controller import BaseAsyncController
 # from threading import Thread
-from src.error.special_errors import ConnetionClosedError
-from models import OnionServer
+from src.error.special_errors import ConnectionClosedError
+from src.models import OnionServer
 
 
 
@@ -126,7 +126,7 @@ class ServerController(BaseAsyncController):
 
         try:  
             await self._close_server()
-        except ConnetionClosedError:
+        except ConnectionClosedError:
             pass
         finally:
             await self.stop_routines()

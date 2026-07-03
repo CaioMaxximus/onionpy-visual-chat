@@ -117,7 +117,6 @@ class App(ctk.CTk):
 
 
 
-
     def setup_enviroment(self):
 
 
@@ -145,7 +144,7 @@ class App(ctk.CTk):
             except Exception as e:
                 raise e
             else:
-                self.set_status_text("Tor daemon downlaod sucecced")
+                self.set_status_text("Tor daemon download sucecced")
 
             
             tor_daemon_file = ""

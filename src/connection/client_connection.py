@@ -77,15 +77,13 @@ class ClientConnection():
         self._connected = False
         self.messages_queue = None
         self.notification_bus= notification_bus
-        self.server_task =  Optional[asyncio.Task]
+        self.server_task :  Optional[asyncio.Task] = None
 
     def initialize(self):
        
         self.notification_bus.start()
         self.messages_queue = asyncio.Queue()
 
-    
-    import re
 
     def validate_onion_and_port(self ,host: str, port: int):
 
@@ -145,7 +143,7 @@ class ClientConnection():
         self.writer = writer
         print("vai comecar o handshake")
         handshake_data = client_connection_handshake("user novo" ,self.password)
-        print(handshake_data)
+
         self.writer .write(handshake_data)
         await self.writer.drain()
         

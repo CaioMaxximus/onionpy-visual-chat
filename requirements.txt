@@ -1,7 +1,13 @@
+aiobcrypt==3.2.0.post1
 aiosqlite==0.22.0
 async-timeout==5.0.1
+bcrypt==3.2.2
+cffi==2.0.0
 customtkinter==5.2.2
 darkdetect==0.8.0
 packaging==25.0
+pillow==11.3.0
+pycparser==2.23
 python-socks==2.8.0
 stem==1.8.2
+typing-extensions==4.15.0

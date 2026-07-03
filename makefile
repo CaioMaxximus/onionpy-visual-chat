@@ -12,3 +12,4 @@ install :
 	${PYTHON} -m venv venv
 	${PIP} install -r requirements.txt
 	${LOCAL_PYTHON} ${INSTALL_SCRIPT}
+	

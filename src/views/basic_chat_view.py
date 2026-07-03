@@ -2,7 +2,7 @@ import customtkinter as  ctk
 import queue
 from popups import PopUpNotificationGUI  , PopUpEntryGui
 from components.message_frame import MessageFrame
-from models import NotificationType
+from src.models import NotificationType
 
 
 
