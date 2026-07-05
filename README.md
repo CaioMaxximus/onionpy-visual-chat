@@ -10,7 +10,7 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
 
 ## Status
 
-  - Fixing the servers protection
+  - Working in the building phase; only working for debian for while.
 
 ## Features
 - CustomTkinter interface providing easy and intuitive access to the application features.
