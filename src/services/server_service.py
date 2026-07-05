@@ -61,7 +61,7 @@ class ServerService():
         self.connected = False
         self.server_name = None
         self.name_regex = r"^[A-Za-z0-9_ ]{6,30}$"
-        self.password_regex = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+        self.password_regex = r"^[A-Za-z\d@$!%*?&]{8,}$"
 
 
 

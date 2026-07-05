@@ -100,8 +100,7 @@ class BaseAsyncController(ABC):
         """
 
         attempt = 0
-        while self.running:
-            if attempt < self.max_attempts_retry:
+        while attempt < self.max_attempts_retry and self.running:
                 if attempt > 0:
                     await asyncio.sleep(self.retry_sleep_time * attempt)
                 try :
@@ -111,13 +110,7 @@ class BaseAsyncController(ABC):
                         Notification(NotificationType.WARNING, f"{str(e)}")
                     )
                     attempt +=1
-                # except asyncio.TimeoutError:
-                #     # await self.notification_bus.send(
-                #     #     Notification(NotificationType.ERROR, f"Timeout executing {func.__name__}, action takes too long")
-                #     # ) 
-                #     attempt =  self.max_attempts_retry
-                #     pass
-                    # raise e ## just for test
+           
                 except Exception as e:
                     await self.notification_bus.send(
                         Notification(NotificationType.ERROR, f"Error executing {func.__name__}: {str(e)}")
@@ -128,12 +121,7 @@ class BaseAsyncController(ABC):
                 else:
                     self._execute_callback( res , callback = callback)
                     break
-            else:
-                # await self.notification_bus.send(
-                #     Notification(NotificationType.INFO ,
-                #                                 f"Aborting execution of {func.__name__}:")
-                # )
-                break
+
 
 
     async def dispatcher(self) -> None :
