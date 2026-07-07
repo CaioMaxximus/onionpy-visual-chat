@@ -1,7 +1,7 @@
 from src.connection import ServerConnection
 import unittest
 from unittest.mock import patch , MagicMock ,AsyncMock
-from src.error.special_errors import ConnetionClosedError
+from src.error.special_errors import ConnectionClosedError
 import asyncio
 
 
@@ -24,19 +24,19 @@ class TestServerConnection(unittest.IsolatedAsyncioTestCase):
     async def test_raises_error_if_connection_didnt_start_yet(self):
 
       
-        with self.assertRaises(ConnetionClosedError):
+        with self.assertRaises(ConnectionClosedError):
             await self.inst.check_messages_for_web()
         
-        with self.assertRaises(ConnetionClosedError):
+        with self.assertRaises(ConnectionClosedError):
             await self.inst.connection_handler()
 
-        with self.assertRaises(ConnetionClosedError):
+        with self.assertRaises(ConnectionClosedError):
             await self.inst.broadcast_message()
 
-        with self.assertRaises(ConnetionClosedError):
+        with self.assertRaises(ConnectionClosedError):
             await self.inst.send_message()
 
-        with self.assertRaises(ConnetionClosedError):
+        with self.assertRaises(ConnectionClosedError):
             await self.inst.close_server()
     
     @patch("src.connection.server_connection.asyncio.start_server",new_callable=AsyncMock)

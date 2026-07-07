@@ -3,8 +3,6 @@ import unittest
 from unittest.mock import patch , MagicMock
 
 
-
-
 class TestTorServiceManager(unittest.TestCase):
 
     def setUp(self):

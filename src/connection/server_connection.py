@@ -89,20 +89,10 @@ class ServerConnection():
         self.notification_bus = notification_bus
         self.broadcast_queue : asyncio.Queue = None
         self.messages_queue: asyncio.Queue = None
-        # self.notification_queue : asyncio.Queue
-        # self.server_task : asyncio.Task  
         self.check_messages_for_web_task : asyncio.Task = None
-        # self.broadcast_messages_task : asyncio.Task # removed
 
-    ## move this to his own class
 
-    
 
-    #to implement
-    def delete_user(self, user_id):
-        self.users.remove(user_id)
-        self.local_black_list.append()
-    
     def initialize(self):
         self.messages_queue = asyncio.Queue()
         # self.notification_queue = asyncio.Queue()
@@ -139,6 +129,7 @@ class ServerConnection():
    
     @validate_connection_state
     async def connection_handler(self,reader, writer):
+
         ## verify if the same source is connected and then block it
         try:
             handshake_data = await reader.readuntil(separator=b'\0')
@@ -163,9 +154,12 @@ class ServerConnection():
                     break
 
             except asyncio.exceptions.LimitOverrunError as e:
-                await self.notification_bus.send( Notification(NotificationType.ERROR, 
-                    f"Message too large (> than {e.consumed} bytes)"))
-                break
+                # await self.notification_bus.send( Notification(NotificationType.WARNING, 
+                #     f"Message too large (> than {e.consumed} bytes)"))
+                # break
+                data = await reader.readexactly(e.consumed)
+                ## changing the message limit policy
+                # continue
             except Exception:
                 await self.notification_bus.send(
                                             Notification(NotificationType.WARNING, f"""Unexpected error from user: {writer.get_extra_info('peername')}
@@ -211,7 +205,7 @@ class ServerConnection():
 
         try:
             server = await asyncio.start_server(self.connection_handler, self.HOST, 
-                                                self.PORT,reuse_address = True)
+                                                self.PORT,reuse_address = True,limit = 1024)
             sock = server.sockets[0]
             self.server = server
             local_port = sock.getsockname()[1]

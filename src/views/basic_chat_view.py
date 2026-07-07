@@ -121,7 +121,7 @@ class BasicChatView(ctk.CTkToplevel):
         self.input_frame.pack(side = "bottom")
         self.message_entry_bottom =  ctk.CTkTextbox(self.input_frame, font = ("Elvetica" ,12), 
                                                   width=  max(int(self.width * 0.65),200 ),
-                                                  height= int(self.height * 0.15))
+                                                  height= int(self.height * 0.15),)
         self.message_entry_bottom.pack(side = "bottom" , pady = 5)
         self.multiple_lines_btn = ctk.CTkButton(self.input_frame,width=15,height=15 ,text= "",fg_color= "white",
                                                 hover_color=None,
