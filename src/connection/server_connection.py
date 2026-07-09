@@ -125,7 +125,16 @@ class ServerConnection():
                 await asyncio.sleep(2)
                 ## this is responsibilty from controller
                 # asyncio.create_task(self.close_server()) 
-                
+
+    async def remove_connection(self, writer):
+
+        try:
+            writer.close()
+            await writer.wait_closed()
+            self.my_connections.discard(writer)
+        except Exception:
+            pass
+
    
     @validate_connection_state
     async def connection_handler(self,reader, writer):
@@ -143,6 +152,7 @@ class ServerConnection():
         self.my_connections.add(writer)
         
         while self._connected:
+
             try:
                 data = await reader.readuntil(separator=b'\0')
 
@@ -154,12 +164,10 @@ class ServerConnection():
                     break
 
             except asyncio.exceptions.LimitOverrunError as e:
-                # await self.notification_bus.send( Notification(NotificationType.WARNING, 
-                #     f"Message too large (> than {e.consumed} bytes)"))
-                # break
-                data = await reader.readexactly(e.consumed)
-                ## changing the message limit policy
-                # continue
+               
+               ## logg here
+                break
+
             except Exception:
                 await self.notification_bus.send(
                                             Notification(NotificationType.WARNING, f"""Unexpected error from user: {writer.get_extra_info('peername')}
@@ -197,7 +205,7 @@ class ServerConnection():
                 await self.broadcast_queue.put(msg_info)
 
         if writer in self.my_connections: ## If the server  not ends before this
-            self.my_connections.remove(writer)
+            await self.remove_connection(writer)
 
 
     async def server_listener(self):

@@ -76,10 +76,7 @@ class ClientConnection():
 
     def initialize(self):
        
-        self.notification_bus.start()
         self.messages_queue = asyncio.Queue()
-
-
 
     
     async def run(self, host: str, port: int ) -> None:

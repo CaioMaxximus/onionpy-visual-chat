@@ -12,6 +12,7 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
 
   - Working on the build phase; only working on Debian for now.
   - Working in the server response for flood data
+  - Cleaning architecture
 
 ## Features
 - CustomTkinter interface providing easy and intuitive access to the application features.
