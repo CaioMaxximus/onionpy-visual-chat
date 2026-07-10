@@ -5,12 +5,13 @@ from src.models import Notification , NotificationType
 from typing import Any, Callable ,Optional
 from decorators import validate_connection_state
 from infrastructure import client_connection_handshake
+from .base_connection import BaseConnection
 
 
 
 
 ## This will use an interface
-class ClientConnection():
+class ClientConnection(BaseConnection):
 
     """
         This class represents a active asynchronous connection between a client and a server
@@ -52,7 +53,7 @@ class ClientConnection():
             connection process
         close_connection()
             Shuts down the connection asynchronous task and define the state as not connected
-        start_connection()
+        startup()
             Configure the proxy, define a socket and starts a asyncion TCP connection
         connection_handler():
         send_message()
@@ -63,6 +64,7 @@ class ClientConnection():
     """
 
     def __init__(self, notification_bus : Notification,password = None):
+
         self.password = password
         self.HOST  = None 
         self.PORT = None
@@ -84,7 +86,7 @@ class ClientConnection():
 
         self.HOST = host
         self.PORT = int(port)
-        await self.start_connection()
+        await self.startup()
  
     @validate_connection_state
     async def close_connection(self):
@@ -99,8 +101,8 @@ class ClientConnection():
         except Exception:
             ## logg here
             pass
-        await self.notification_bus.send(Notification(NotificationType.WARNING,
-                                          "Connection finished with the server."))
+        await  self.notify(NotificationType.WARNING,
+                                          "Connection finished with the server.")
         
 
     @validate_connection_state
@@ -121,19 +123,17 @@ class ClientConnection():
                     data = e.partial
                     self._connected = False
                 else:
-                    await self.notification_bus.send(
-                        Notification(NotificationType.WARNING, "Server closed connection.")
-                    )
+                    await self.self.notify(NotificationType.WARNING, "Server closed connection.")
+                    
                     break
             except asyncio.LimitOverrunError as e:
-                await self.notification_bus.send( Notification(NotificationType.ERROR, 
-                    f"Message too large (> than {e.consumed} bytes)"))
+                await  self.notify(NotificationType.ERROR, 
+                    f"Message too large (> than {e.consumed} bytes)")
                 break
 
             except Exception:
-                await self.notification_bus.send(
-                                            Notification(NotificationType.WARNING, f"""Unexpected error from server: {writer.get_extra_info('peername')}
-                                                        closing connection..."""))
+                await  self.notify(NotificationType.WARNING, f"""Unexpected error from server: {writer.get_extra_info('peername')}
+                                                        closing connection...""")
                 break
 
             try:
@@ -144,31 +144,28 @@ class ClientConnection():
                     "owner": False
                 }
             except UnicodeDecodeError as e:
-                await self.notification_bus.send(
-                    Notification(NotificationType.ERROR, 
-                        f"Failed to decode message  {str(e)}"))
+                await self.notify(NotificationType.ERROR, 
+                        f"Failed to decode message  {str(e)}")
                 break
             except ValueError as e:
-                await self.notification_bus.send(
-                    Notification(NotificationType.ERROR, 
-                        f"Invalid message format f{str(e)}"))
+                await self.notify(NotificationType.ERROR, 
+                        f"Invalid message format f{str(e)}")
                 break
             except Exception as e:
-                await self.notification_bus.send(
-                    Notification(NotificationType.ERROR, 
-                        f"Unexpected error decoding message {str(e)}"))
+                await self.notify(NotificationType.ERROR, 
+                        f"Unexpected error decoding message {str(e)}")
                 break
             else:
                 await self.messages_queue.put(msg_info)
 
         await self.close_connection()
 
-    async def start_connection(self):
+    async def startup(self):
 
         try:
             self.proxy = Proxy(proxy_type= ProxyType.SOCKS5,
                             host= "127.0.0.1" , port = self.PROXY_PORT, rdns=True)
-            self.sock  = await self.proxy.connect(dest_host = self.HOST,dest_port= self.PORT,timeout=10
+            self.sock  = await self.proxy.connect(dest_host = self.HOST,dest_port= self.PORT,timeout=13
             )   
         except TimeoutError as e:
             raise RuntimeError(f"Connection timeout in proxy connection {self.HOST}:{self.PORT}") from e
@@ -197,15 +194,14 @@ class ClientConnection():
         w.write(data_encoded)
         try:
             await w.drain()
-        except (ConnectionResetError , ConnectionRefusedError) as e: 
-            await self.notification_bus.send(
-                Notification(NotificationType.WARNING , 
-                "Unable to send the message"))
+        except (BrokenPipeError ,ConnectionResetError , ConnectionRefusedError) as e: 
+            await self.notify(NotificationType.WARNING , 
+                "Unable to send the message")
         
 
-    async def get_message_in_queue(self):
-        msg = await self.messages_queue.get()
-        return msg
+    # async def get_message_in_queue(self):
+    #     msg = await self.messages_queue.get()
+    #     return msg
     
 
     

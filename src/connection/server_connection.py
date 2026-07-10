@@ -6,12 +6,13 @@ from typing import Any, Callable
 import traceback
 from decorators import validate_connection_state
 from infrastructure import server_connection_handshake
+from .base_connection import BaseConnection
 
 
 ## Temporary
 
 ## This will use an interface
-class ServerConnection():
+class ServerConnection(BaseConnection):
 
     """
         This class defines a local asynchronous server connected with onion server
@@ -57,7 +58,7 @@ class ServerConnection():
         delet_user (not implemented yet)
         start_server (port : int)
             Start the server state and the class asynchronous queues in the proper event loop context
-        server_listener:
+        startup:
             Start the server properly, listening in the local host for the onion connection
         connection_handler:
             Server listener loop receive the data e store in the local message and broadcast queue, 
@@ -91,19 +92,23 @@ class ServerConnection():
         self.messages_queue: asyncio.Queue = None
         self.check_messages_for_web_task : asyncio.Task = None
 
-
+    @validate_connection_state    
+    async def send_message(self,message):
+        await self.broadcast_queue.put(message)
+        
 
     def initialize(self):
-        self.messages_queue = asyncio.Queue()
+        # self.messages_queue = asyncio.Queue()
+        super().initialize()
         # self.notification_queue = asyncio.Queue()
         # self.messages_to_send_queue = asyncio.Queue()
         self.broadcast_queue = asyncio.Queue()
 
-    async def start_server(self ,port,password):
+    async def run(self ,port,password):
 
         self.PORT  = port
         self.password = password
-        await self.server_listener() 
+        await self.startup() 
 
 
     @validate_connection_state    
@@ -120,8 +125,8 @@ class ServerConnection():
             except  asyncio.CancelledError as e :
                 raise e
             except Exception as e:
-                await self.notification_bus.send(Notification(
-                    NotificationType.ERROR,f"FATAL ERROR: {e}"))
+                await self.notify(
+                    NotificationType.ERROR,f"FATAL ERROR: {e}")
                 await asyncio.sleep(2)
                 ## this is responsibilty from controller
                 # asyncio.create_task(self.close_server()) 
@@ -144,11 +149,11 @@ class ServerConnection():
             handshake_data = await reader.readuntil(separator=b'\0')
             await server_connection_handshake(handshake_data, self.password)
         except Exception:
-            await self.notification_bus.send(Notification(NotificationType.INFO, f"""handshake failed"""))
+            await self.notify(NotificationType.INFO, f"""handshake failed""")
             return
             
         else:
-            await self.notification_bus.send(Notification(NotificationType.INFO, f"""New user connected: {writer.get_extra_info('peername')}"""))
+            await self.notify(NotificationType.INFO, f"""New user connected: {writer.get_extra_info('peername')}""")
         self.my_connections.add(writer)
         
         while self._connected:
@@ -159,8 +164,8 @@ class ServerConnection():
             except asyncio.exceptions.IncompleteReadError as e:
                 data = e.partial
                 if not data:
-                    await self.notification_bus.send(
-                        Notification(NotificationType.WARNING, f"User {writer.get_extra_info('peername')}"))
+                    await self.notify(
+                        NotificationType.WARNING, f"User {writer.get_extra_info('peername')}")
                     break
 
             except asyncio.exceptions.LimitOverrunError as e:
@@ -169,13 +174,13 @@ class ServerConnection():
                 break
 
             except Exception:
-                await self.notification_bus.send(
-                                            Notification(NotificationType.WARNING, f"""Unexpected error from user: {writer.get_extra_info('peername')}
-                                                            closing connection..."""))
+                await self.notify(
+                                            NotificationType.WARNING, f"""Unexpected error from user: {writer.get_extra_info('peername')}
+                                                            closing connection...""")
                 break
             if not data: ## this block might be unecessary..
-                await self.notification_bus.send(
-                Notification(NotificationType.WARNING,f"User {writer.get_extra_info('peername')}"))
+                await self.notify(
+                NotificationType.WARNING,f"User {writer.get_extra_info('peername')}")
                 break
             try:
                 message = data.decode().rstrip('\x00').strip()
@@ -186,19 +191,19 @@ class ServerConnection():
                 }
 
             except UnicodeDecodeError as e:
-                await self.notification_bus.send(
-                    Notification(NotificationType.ERROR, 
-                        f"Failed to decode message from {writer.get_extra_info('peername')}: {str(e)}"))
+                await self.notify(
+                    NotificationType.ERROR, 
+                        f"Failed to decode message from {writer.get_extra_info('peername')}: {str(e)}")
                 break
             except ValueError as e:
-                await self.notification_bus.send(
-                    Notification(NotificationType.ERROR, 
-                        f"Invalid message format from {writer.get_extra_info('peername')}: {str(e)}"))
+                await self.notify(
+                    NotificationType.ERROR, 
+                        f"Invalid message format from {writer.get_extra_info('peername')}: {str(e)}")
                 break
             except Exception as e:
-                await self.notification_bus.send(
-                    Notification(NotificationType.ERROR, 
-                        f"Unexpected error decoding message from {writer.get_extra_info('peername')}: {str(e)}"))
+                await self.notify(
+                    NotificationType.ERROR, 
+                        f"Unexpected error decoding message from {writer.get_extra_info('peername')}: {str(e)}")
                 break
             else:
                 await self.messages_queue.put(msg_info)
@@ -208,7 +213,7 @@ class ServerConnection():
             await self.remove_connection(writer)
 
 
-    async def server_listener(self):
+    async def startup(self):
    
 
         try:
@@ -224,9 +229,9 @@ class ServerConnection():
         except Exception as e:
             raise RuntimeError(f"Unexpected error while starting the server") from e
         else:
-            await self.notification_bus.send(
-            Notification(NotificationType.SUCCESS, f"Server started on {self.HOST}:{local_port}")
-            )
+            await self.notify(
+            NotificationType.SUCCESS, f"Server started on {self.HOST}:{local_port}")
+            
         self._connected = True
         self.check_messages_for_web_task = asyncio.create_task(self.check_messages_for_web())
         
@@ -246,17 +251,13 @@ class ServerConnection():
                 w.write(data_encoded)
                 await w.drain()
         except (ConnectionResetError , ConnectionRefusedError): 
-            await self.notification_bus.send(
-                Notification(NotificationType.INFO, f"Error sending message to {peername}"))
+            await self.notify(
+                NotificationType.INFO, f"Error sending message to {peername}")
         except Exception:
             # raise e
             # logg here
             pass
     
-    @validate_connection_state    
-    async def send_message(self,message):
-        await self.broadcast_queue.put(message)
-        
 
     
     @validate_connection_state    
@@ -285,7 +286,7 @@ class ServerConnection():
         except Exception:
             pass
 
-    # @validate_connection_state
-    async def get_message_in_queue(self):
-        return await self.messages_queue.get()
+    # # @validate_connection_state
+    # async def get_message_in_queue(self):
+    #     return await self.messages_queue.get()
     
