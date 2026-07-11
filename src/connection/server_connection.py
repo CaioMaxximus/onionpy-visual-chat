@@ -140,20 +140,25 @@ class ServerConnection(BaseConnection):
         except Exception:
             pass
 
+    
+    async def _handshake(self, reader , writer):
+            handshake_data = await reader.readuntil(separator=b'\0')
+            await server_connection_handshake(handshake_data, self.password)
+       
    
     @validate_connection_state
     async def connection_handler(self,reader, writer):
 
-        ## verify if the same source is connected and then block it
         try:
-            handshake_data = await reader.readuntil(separator=b'\0')
-            await server_connection_handshake(handshake_data, self.password)
-        except Exception:
+
+            await self._handshake(reader , writer)
+        except Exception as e:
+
             await self.notify(NotificationType.INFO, f"""handshake failed""")
-            return
-            
         else:
+
             await self.notify(NotificationType.INFO, f"""New user connected: {writer.get_extra_info('peername')}""")
+        
         self.my_connections.add(writer)
         
         while self._connected:

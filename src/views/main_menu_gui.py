@@ -215,52 +215,52 @@ class MainMenuGUI:
         # config_view.tkraise()
 
 
-## REMOVED
-class ElementList(ctk.CTkScrollableFrame):
+# ## REMOVED
+# class ElementList(ctk.CTkScrollableFrame):
 
-    """
-    A class represeting a wigdet of a list of elements
+#     """
+#     A class represeting a wigdet of a list of elements
 
-    It stores all the elements with a callback funtion associated for all of them. 
+#     It stores all the elements with a callback funtion associated for all of them. 
     
-    Attributes
-    ----------
-    master :  ctk
-        the root tkinter object for the all aplication
-    callback : <function>
-        Callback function that is called for one item of item once is clicked
-    items : list
-        Items used to polute the wigdet
-    buttons : {CTkButton}
-        Dictionary containing the buttons wigdets
+#     Attributes
+#     ----------
+#     master :  ctk
+#         the root tkinter object for the all aplication
+#     callback : <function>
+#         Callback function that is called for one item of item once is clicked
+#     items : list
+#         Items used to polute the wigdet
+#     buttons : {CTkButton}
+#         Dictionary containing the buttons wigdets
     
-    Methods
-    ------
-    polute_frame
-        Instanciate the wigdets on the canvas
-    set_items
-        Allows lazy creation of the items on the list
-    """
+#     Methods
+#     ------
+#     polute_frame
+#         Instanciate the wigdets on the canvas
+#     set_items
+#         Allows lazy creation of the items on the list
+#     """
 
-    def __init__(self, master, callback, items = []):
-        super().__init__(master)
-        self.master = master
-        self.callback = callback
-        self.items = items
-        self.buttons = {}
-        self.polute_frame()
+#     def __init__(self, master, callback, items = []):
+#         super().__init__(master)
+#         self.master = master
+#         self.callback = callback
+#         self.items = items
+#         self.buttons = {}
+#         self.polute_frame()
     
-    def polute_frame(self):
-        for i, e in enumerate(self.items):
-            btn =  ctk.CTkButton(self,20,15,corner_radius= 8,
-                                             command= lambda e = e: self.callback(e),
-                                             text=e)
-            btn.pack(fill = "x")
-            self.buttons[i] = btn
+#     def polute_frame(self):
+#         for i, e in enumerate(self.items):
+#             btn =  ctk.CTkButton(self,20,15,corner_radius= 8,
+#                                              command= lambda e = e: self.callback(e),
+#                                              text=e)
+#             btn.pack(fill = "x")
+#             self.buttons[i] = btn
     
 
-    def set_items(self,items):
-        self.items = items
-        self.polute_frame()
+#     def set_items(self,items):
+#         self.items = items
+#         self.polute_frame()
 
 

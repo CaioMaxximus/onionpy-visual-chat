@@ -104,15 +104,28 @@ class ClientConnection(BaseConnection):
         await  self.notify(NotificationType.WARNING,
                                           "Connection finished with the server.")
         
+    
+    async def _handshake(self, reader , writer):
+        
+        # await reader
+        handshake_data = client_connection_handshake("user novo" ,self.password)
+        self.writer.write(handshake_data)
+        await self.writer.drain()
+
+        # reader.read
+
 
     @validate_connection_state
     async def connection_handler(self,reader, writer):
+        self.writer = writer
 
         await self.notification_bus.send(Notification(NotificationType.INFO, "Starting handshake"))
-        self.writer = writer
-        handshake_data = client_connection_handshake("user novo" ,self.password)
-        self.writer .write(handshake_data)
-        await self.writer.drain()
+
+        try:
+            await self._handshake(reader, writer)
+        except Exception as e:
+            await self.self.notify(NotificationType.WARNING, "Server handshake failed.")
+            return 
         
         while self._connected:
             try:

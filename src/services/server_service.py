@@ -143,7 +143,7 @@ class ServerService():
         local_port  = _generate_new_available_port(used_ports) # type: ignore
         used_ports.append(local_port)
         onion_port  = _generate_new_available_port(used_ports) # type: ignore
-        await self.connection.start_server(local_port,encript_pass)
+        await self.connection.run(local_port,encript_pass)
         rollback_operations.append(lambda : self.connection.close_server())
         # Move this for the start of the controller
         # await self.start_routines()
@@ -187,7 +187,7 @@ class ServerService():
         self.server_name = name
         await self.notification_bus.send(Notification(NotificationType.WARNING , "Starting server.."))
         server_info = await self.database_service.get_server_by_name(name)
-        await self.connection.start_server(server_info.local_server_port ,password) # type: ignore
+        await self.connection.run(server_info.local_server_port ,password) # type: ignore
         # await self.start_routines()
 
 

@@ -110,6 +110,7 @@ class BaseAsyncController(ABC):
                         Notification(NotificationType.WARNING, f"{str(e)}")
                     )
                     attempt +=1
+                    # raise e
            
                 except Exception as e:
                     await self.notification_bus.send(

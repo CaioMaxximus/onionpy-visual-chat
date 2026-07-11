@@ -36,4 +36,6 @@ class BaseConnection(ABC):
         return msg
     
 
-    
+    @abstractmethod
+    async def _handshake(self,reader,writer):
+         raise NotImplementedError()
