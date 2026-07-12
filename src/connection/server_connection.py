@@ -5,7 +5,7 @@ from src.models import Notification , NotificationType
 from typing import Any, Callable
 import traceback
 from decorators import validate_connection_state
-from infrastructure import server_connection_handshake
+from infrastructure import server_connection_handshake ,server_success_handshake_response, server_failure_handshake_response
 from .base_connection import BaseConnection
 
 
@@ -140,21 +140,37 @@ class ServerConnection(BaseConnection):
         except Exception:
             pass
 
+        
+
     
-    async def _handshake(self, reader , writer):
-            handshake_data = await reader.readuntil(separator=b'\0')
-            await server_connection_handshake(handshake_data, self.password)
-       
+    async def _handshake(self, reader , writer,password):
+            
+            handshake_data = await asyncio.wait_for(reader.readuntil(separator=b'\0'), timeout=6.0)
+            try:
+
+                await server_connection_handshake(handshake_data, password)
+            except Exception as e:
+
+                res = server_failure_handshake_response()
+                writer.write(res)
+                await writer.drain()
+                raise ConnectionRefusedError
+            else:
+                res = server_success_handshake_response(self.name)
+                writer.write(res)
+                await writer.drain()
+
    
     @validate_connection_state
     async def connection_handler(self,reader, writer):
 
         try:
-
-            await self._handshake(reader , writer)
+            await self._handshake(reader , writer, self.password)
         except Exception as e:
 
             await self.notify(NotificationType.INFO, f"""handshake failed""")
+            await self.remove_connection(writer)
+            return 
         else:
 
             await self.notify(NotificationType.INFO, f"""New user connected: {writer.get_extra_info('peername')}""")

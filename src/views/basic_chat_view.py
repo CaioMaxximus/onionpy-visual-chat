@@ -166,7 +166,7 @@ class BasicChatView(ctk.CTkToplevel):
                 operating in the right way
             """
             self.notifications_queue.put(notification)
-            self.after(10 ,self.get_notification_routine)
+            self.after(1000 ,self.get_notification_routine)
         if not self.destroyed: 
             self.controller.get_notification(put_in_queue) 
 

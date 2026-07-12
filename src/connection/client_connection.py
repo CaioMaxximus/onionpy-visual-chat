@@ -4,7 +4,7 @@ from python_socks import ProxyType
 from src.models import Notification , NotificationType
 from typing import Any, Callable ,Optional
 from decorators import validate_connection_state
-from infrastructure import client_connection_handshake
+from infrastructure import client_connection_handshake,handle_server_response
 from .base_connection import BaseConnection
 
 
@@ -108,10 +108,24 @@ class ClientConnection(BaseConnection):
     async def _handshake(self, reader , writer):
         
         # await reader
-        handshake_data = client_connection_handshake("user novo" ,self.password)
-        self.writer.write(handshake_data)
-        await self.writer.drain()
-
+        res = None
+        try:
+            handshake_data = client_connection_handshake("user novo" ,self.password)
+            writer.write(handshake_data)
+            await writer.drain()
+        except Exception :
+            raise ConnectionError
+        try:
+            ## add a timer here
+            res = await asyncio.wait_for(reader.readuntil(separator=b'\0'), timeout=6.0)
+        except Exception as e :
+            raise ConnectionError
+        try:
+            data = handle_server_response(res)
+        except:
+            raise ConnectionAbortedError
+        else:
+            return data
         # reader.read
 
 
@@ -124,8 +138,10 @@ class ClientConnection(BaseConnection):
         try:
             await self._handshake(reader, writer)
         except Exception as e:
-            await self.self.notify(NotificationType.WARNING, "Server handshake failed.")
-            return 
+            await self.notify(NotificationType.WARNING, "Server handshake failed.")
+            await self.close_connection()
+            return
+            # raise e
         
         while self._connected:
             try:
