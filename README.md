@@ -44,7 +44,6 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
 - ⚠️ **No TLS/SSL End-to-End**: Messages encrypted only by Tor (add TLS in future)
 - ⚠️ **No Message Persistence**: Chat history not saved (by design for privacy)
 - ⚠️ **No Reconnection Logic**: Dropped connections not retried (TODO)
-- ⚠️ **No Rate Limiting**: Not protected against spam (TODO)
 
 ---
 
