@@ -14,24 +14,39 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
   - Working in the server response for flood data
   - Cleaning architecture
 
-## Features
-- CustomTkinter interface providing easy and intuitive access to the application features.
- ![Status](https://img.shields.io/badge/status-done-brightgreen)
-- No need to setup onion configuration files - just enter a valid server name and you're done.
- ![Status](https://img.shields.io/badge/status-done-brightgreen)
-- Easy creation of onion clients using Tor as a proxy by simply typing the desired onion adress.
- ![Status](https://img.shields.io/badge/status-done-brightgreen)
-- Informative view with popup notifications about connection status and erros.
- ![Status](https://img.shields.io/badge/status-done-brightgreen)
-- Multithreaded asynchronous application providing a smooth and non-blocking interface.
--![Status](https://img.shields.io/badge/status-done-brightgreen)
-- Option to manage the local servers and recent connections.
- ![Status](https://img.shields.io/badge/status-done-brightgreen)
-- Create servers with special requirements such as passwords.
- ![Status](https://img.shields.io/badge/status-done-green)
- - Keep the local credentials proper encripited and safe. 
- ![Status](https://img.shields.io/badge/status--done-green)
+## ✨ Features
 
+| Feature | Status | Description |
+|---------|--------|-------------|
+| **CustomTkinter GUI** | ✅ Done | Intuitive desktop interface |
+| **Zero-Config Onion Setup** | ✅ Done | Create Tor hidden services without config files |
+| **P2P Client/Server** | ✅ Done | Connect to any onion address, host multiple servers |
+| **Password Protected Servers** | ✅ Done | Optional  access control |
+| **Real-time Notifications** | ✅ Done | Connection status, errors, and alerts |
+| **Message Broadcasting** | ✅ Done | Async message delivery to all connected clients |
+| **Secure Credentials** | ✅ Done | Passwords hashed  |
+| **Persistent Storage** | ✅ Done | SQLite database for servers and connections |
+| **Async Non-Blocking UI** | ✅ Done | Smooth, responsive interface via asyncio |
+| **Connection Management** | ✅ Done | View, manage, and delete saved servers |
+
+---
+
+## 🔒 Security Considerations
+
+### Implemented
+- ✅ **Password Hashing**: bcrypt with random salt (never plaintext in DB)
+- ✅ **Handshake Protocol**: JSON-based with mandatory authentication fields
+- ✅ **Tor Routing**: All traffic routed through Tor hidden services
+- ✅ **Connection Validation**: Decorator-based state checks before operations
+- ✅ **Input Validation**: Regex patterns for names and passwords
+
+### Known Limitations
+- ⚠️ **No TLS/SSL End-to-End**: Messages encrypted only by Tor (add TLS in future)
+- ⚠️ **No Message Persistence**: Chat history not saved (by design for privacy)
+- ⚠️ **No Reconnection Logic**: Dropped connections not retried (TODO)
+- ⚠️ **No Rate Limiting**: Not protected against spam (TODO)
+
+---
 
 ## Requirements
 - Python 3.8+
