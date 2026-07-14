@@ -9,7 +9,6 @@ class PopUpNotificationGUI(CTkToplevel):
         # keep window on top of master and fixed size
         self.transient(master)
         self.resizable(False, False)
-
         
         self.disable_button = disable_button
         self.message_label = CTkLabel(self, text=message)

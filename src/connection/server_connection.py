@@ -137,7 +137,8 @@ class ServerConnection(BaseConnection):
             writer.close()
             await writer.wait_closed()
             self.my_connections.discard(writer)
-        except Exception:
+        except Exception as e:
+            print(e)
             pass
 
         
@@ -172,10 +173,8 @@ class ServerConnection(BaseConnection):
             await self.remove_connection(writer)
             return 
         else:
-
             await self.notify(NotificationType.INFO, f"""New user connected: {writer.get_extra_info('peername')}""")
-        
-        self.my_connections.add(writer)
+            self.my_connections.add(writer)
         
         while self._connected:
 
@@ -192,12 +191,13 @@ class ServerConnection(BaseConnection):
             except asyncio.exceptions.LimitOverrunError as e:
                
                ## logg here
+                print("entrou no limitoverrun")
                 break
 
-            except Exception:
-                await self.notify(
-                                            NotificationType.WARNING, f"""Unexpected error from user: {writer.get_extra_info('peername')}
+            except Exception as e: 
+                await self.notify( NotificationType.WARNING, f"""Unexpected error from user: {writer.get_extra_info('peername')}
                                                             closing connection...""")
+                raise e
                 break
             if not data: ## this block might be unecessary..
                 await self.notify(

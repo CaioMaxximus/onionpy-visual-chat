@@ -42,7 +42,6 @@ class ItemListView(ctk.CTkScrollableFrame):
         self.on_exibit_item = on_exibit_item
         self.items = items or []
         self.buttons = {}
-
         self.render_items()
 
     def render_items(self) -> None:

@@ -9,6 +9,8 @@ class PopUpChoiceGUI(CTkToplevel):
         self.message_label = CTkLabel(self, text=message)
         self.confirm_btn = CTkButton(self, text="CONFIRM", command=lambda: self.close(True))
         self.deny_btn = None
+        self.resizable(False, False)
+
         if deny_option:
             self.deny_btn = CTkButton(self,text="DENY" ,
                                   command= lambda : self.close(False))

@@ -142,6 +142,9 @@ class ClientConnection(BaseConnection):
             await self.close_connection()
             return
             # raise e
+
+        await self.notify(NotificationType.SUCCESS, "Handshake sucefully")
+
         
         while self._connected:
             try:

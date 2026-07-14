@@ -75,6 +75,7 @@ class BasicChatView(ctk.CTkToplevel):
         self.geometry(f"{self.height}x{self.width}")
         self.running = False
         self.active_notification_gui = None
+        self.resizable(False, False)
 
 
         

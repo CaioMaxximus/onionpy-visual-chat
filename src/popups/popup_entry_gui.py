@@ -45,6 +45,8 @@ class PopUpEntryGui(ctk.CTkToplevel):
         self.generate_personalized_inputs()
         self.registered_values = {}
         self.done = False
+        self.resizable(False, False)
+
 
     def generate_personalized_inputs(self) -> None:
         for label_text in self.labels:
