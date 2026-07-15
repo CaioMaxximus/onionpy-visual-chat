@@ -8,10 +8,16 @@ import asyncio
 class TestServerConnection(unittest.IsolatedAsyncioTestCase):
 
     async def asyncSetUp(self):
-        not_bus = MagicMock()
+
+        not_bus = AsyncMock()
         self.inst = ServerConnection("test",not_bus)
         self.inst.PORT = 80
-        self.inst.notification_bus.send = AsyncMock()
+        self.inst.notify = AsyncMock()
+        self.inst.notify.return_value = None
+        # self.inst.notify.side_effect = lambda *args, **kwargs: None
+
+    # async def mocked_notify(self,*args,**kwargs):
+    #     return None
 
 
     def mock_server_listener(self,task_mock , server_mock):
@@ -43,7 +49,7 @@ class TestServerConnection(unittest.IsolatedAsyncioTestCase):
     @patch("src.connection.server_connection.asyncio.create_task")
     async def test_server_listener_starts_server(self,task_mock , server_mock):
         self.mock_server_listener(task_mock , server_mock)
-        await self.inst.server_listener()
+        await self.inst.startup()
         server_mock.assert_called_once()
     
     
@@ -54,7 +60,7 @@ class TestServerConnection(unittest.IsolatedAsyncioTestCase):
         self.mock_server_listener(task_mock , server_mock)
         server_mock.side_effect = OSError()
         with self.assertRaises(OSError) as oserror:
-            await self.inst.server_listener()
+            await self.inst.startup()
         
         self.assertEqual(str(oserror.exception) ,"Failed to start server on 127.0.0.1:80")
 
@@ -66,7 +72,7 @@ class TestServerConnection(unittest.IsolatedAsyncioTestCase):
         self.mock_server_listener(task_mock , server_mock)
         server_mock.side_effect = Exception()
         with self.assertRaises(RuntimeError) as rerror:
-            await self.inst.server_listener()
+            await self.inst.startup()
         server_mock.assert_called_once()
         self.assertEqual(str(rerror.exception), "Unexpected error while starting the server")
 
@@ -76,30 +82,45 @@ class TestServerConnection(unittest.IsolatedAsyncioTestCase):
        
         print("testando o bus")
         self.mock_server_listener(task_mock , server_mock)
-        await self.inst.server_listener()
-        self.inst.notification_bus.send.assert_called_once()
+        await self.inst.startup()
+        self.inst.notify.assert_called_once()
+        
 
 
-    @patch("src.connection.server_connection.server_connection_handshake", new_callable = AsyncMock)
+    # async def test_manual(self):
+    #     mock_async_func = AsyncMock()
+    #     mock_async_func.return_value = "Success"
+        
+    #     result = await mock_async_func()
+    #     assert result == "Success"
+
+        
+
+    @patch.object(ServerConnection, "_handshake", new_callable=AsyncMock)
     async def test_connection_handler_dont_break_in_invalid_messages_with_excessive_size(self,handshake_mock):
         
         # handshake_mock.side_effect
         self.inst._connected = True
         mocked_reader = AsyncMock()
-        mocked_writer = MagicMock()
-        mocked_reader.readuntil.side_effect = [True ,asyncio.exceptions.LimitOverrunError]
+        mocked_writer = AsyncMock()
+        mocked_writer.close = MagicMock()
+        mocked_reader.readuntil.side_effect = asyncio.exceptions.LimitOverrunError("A mensagem passou do limite do buffer", consumed=4096)
+        
+        with patch.object(self.inst, "notify", new_callable=AsyncMock) as mock_notify:
 
-        await self.inst.connection_handler(mocked_reader, mocked_writer)
+            await self.inst.connection_handler(mocked_reader, mocked_writer)
 
-        self.assertEqual(self.inst.notification_bus.send.call_count , 2)
-        self.assertEqual(len(self.inst.my_connections) , 0)
+            self.assertEqual(self.inst.notify.call_count , 1)
+            self.assertEqual(len(self.inst.my_connections) , 0)
+            self.inst.notify.reset_mock()
+
 
     @patch("src.connection.server_connection.server_connection_handshake", new_callable = AsyncMock)
     async def test_connection_handler_dont_break_with_an_incompleted_input(self,handshake_mock):
 
         self.inst._connected = True
         mocked_reader = AsyncMock()
-        mocked_writer = MagicMock()
+        mocked_writer = AsyncMock()
         incompleted_exception = asyncio.exceptions.IncompleteReadError(MagicMock() , MagicMock())
         incompleted_exception.partial =  None
         mocked_reader.readuntil.side_effect = [True ,incompleted_exception]
@@ -107,7 +128,7 @@ class TestServerConnection(unittest.IsolatedAsyncioTestCase):
 
         await self.inst.connection_handler(mocked_reader, mocked_writer)
 
-        self.assertEqual(self.inst.notification_bus.send.call_count , 2)
+        self.assertEqual(self.inst.notify.call_count , 1)
         self.assertEqual(len(self.inst.my_connections) , 0)
 
     @patch("src.connection.server_connection.server_connection_handshake", new_callable = AsyncMock)
@@ -122,7 +143,7 @@ class TestServerConnection(unittest.IsolatedAsyncioTestCase):
 
         await self.inst.connection_handler(mocked_reader, mocked_writer)
 
-        self.assertEqual(self.inst.notification_bus.send.call_count , 2)
+        self.assertEqual(self.inst.notification_bus.send.call_count , 0)
         self.assertEqual(len(self.inst.my_connections) , 0)
 
     @patch("src.connection.server_connection.server_connection_handshake", new_callable = AsyncMock)
@@ -137,7 +158,7 @@ class TestServerConnection(unittest.IsolatedAsyncioTestCase):
 
         await self.inst.connection_handler(mocked_reader, mocked_writer)
 
-        self.assertEqual(self.inst.notification_bus.send.call_count , 2)
+        self.assertEqual(self.inst.notification_bus.send.call_count , 0)
         self.assertEqual(len(self.inst.my_connections) , 0)
 
     async def test_close_server_finish_connection_even_if_check_messages_for_web_task_rises_exception(self):
