@@ -1,1 +1,1 @@
-PYTHONPATH=src python3 -m unittest discover -s tests
+PYTHONPATH=src python3 -W ignore::RuntimeWarning -m unittest discover -s tests

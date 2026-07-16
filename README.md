@@ -41,7 +41,6 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
 - ✅ **Input Validation**: Regex patterns for names and passwords
 
 ### Known Limitations
-- ⚠️ **No TLS/SSL End-to-End**: Messages encrypted only by Tor (add TLS in future)
 - ⚠️ **No Message Persistence**: Chat history not saved (by design for privacy)
 - ⚠️ **No Reconnection Logic**: Dropped connections not retried (TODO)
 
@@ -73,7 +72,7 @@ TESTS
 ## Tests
 
 - TorServiceManager ![Status](https://img.shields.io/badge/status-done-brightgreen)
-- client_connection ![Status](https://img.shields.io/badge/status-lacking-red)
+- client_connection ![Status](https://img.shields.io/badge/status-working-yellow)
 - server_connection ![Status](https://img.shields.io/badge/status-done-brightgreen)
 - client_controller ![Status](https://img.shields.io/badge/status-lacking-red)
 - basic_async_controller ![Status](https://img.shields.io/badge/status-done-brightgreen)
