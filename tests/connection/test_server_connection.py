@@ -86,16 +86,6 @@ class TestServerConnection(unittest.IsolatedAsyncioTestCase):
         self.inst.notify.assert_called_once()
         
 
-
-    # async def test_manual(self):
-    #     mock_async_func = AsyncMock()
-    #     mock_async_func.return_value = "Success"
-        
-    #     result = await mock_async_func()
-    #     assert result == "Success"
-
-        
-
     @patch.object(ServerConnection, "_handshake", new_callable=AsyncMock)
     async def test_connection_handler_dont_break_in_invalid_messages_with_excessive_size(self,handshake_mock):
         

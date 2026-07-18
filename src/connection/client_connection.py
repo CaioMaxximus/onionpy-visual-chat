@@ -8,8 +8,6 @@ from infrastructure import client_connection_handshake,handle_server_response
 from .base_connection import BaseConnection
 
 
-
-
 ## This will use an interface
 class ClientConnection(BaseConnection):
 
@@ -90,13 +88,14 @@ class ClientConnection(BaseConnection):
  
     @validate_connection_state
     async def close_connection(self):
-        ## NEED TO WORK TO CLOSE WEB CONNECTION
-        ## AND GARATEE THE END OF ALL PENDING TASKS
+      
+
         self._connected = False
         try:
             self.server_task.cancel()
             await self.server_task
         except asyncio.CancelledError :
+            # logg here
             pass
         except Exception:
             ## logg here
@@ -132,8 +131,9 @@ class ClientConnection(BaseConnection):
     @validate_connection_state
     async def connection_handler(self,reader, writer):
         self.writer = writer
+        await self.notify(NotificationType.INFO, "Starting handshake")
 
-        await self.notification_bus.send(Notification(NotificationType.INFO, "Starting handshake"))
+
 
         try:
             await self._handshake(reader, writer)
@@ -141,9 +141,8 @@ class ClientConnection(BaseConnection):
             await self.notify(NotificationType.WARNING, "Server handshake failed.")
             await self.close_connection()
             return
-            # raise e
-
-        await self.notify(NotificationType.SUCCESS, "Handshake sucefully")
+        else:
+            await self.notify(NotificationType.SUCCESS, "Handshake sucefully")
 
         
         while self._connected:
@@ -202,7 +201,7 @@ class ClientConnection(BaseConnection):
         except TimeoutError as e:
             raise RuntimeError(f"Connection timeout in proxy connection {self.HOST}:{self.PORT}") from e
         except ConnectionError as e:
-            raise ConnectionError(f"Error! Unable to connect to proxy {self.HOST}:{self.PORT}") from e
+            raise ConnectionError(f"ConnectionError with proxy to the host {self.HOST}:{self.PORT}") from e
         
         try :
             reader,writer = await asyncio.open_connection( 

@@ -37,12 +37,9 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
 - ✅ **Password Hashing**: bcrypt with random salt (never plaintext in DB)
 - ✅ **Handshake Protocol**: JSON-based with mandatory authentication fields
 - ✅ **Tor Routing**: All traffic routed through Tor hidden services
-- ✅ **Connection Validation**: Decorator-based state checks before operations
-- ✅ **Input Validation**: Regex patterns for names and passwords
 
 ### Known Limitations
-- ⚠️ **No Message Persistence**: Chat history not saved (by design for privacy)
-- ⚠️ **No Reconnection Logic**: Dropped connections not retried (TODO)
+- ⚠️ **Security issues**: This user the tor network fot its connections but its not audited for security
 
 ---
 
@@ -72,7 +69,7 @@ TESTS
 ## Tests
 
 - TorServiceManager ![Status](https://img.shields.io/badge/status-done-brightgreen)
-- client_connection ![Status](https://img.shields.io/badge/status-working-yellow)
+- client_connection ![Status](https://img.shields.io/badge/status-done-green)
 - server_connection ![Status](https://img.shields.io/badge/status-done-brightgreen)
 - client_controller ![Status](https://img.shields.io/badge/status-lacking-red)
 - basic_async_controller ![Status](https://img.shields.io/badge/status-done-brightgreen)

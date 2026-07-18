@@ -182,11 +182,8 @@ class ServerConnection(BaseConnection):
                 data = await reader.readuntil(separator=b'\0')
 
             except asyncio.exceptions.IncompleteReadError as e:
-                data = e.partial
-                if not data:
-                    await self.notify(
-                        NotificationType.WARNING, f"User {writer.get_extra_info('peername')}")
-                    break
+                ##loog here
+                break
 
             except asyncio.exceptions.LimitOverrunError as e:
                
@@ -197,12 +194,9 @@ class ServerConnection(BaseConnection):
             except Exception as e: 
                 await self.notify( NotificationType.WARNING, f"""Unexpected error from user: {writer.get_extra_info('peername')}
                                                             closing connection...""")
-                raise e
+                # raise e
                 break
-            if not data: ## this block might be unecessary..
-                await self.notify(
-                NotificationType.WARNING,f"User {writer.get_extra_info('peername')}")
-                break
+         
             try:
                 message = data.decode().rstrip('\x00').strip()
                 msg_info = {
