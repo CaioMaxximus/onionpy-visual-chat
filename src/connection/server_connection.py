@@ -7,9 +7,9 @@ import traceback
 from decorators import validate_connection_state
 from infrastructure import server_connection_handshake ,server_success_handshake_response, server_failure_handshake_response
 from .base_connection import BaseConnection
+from bidict import bidict
 
 
-## Temporary
 
 ## This will use an interface
 class ServerConnection(BaseConnection):
@@ -85,7 +85,7 @@ class ServerConnection(BaseConnection):
         self.onion_adress = ""
         self.PORT = None
         self.HOST = "127.0.0.1"
-        self.my_connections = set()
+        self.my_connections = bidict()
         self._connected = False
         self.notification_bus = notification_bus
         self.broadcast_queue : asyncio.Queue = None
@@ -136,7 +136,7 @@ class ServerConnection(BaseConnection):
         try:
             writer.close()
             await writer.wait_closed()
-            self.my_connections.discard(writer)
+            self.my_connections.pop(writer, None)
         except Exception as e:
             print(e)
             pass
@@ -144,12 +144,12 @@ class ServerConnection(BaseConnection):
         
 
     
-    async def _handshake(self, reader , writer,password):
+    async def _handshake(self, reader , writer,password, local_clients):
             
             handshake_data = await asyncio.wait_for(reader.readuntil(separator=b'\0'), timeout=6.0)
             try:
 
-                await server_connection_handshake(handshake_data, password)
+                client_data = await server_connection_handshake(handshake_data, password, local_clients.inverse)
             except Exception as e:
 
                 res = server_failure_handshake_response()
@@ -160,13 +160,15 @@ class ServerConnection(BaseConnection):
                 res = server_success_handshake_response(self.name)
                 writer.write(res)
                 await writer.drain()
-
+                return client_data
    
     @validate_connection_state
     async def connection_handler(self,reader, writer):
 
+        actual_task = asyncio.current_task()
+        actual_task.add_done_callback(self.handle_tasks_errors)
         try:
-            await self._handshake(reader , writer, self.password)
+            client_data = await self._handshake(reader , writer, self.password, self.my_connections)
         except Exception as e:
 
             await self.notify(NotificationType.INFO, f"""handshake failed""")
@@ -174,7 +176,7 @@ class ServerConnection(BaseConnection):
             return 
         else:
             await self.notify(NotificationType.INFO, f"""New user connected: {writer.get_extra_info('peername')}""")
-            self.my_connections.add(writer)
+            self.my_connections[writer] = client_data["name"]
         
         while self._connected:
 
@@ -201,9 +203,10 @@ class ServerConnection(BaseConnection):
                 message = data.decode().rstrip('\x00').strip()
                 msg_info = {
                     "entry": message,
-                    "author_name": writer.get_extra_info('peername'), 
+                    "author_name": self.my_connections[writer], 
                     "owner": False
                 }
+                print(msg_info)
 
             except UnicodeDecodeError as e:
                 await self.notify(
@@ -249,6 +252,7 @@ class ServerConnection(BaseConnection):
             
         self._connected = True
         self.check_messages_for_web_task = asyncio.create_task(self.check_messages_for_web())
+        self.check_messages_for_web_task.add_done_callback(self.handle_tasks_errors)
         
 
     @validate_connection_state            
@@ -259,15 +263,16 @@ class ServerConnection(BaseConnection):
         data_encoded = (data + "\n\0").encode()
 
         # for w in self.my_connections:
-        peername = w.get_extra_info('peername')
+        author_name = message["author_name"]
+        writer_name = self.my_connections[w]
 
         try: ## this is just a simple version of proper indentificatiion method
-            if message["owner"] or message["author_name"][1] != peername[1] :
+            if message["owner"] or author_name != writer_name :
                 w.write(data_encoded)
                 await w.drain()
         except (ConnectionResetError , ConnectionRefusedError): 
             await self.notify(
-                NotificationType.INFO, f"Error sending message to {peername}")
+                NotificationType.INFO, f"Error sending message to {writer_name}")
         except Exception:
             # raise e
             # logg here

@@ -39,3 +39,17 @@ class BaseConnection(ABC):
     @abstractmethod
     async def _handshake(self,reader,writer):
          raise NotImplementedError()
+
+    def handle_tasks_errors(self, task):
+         
+        try:
+        
+            task.result()
+        except asyncio.CancelledError:
+            pass
+
+        except Exception as e:
+             
+            ## Logg here
+            print(e)
+            pass

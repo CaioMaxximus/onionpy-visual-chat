@@ -166,17 +166,18 @@ class MainMenuGUI:
     
     def create_new_client(self):
         pop_w = PopUpEntryGui(self.root,
-                              ["Enter the Server Adress" ,"Enter the onion port", "Insert a password if the server has strict acess"],
-                              ["onion_adress" ,"onion_port" , "password"])
+                              ["Enter the Server Adress" ,"Enter the onion port", "Insert a password if the server has strict acess","Insert a valid fantasy name"],
+                              ["onion_adress" ,"onion_port" , "password","name"])
         self.root.wait_window(pop_w)
         if pop_w.done:
+            name = pop_w.registered_values["name"]
             host = pop_w.registered_values["onion_adress"]
             port = pop_w.registered_values["onion_port"]
             port = port if port.strip(" ") != ""  else "-1"
             password = pop_w.registered_values["password"].strip(" ")
 
 
-            self.create_new_client_window(host, port,password)
+            self.create_new_client_window(name ,host, port,password)
 
 
     def get_notification_routine(self):
@@ -193,8 +194,8 @@ class MainMenuGUI:
     def create_new_server_window(self , server_name, password):
         self.server_gui_navigate(self.root , server_name ,mode = True,password = password)
 
-    def create_new_client_window(self,host , port, password):
-        self.client_gui_navigate(self.root , 0 , host ,port,password)
+    def create_new_client_window(self,name ,host , port, password):
+        self.client_gui_navigate(self.root , name , host ,port,password)
 
     def initiate_server_window(self, server):
         self.server_gui_navigate(self.root, server.name, mode=False,password = server.password)
@@ -202,10 +203,10 @@ class MainMenuGUI:
     def initiate_client_window(self, server_info):
         
         pop_w = PopUpEntryGui(self.root,
-                              ["Insert the password if the server has strict acess otherwise leave it blank"],
-                              ["password"])
+                              ["Insert the password if the server has strict acess otherwise leave it blank","Insert a fantasy name"],
+                              ["password" ,"name"])
         self.root.wait_window(pop_w)
-        self.client_gui_navigate(self.root,0 ,server_info.hostname, server_info.port, password = pop_w.registered_values["password"])
+        self.client_gui_navigate(self.root, pop_w.registered_values["name"] ,server_info.hostname, server_info.port, password = pop_w.registered_values["password"])
 
 
     # i will move this to application coordinato

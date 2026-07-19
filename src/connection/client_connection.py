@@ -79,12 +79,12 @@ class ClientConnection(BaseConnection):
         self.messages_queue = asyncio.Queue()
 
     
-    async def run(self, host: str, port: int ) -> None:
+    async def run(self, name ,host: str, port: int ) -> None:
 
-
+        self.name = name
         self.HOST = host
         self.PORT = int(port)
-        await self.startup()
+        return await self.startup()
  
     @validate_connection_state
     async def close_connection(self):
@@ -94,6 +94,7 @@ class ClientConnection(BaseConnection):
         try:
             self.server_task.cancel()
             await self.server_task
+            
         except asyncio.CancelledError :
             # logg here
             pass
@@ -104,12 +105,12 @@ class ClientConnection(BaseConnection):
                                           "Connection finished with the server.")
         
     
-    async def _handshake(self, reader , writer):
+    async def _handshake(self, reader , writer,name):
         
         # await reader
         res = None
         try:
-            handshake_data = client_connection_handshake("user novo" ,self.password)
+            handshake_data = client_connection_handshake(name ,self.password)
             writer.write(handshake_data)
             await writer.drain()
         except Exception :
@@ -130,19 +131,7 @@ class ClientConnection(BaseConnection):
 
     @validate_connection_state
     async def connection_handler(self,reader, writer):
-        self.writer = writer
-        await self.notify(NotificationType.INFO, "Starting handshake")
 
-
-
-        try:
-            await self._handshake(reader, writer)
-        except Exception as e:
-            await self.notify(NotificationType.WARNING, "Server handshake failed.")
-            await self.close_connection()
-            return
-        else:
-            await self.notify(NotificationType.SUCCESS, "Handshake sucefully")
 
         
         while self._connected:
@@ -210,10 +199,26 @@ class ClientConnection(BaseConnection):
             raise RuntimeError(f"Connection timeout trying to connect to server {self.HOST}:{self.PORT}")
         except ConnectionError as e:
             raise ConnectionError(f"Error! Unable to connect to server {self.HOST}:{self.PORT}") from e
-        else:
 
+        ## The server connected
+
+        self.writer = writer
+        await self.notify(NotificationType.INFO, "Starting handshake")
+
+
+        try:
+            server_handshake_data = await self._handshake(reader, writer, self.name)
+        except Exception as e:
+            await self.notify(NotificationType.WARNING, "Server handshake failed.")
+            await self.close_connection()
+            raise e
+        else:
+            await self.notify(NotificationType.SUCCESS, "Handshake sucefully")
             self._connected = True
             self.server_task = asyncio.create_task(self.connection_handler(reader,writer))
+            self.server_task.add_done_callback(self.handle_tasks_errors)
+
+        return server_handshake_data
         
     @validate_connection_state
     async def send_message(self, message):

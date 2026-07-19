@@ -5,8 +5,8 @@ from enum import Enum
 
 class HandShake():
       
-    def __init__(self,id , password):
-        self.id = id
+    def __init__(self,name , password):
+        self.name = name
         self.password = password
 
 
@@ -18,14 +18,16 @@ class Response(Enum):
 
 ## SERVER SIDE HANDSHAKE
 
-async def server_connection_handshake(message,password):
+async def server_connection_handshake(message,password, local_users):
         
         clean = message[:-1]
         json_str = clean.decode("utf-8")
         dic_data = json.loads(json_str)
         ## Create new exceptions for this case
-        if "password" not in dic_data or "id" not in dic_data:
-            raise ValueError
+        if "password" not in dic_data or "name" not in dic_data:
+            raise ValueError("Invalid HandShakeFormat")
+        if dic_data["name"] in local_users:
+            raise ValueError("Invalid Name")
         if password == "":
             return dic_data
 

@@ -280,7 +280,7 @@ class BasicChatView(ctk.CTkToplevel):
             return
         
         msg= {"entry" : last_message,
-                             "author_name" : " " , "owner" :  True }
+                             "author_name" : "" , "owner" :  True }
 
         self.controller.send_message_to_web(msg , None)
         self.message_queue.put(msg)

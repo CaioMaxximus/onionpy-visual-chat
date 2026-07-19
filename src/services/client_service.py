@@ -56,15 +56,15 @@ class ClientService():
 
    
 
-    async def _start_client(self) -> None:
+    async def _start_client(self,name) -> None:
         
         self.validate_onion_and_port(self.HOST, self.PORT)
-        await self.connection.run(self.HOST, self.PORT)
+        server_handshake_data = await self.connection.run(name,self.HOST, self.PORT)
         # await self.start_routines()
         self.connected = True
         ## DEFINE A WAY TO NAME SERVER , FOR A WHILE, THE SAME NAME 
-        await self.database_service.save_discovered_server(self.HOST, self.PORT)
-
+        await self.database_service.save_discovered_server(self.HOST, self.PORT,server_name = server_handshake_data["name"])
+        return server_handshake_data
     async def get_message(self):
         return await self.connection.get_message_in_queue()
     

@@ -123,8 +123,8 @@ class ClientController(BaseAsyncController):
         finally:
             await self.stop_routines()
 
-    def start_client(self,callback):
-        self._enqueue(self.service._start_client ,callback= callback)
+    def start_client(self,name, callback):
+        self._enqueue(self.service._start_client ,name,callback= callback)
     
     def close_connection(self, callback):
         self._enqueue(self.service._close_connection,(),callback)
