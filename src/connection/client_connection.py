@@ -6,6 +6,7 @@ from typing import Any, Callable ,Optional
 from decorators import validate_connection_state
 from infrastructure import client_connection_handshake,handle_server_response
 from .base_connection import BaseConnection
+from models import ServerMessage
 
 
 ## This will use an interface
@@ -143,7 +144,7 @@ class ClientConnection(BaseConnection):
                     data = e.partial
                     self._connected = False
                 else:
-                    await self.self.notify(NotificationType.WARNING, "Server closed connection.")
+                    await self.notify(NotificationType.WARNING, "Server closed connection.")
                     
                     break
             except asyncio.LimitOverrunError as e:
@@ -157,11 +158,13 @@ class ClientConnection(BaseConnection):
                 break
 
             try:
-                message = data.decode().strip()
+                # message = data.decode().strip()
+                message_obj = ServerMessage.from_stream(data)
                 msg_info = {
-                    "entry": message,
-                    "author_name": writer.get_extra_info('peername'), 
-                    "owner": False
+                    "entry": message_obj.message,
+                    "author_name": message_obj.author, 
+                    "owner": False,
+                    "from_server" : message_obj.from_server
                 }
             except UnicodeDecodeError as e:
                 await self.notify(NotificationType.ERROR, 

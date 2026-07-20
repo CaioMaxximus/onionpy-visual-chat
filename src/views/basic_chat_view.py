@@ -247,10 +247,15 @@ class BasicChatView(ctk.CTkToplevel):
             if not self.destroyed : self.master.after(50 , self.handle_message)
 
 
-    def add_message_on_gui(self , entry = "", author_name = " " , owner =  False ) -> None:
+    def add_message_on_gui(self , entry = "", author_name = " " , owner =  False , from_server = False) -> None:
     
-        author_name = "you" if owner else author_name
+        author_name = "YOU" if owner else author_name
         side_gap = self.width * 0.1
+
+        fg_color = "#2b2b2b" if not owner else "#006969"
+        
+        if from_server:
+            fg_color = "#56378f"
 
         message_frame = MessageFrame(
             self.scroll_frame,
@@ -258,7 +263,7 @@ class BasicChatView(ctk.CTkToplevel):
             content=entry,
             width= int(self.width * 0.8),
             callback= print,
-            fg_color=("#2b2b2b" if not owner else "#006969"),
+            fg_color=fg_color,
             corner_radius=10
         )
         message_frame.pack(

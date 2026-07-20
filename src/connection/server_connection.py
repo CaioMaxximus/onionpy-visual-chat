@@ -8,7 +8,7 @@ from decorators import validate_connection_state
 from infrastructure import server_connection_handshake ,server_success_handshake_response, server_failure_handshake_response
 from .base_connection import BaseConnection
 from bidict import bidict
-
+from models import ServerMessage
 
 
 ## This will use an interface
@@ -260,8 +260,10 @@ class ServerConnection(BaseConnection):
 
 
         data = message["entry"].replace("\x00", "")
-        data_encoded = (data + "\n\0").encode()
+        # data_encoded = (data + "\0").encode()
 
+        formated_message = ServerMessage(message= data ,author= message["author_name"] ,from_server= message["owner"])
+        data_encoded = formated_message.convert_to_stream()
         # for w in self.my_connections:
         author_name = message["author_name"]
         writer_name = self.my_connections[w]
