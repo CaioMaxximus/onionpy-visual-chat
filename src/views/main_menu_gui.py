@@ -130,7 +130,7 @@ class MainMenuGUI:
         self.my_servers_list.pack(side = "left", fill = "y" , padx=10, pady=10)
 
         self.my_visited_servers_list = ItemListView(self.bottow_frame,"My discovered servers", self.initiate_client_window,
-                                                    lambda server : (f"{server.name} + {server.hostname}"))
+                                                    lambda server : (f"{server.name}"))
         self.my_visited_servers_list.pack(side = "right", fill = "y", padx=10, pady=10)
         self.controller.run(self.root,self.create_tables)
 
@@ -156,7 +156,7 @@ class MainMenuGUI:
         "1 lowercase letter, 1 number, and 1 special character; any blank space after or before will be removed!"
 
         pop_w = PopUpEntryGui(self.root,
-                               ["Define a name for the new server",
+                               ["Define a name for the new server, with al least 6 and a maximus of 30 characters",
                                  password_label_message]
                               , ["server_name", "password"])
         self.root.wait_window(pop_w)

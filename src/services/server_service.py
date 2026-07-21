@@ -130,7 +130,7 @@ class ServerService():
             - Emits notificaitons
         """
         name = self._verify_valid_server_name(name)
-        self._verify_valid_password(name)
+        self._verify_valid_password(password)
         encript_pass = await encrypt_data(password)
 
         onion_connection = None

@@ -29,6 +29,7 @@ async def get_all_servers():
         exit_.append(OnionServer(name=s[0], hostname=s[1],local_server_port=s[2],
                                  onion_port=s[3],password= s[4]))
     return exit_
+
 async def get_server_by_name(name):
     res =  await db.get_server_by_name(name)
     return OnionServer(res["server_name"] ,res["onion_hostname"],

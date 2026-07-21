@@ -253,15 +253,17 @@ class BasicChatView(ctk.CTkToplevel):
         side_gap = self.width * 0.1
 
         fg_color = "#2b2b2b" if not owner else "#006969"
-        
+        width = int(self.width * 0.8)
+
         if from_server:
             fg_color = "#56378f"
+            width = int(self.width * 0.9)
 
         message_frame = MessageFrame(
             self.scroll_frame,
             author_name,
             content=entry,
-            width= int(self.width * 0.8),
+            width= width,
             callback= print,
             fg_color=fg_color,
             corner_radius=10

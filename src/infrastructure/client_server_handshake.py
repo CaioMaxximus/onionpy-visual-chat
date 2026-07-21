@@ -1,6 +1,7 @@
 import json
 from .verify_hash import verify_hash
 from enum import Enum
+import re
 
 
 class HandShake():
@@ -15,6 +16,8 @@ class Response(Enum):
     ERROR = "ERROR"
     SUCCESS = "SUCCESS"
 
+CLIENT_NAME_RAGEX_ = r'^[A-Za-z0-9_]{5,30}$'
+
 
 ## SERVER SIDE HANDSHAKE
 
@@ -26,7 +29,7 @@ async def server_connection_handshake(message,password, local_users):
         ## Create new exceptions for this case
         if "password" not in dic_data or "name" not in dic_data:
             raise ValueError("Invalid HandShakeFormat")
-        if dic_data["name"] in local_users:
+        if dic_data["name"] in local_users or not re.match(CLIENT_NAME_RAGEX_, dic_data["name"]):
             raise ValueError("Invalid Name")
         if password == "":
             return dic_data

@@ -175,7 +175,7 @@ class ServerConnection(BaseConnection):
             await self.remove_connection(writer)
             return 
         else:
-            await self.notify(NotificationType.INFO, f"""New user connected: {writer.get_extra_info('peername')}""")
+            await self.notify(NotificationType.INFO, f"New user connected: {client_data['name']}")
             self.my_connections[writer] = client_data["name"]
         
         while self._connected:

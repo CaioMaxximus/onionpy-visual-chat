@@ -6,7 +6,7 @@ class MessageFrame(CTkFrame):
     def __init__(self, master,user , content ,width ,callback,*args, **kwargs):
         super().__init__(master,*args ,**kwargs)
         
-        label1 = CTkLabel(self, text=f"UserName: {user}", font=("Arial", 10, "bold"))
+        label1 = CTkLabel(self, text=f"- {user}", font=("Arial", 10, "bold"))
         label1.pack(anchor="w", padx=10, pady=(10, 0))
         label1.configure(cursor="hand2")
         label1.bind("<ButtonRelease-1>", self.spaw_gui)

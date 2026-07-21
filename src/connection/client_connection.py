@@ -188,7 +188,7 @@ class ClientConnection(BaseConnection):
         try:
             self.proxy = Proxy(proxy_type= ProxyType.SOCKS5,
                             host= "127.0.0.1" , port = self.PROXY_PORT, rdns=True)
-            self.sock  = await self.proxy.connect(dest_host = self.HOST,dest_port= self.PORT,timeout=13
+            self.sock  = await self.proxy.connect(dest_host = self.HOST,dest_port= self.PORT,timeout=20
             )   
         except TimeoutError as e:
             raise RuntimeError(f"Connection timeout in proxy connection {self.HOST}:{self.PORT}") from e
