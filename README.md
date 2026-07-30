@@ -42,6 +42,11 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
 - ⚠️ **Security issues**: This user the tor network fot its connections but its not audited for security
 
 ---
+##  Tkinter issues
+
+-  The messages inside the Scrollable element will need a new render method, to manage the receiving of too many messages;
+
+---
 
 ## Requirements
 - Python 3.8+
