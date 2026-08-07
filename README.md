@@ -10,9 +10,8 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
 
 ## Status
 
-  - Working on the build phase; only working on Debian for now.
-  - Working in the server response for flood data
   - Cleaning architecture
+  - Working in tor container connection
 
 ## ✨ Features
 
