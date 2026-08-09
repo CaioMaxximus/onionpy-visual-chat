@@ -23,6 +23,7 @@ class MessageFrame(CTkFrame):
         self.user_name = user
         self.callback = callback
 
+    ## Not used
     def spaw_gui(self , _event = None):
         warning = PopUpChoiceGUI(self,
                             f"Do you want to remove ({self.user_name}) this connection?",

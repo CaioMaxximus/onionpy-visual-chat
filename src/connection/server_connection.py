@@ -121,7 +121,7 @@ class ServerConnection(BaseConnection):
                 await asyncio.gather(*[
                     self.broadcast_message(last_message, w) for w in self.my_connections
                 ])
-            ## isso aq lanca uma ecxxcecao quamndo a apçicacao é fechada
+            #  precisa de um pass aq
             except  asyncio.CancelledError as e :
                 raise e
             except Exception as e:

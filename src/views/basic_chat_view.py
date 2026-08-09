@@ -113,7 +113,7 @@ class BasicChatView(ctk.CTkToplevel):
         self.scroll_frame = ctk.CTkScrollableFrame(self, label_text="")
         self.scroll_frame.pack(expand=True, fill="both", padx=10, pady=10)
 
-        self.insert_message_btn = ctk.CTkButton(self, text = "enter", command= self.add_my_message
+        self.insert_message_btn = ctk.CTkButton(self, text = "enter", command= self.collect_message_inp
                                                 , width= min(int(self.width * 0.45),175 ))
         self.insert_message_btn.pack(side = "bottom" , pady = 5)
 
@@ -235,7 +235,7 @@ class BasicChatView(ctk.CTkToplevel):
 
     def handle_enter_press(self,event) -> None:
         if not self.multiple_lines:
-            self.add_my_message()
+            self.collect_message_inp()
 
     def handle_message(self):
         try:
@@ -277,11 +277,14 @@ class BasicChatView(ctk.CTkToplevel):
 
         self.after(90 , self.scroll_to_bottom)
 
-
-    def add_my_message(self) -> None:
+    def collect_message_inp(self):
 
         last_message = self.message_entry_bottom.get("1.0", "end-1c") + '\0'
         self.message_entry_bottom.delete("1.0", "end") 
+        self.add_my_message(last_message)
+
+    def add_my_message(self,last_message) -> None:
+
         
         if last_message.strip() == "":
             return

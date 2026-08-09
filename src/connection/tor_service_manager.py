@@ -10,8 +10,9 @@ import shutil
 import asyncio
 # from python_socks.async_.asyncio import Proxy
 from python_socks import ProxyType## Temporary!
+import docker
+import json
 
-TOR_CONTROL_PORT = 9051
 
 class TorServiceManager():
 
@@ -22,15 +23,17 @@ class TorServiceManager():
     """
 
     APPLICATION_ROOT = os.getenv("APPLICATION_ROOT") or str(Path(__file__).resolve().parents[2])
-    global_controller = None
 
     if not os.path.isdir(APPLICATION_ROOT):
         raise RuntimeError(f"APPLICATION_ROOT invalid: {APPLICATION_ROOT}")
-    # APPLICATION_ROOT = "/home/caiomaxx/Documentos/projetos/web_chat_with_tkinter"
+    global_controller = None
+    config_json = None
+    docker_client = None
+    password= "mypass"
     INSTANCES_PATH = "tor_service/tor_instances"
-    TEMPLATE_TORRC_PATH = "tor_service/files/etc/tor/torrc"
     proxy_process = None
-    
+    TOR_CONTROL_PORT = None
+
     @classmethod
     def create_new_onion_server(cls, server_name ):
         if not cls.check_server_exists(server_name):
@@ -43,41 +46,142 @@ class TorServiceManager():
     def _create_new_onion_server(cls, server_name ):
         
         folder_instace_path = f"{cls.APPLICATION_ROOT}/{cls.INSTANCES_PATH}/instance_{server_name}"
-        data_dir = f"{folder_instace_path}/data"
+        # data_dir = f"{folder_instace_path}/data"
+        os.makedirs(folder_instace_path, exist_ok= True)
 
-        os.makedirs(data_dir, exist_ok= True)
-        subprocess.run(["chmod", "700", data_dir]) 
+        private_key_file_name = "hs_ed25519_secret_key"
+        private_key_filepath = os.path.join(folder_instace_path, private_key_file_name)
+
+        hostname_path = os.path.join(folder_instace_path , "hostname")
+
+        try:
+            with open(private_key_filepath , "w" , encoding="utf-8") as file:
+                file.write("")
+        except Exception as e:
+            raise RuntimeError(f"Error creating {server_name} private file : {e}")
+
+        try:
+            with open(hostname_path , "w" , encoding="utf-8") as file:
+                file.write("")
+
+        except Exception as e:
+            raise RuntimeError(f"Error creating {server_name} hostname file : {e}")
+
+        subprocess.run(["chmod", "700", folder_instace_path]) 
 
     @classmethod   
     def start_onion_server(cls,server_name, local_port, onion_port):
+
         if cls.global_controller is None:
             cls.global_controller = Controller
         onion_info = cls._start_onion_server(server_name, local_port , onion_port ,cls.global_controller)
         return onion_info
+
+    @classmethod
+    def _read_private_key_file(cls,private_key_path):
+
+
+        try:
+            with open(private_key_path, 'r') as key_file:
+                private_key = key_file.read().strip()
+        except FileNotFoundError as e:
+            raise FileNotFoundError(f"Local onion hostname adress {private_key_path} not found!")
+        except Exception as e:
+            raise RuntimeError("Unexpceted error during server key reading {e}")
+                            
+        return private_key
     
+    @classmethod
+    def _write_in_private_key_file(cls,private_key_path, key):
+
+        try:
+            with open(private_key_path, 'w') as key_file:
+                key_file.write(key)
+        except FileNotFoundError as e:
+            raise FileNotFoundError(f"Local onion key adress {private_key_path} not found!")
+        except Exception as e:
+            raise RuntimeError("Unexpected error during server key reading {e}")
+
+    @classmethod                        
+    def _write_in_hostname_file(cls,hostname_path , hostname):
+
+        try:
+            with open(hostname_path, 'w') as host_file:
+                host_file.write(hostname)
+        except FileNotFoundError as e:
+            raise FileNotFoundError(f"Local onion hostname adress {hostname_path} not found!")
+        except Exception as e:
+            raise RuntimeError("Unexpected error during server key reading {e}")
+
+    @classmethod
+    def _read_hostname_file(cls, hostname_path):
+
+        try:
+            with open(hostname_path, 'r') as host_file:
+                hostname = host_file.read()
+        except FileNotFoundError as e:
+            raise FileNotFoundError(f"Local onion hostname adress {hostname} not found!")
+        except Exception as e:
+            raise RuntimeError("Unexpceted error during server key reading {e}")
+                            
+        return hostname
+
+    @classmethod
+    def _create_new_onion(cls,controller,onion_port , local_port):
+        with controller.from_port(port = cls.TOR_CONTROL_PORT) as ctrl:
+            ctrl.authenticate(password = cls.password)
+
+            result = ctrl.create_ephemeral_hidden_service(
+                ports = {onion_port :local_port},
+                key_type= "NEW",detached = True,
+                await_publication=True)
+
+
+        if not result:
+            raise ConnectionError("Error starting onion service")
+        return result
+
+    def _start_existing_onion(cls,controller,onion_port , local_port, private_key):
+        private_key = private_key.split(":")
+        with controller.from_port(port = cls.TOR_CONTROL_PORT) as ctrl:
+            ctrl.authenticate(password = cls.password)
+
+            result = ctrl.create_ephemeral_hidden_service(
+                ports = {onion_port :local_port},
+                key_type= private_key[0]
+                ,key_content = private_key[1],detached = True,
+                await_publication=True)
+
+        if not result:
+            raise ConnectionError("Error starting onion service")
+        return result
+        
     @classmethod
     def _start_onion_server(cls,server_name, local_port, onion_port , controller):
         instance_path = f"{cls.APPLICATION_ROOT}/{cls.INSTANCES_PATH}/instance_{server_name}"
-        data_dir = f"{instance_path}/data"
-        hostname_path = f"{data_dir}/hostname"
-        private_key_path = f"{data_dir}/hs_ed25519_secret_key"
+        # data_dir = f"{instance_path}/data"
+        hostname_path = f"{instance_path}/hostname"
+        private_key_path = f"{instance_path}/hs_ed25519_secret_key"
+        private_key = cls._read_private_key_file(private_key_path)
         adrr = ""
-        # id_ = None
+        result = ""
         try:
-            with controller.from_port(port = TOR_CONTROL_PORT) as ctrl:
-                ctrl.authenticate()
+            if private_key == "":
+                result =cls._create_new_onion(controller,onion_port , local_port)
+            else:
+                result = cls._start_existing_onion(cls,controller,onion_port , local_port, private_key)
 
-                result = ctrl.create_hidden_service(data_dir,onion_port , target_port =local_port)
-
-                if not result:
-                    raise ConnectionError("Error starting onion service")
-            with open(hostname_path, "r", encoding="utf-8") as f:
-                adrr = f.read().strip()
-        except FileNotFoundError as e:
-            raise FileNotFoundError("Local onion hostname adress not find!")
         except Exception as e:
-            raise e
-                            
+            raise RuntimeError(f"Error connecting with the server {e}")
+
+        adrr = f"{result.service_id}.onion"
+
+        if private_key == "":
+            complete_private_key = f"{result.private_key_type}:{result.private_key}"
+            cls._write_in_private_key_file(private_key_path, complete_private_key)
+            cls._write_in_hostname_file(hostname_path,adrr)
+
+       
         return adrr
 
     @classmethod
@@ -89,13 +193,19 @@ class TorServiceManager():
 
     @classmethod
     def _stop_onion_server(cls , server_name, controller): 
+
         instance_path = f"{cls.APPLICATION_ROOT}/{cls.INSTANCES_PATH}/instance_{server_name}"
-        data_dir = f"{instance_path}/data"
-        with controller.from_port(port=TOR_CONTROL_PORT) as ctrl:
-            ctrl.authenticate()
-            res = ctrl.remove_hidden_service(data_dir)
-            print(res , "*********" * 20)
-    
+        hostname_path = f"{instance_path}/hostname"
+        hostname = cls._read_hostname_file(hostname_path).split(".")[0]
+
+        with controller.from_port(port=cls.TOR_CONTROL_PORT) as ctrl:
+
+            ctrl.authenticate(password = cls.password)
+
+            res = ctrl.remove_ephemeral_hidden_service(hostname)
+
+
+        
     # This will be used to cross-check with the sql database
     @classmethod
     def find_local_servers(cls):
@@ -114,6 +224,7 @@ class TorServiceManager():
         while time.time() - start < timeout:
             try:
                 with socket.create_connection(("127.0.0.1", port), timeout=10):
+
                     return True
             except OSError:
                 time.sleep(0.3)
@@ -134,64 +245,61 @@ class TorServiceManager():
             instance_resolved.relative_to(app_root)
         except Exception:
             raise ValueError("Refusing to remove directory outside APPLICATION_ROOT")
-
         try:
             
             shutil.rmtree(instance_resolved)
         except FileNotFoundError as e:
             
-            ## log here
-            pass
+            raise RuntimeError(f"The server folder {path} was not found")
+            
         except PermissionError as e:
             
             raise RuntimeError(f"The application is unauthorized to remove the server folder; verify your credentials.")
         except Exception as e:
             ## log here
-            pass 
+            raise RuntimeError(f"Unexpectd error during onion server removal {e}")
+ 
 
         return
 
     @classmethod
+    def _open_setup_file(cls):
+
+        try:
+            with open(f"{cls.APPLICATION_ROOT}/config.json" ,"r" , encoding="utf-8") as jfile:
+                set_up_data = json.load(jfile)
+        except FileNotFoundError as e:
+            raise RuntimeError("The setup file cannot be found, check the make install step")
+        return set_up_data
+
+
+    @classmethod
     def start_tor(cls,timeout) -> None:
 
-        executabel_path = f"{cls.APPLICATION_ROOT}/tor_service/files/usr/bin/tor"
-        torcc_path = f"{cls.APPLICATION_ROOT}/tor_service/torrc"
+        ## Load the configuration file
+        cls.config_json = cls._open_setup_file()
         try:
+            cls.docker_client = docker.from_env()
+        except Exception  as e:
+            raise RuntimeError(f"Error trying top connect to docker client {e}")
 
-            process = subprocess.Popen([f"{executabel_path}", "-f", torcc_path])
-            cls.proxy_process =process  
-            # cls._kill_tor()
-
+        container_name = cls.config_json["container-name"]
+        try:
+            cls.docker_container = cls.docker_client.containers.get(container_name)
+            cls.docker_container.start()
         except Exception as e:
-            cls._kill_tor()
+            raise RuntimeError(f"Unable to start docker container {e}")
 
-            raise ConnectionError(
-            f"Error! Trying to run tor proxy service process! check executable path: {executabel_path}"
-            ) from e
-        try:
-            cls.wait_for_socks()
-        except TimeoutError:
-            cls._kill_tor()
-            raise TimeoutError("Tor process dindt wake in time!")
+        cls.wait_for_socks(cls.config_json["port"])
+        cls.TOR_CONTROL_PORT = cls.config_json["control-port"]
         
-        try :
-            proxy = Proxy(proxy_type= ProxyType.SOCKS5,
-                            host= "127.0.0.1" , port = 9050, rdns=True)
-            local_socekt = proxy.connect(dest_host="8.8.8.8" , dest_port=53,timeout = timeout)
-            local_socekt.close()
-        except TimeoutError as e:
-            cls._kill_tor()
-            raise TimeoutError((f"Tor proxy was unable to connect in {timeout} seconds; please restart the application!")) from e
-        except Exception as e:
-            cls._kill_tor()
-            raise e
-
     @classmethod
     def _kill_tor(cls):
         try:
-            cls.proxy_process.terminate()
-            cls.proxy_process.wait()
+            cls.docker_container.stop()
+            cls.docker_container.wait()
         except Exception as e:
+            #Log here
             pass
     
     @classmethod 

@@ -67,7 +67,7 @@ class ClientConnection(BaseConnection):
         self.password = password
         self.HOST  = None 
         self.PORT = None
-        self.PROXY_PORT = 9050
+        self.PROXY_PORT = 9050 # fixed here for while
         self.sock = None
         self.writer = None  
         self._connected = False

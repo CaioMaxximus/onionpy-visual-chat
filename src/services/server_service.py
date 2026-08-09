@@ -17,14 +17,12 @@ def rollback(func):
         try:
             return await func(self,rollback_operations ,*args ,**kwargs)
         except Exception as e:
+
             for op in reversed(rollback_operations):
                     try :
-                        res = op
+                        res = op()
                         if inspect.isawaitable(res):
-                            await res()
-                        else:
-                            res()
-
+                            await res
                     except Exception:
                         pass
             raise e
@@ -97,8 +95,8 @@ class ServerService():
             return 
         else:
             raise ValueError("Invalid password format; " \
-            "minimum of 8 characters, at least 1 uppercase letter, " \
-            "1 lowercase letter, 1 number, and 1 special character")
+            "minimum of 8 characters "
+            )
 
 
     @rollback        

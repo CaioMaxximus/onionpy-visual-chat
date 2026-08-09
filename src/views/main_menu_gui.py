@@ -151,9 +151,7 @@ class MainMenuGUI:
     def create_new_server(self):
 
         password_label_message = "Insert the password if the server has strict acess otherwise leave it blank.\n " \
-        "Minimum of 8 characters," \
-        " at least 1 uppercase letter, " \
-        "1 lowercase letter, 1 number, and 1 special character; any blank space after or before will be removed!"
+        "Minimum of 8 characters ;any blank space after or before will be removed!"
 
         pop_w = PopUpEntryGui(self.root,
                                ["Define a name for the new server, with al least 6 and a maximus of 30 characters",

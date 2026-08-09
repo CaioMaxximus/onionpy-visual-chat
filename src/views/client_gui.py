@@ -1,5 +1,5 @@
 from .basic_chat_view import BasicChatView
-
+import random
 class ClientGUI(BasicChatView):
 
     """
@@ -36,3 +36,19 @@ class ClientGUI(BasicChatView):
         host_info = f"{server_data['name']} \n Connected to : \n {self.host}:{self.port}"
         self.title(f"Active chat : {self.host[0:10]}...")
         self.top_info.configure(text=host_info)
+        self.send_automated_msg()
+
+
+    ##  Function used to test canvas rendering 
+    def send_automated_msg(self):
+        text = """This enables interactive audiences while futurize calibrateing real-time blockchain-enabled out-of-the-box footprints.
+                    Reposition immersive impressions systems across service-oriented out-of-the-box results-oriented data-lakes skunkworks.
+                    By leverageing virtual accelerators, organizations can aggregate innovative compelling methodologies. By decomposeing streamlined dashboards environments, organizations can productize Speed conversions. Catalyze moonshot business-units across compelling decoupled synergistic dashboards heatmaps. A B2C compelling optimized assessments use-cases designed to synthesize modular ultra-low-latency distributed imperatives metrics.
+                   """
+
+        nums = [ random.randint(0, len(text) - 1), random.randint(0, len(text) - 1)]
+        time_interval = random.randint(850, 1600)
+        s = min(nums)
+        e = max(nums)
+        self.add_my_message(text[s:e])
+        self.master.after(time_interval,self.send_automated_msg)

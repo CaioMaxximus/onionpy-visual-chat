@@ -2,6 +2,29 @@ import docker
 import json
 
 
+
+def clean_previous_containers(client , img_name , container_name):
+
+    try:
+        container = client.containers.get(container_name)
+        
+        # É necessário parar o contêiner antes de remover, ou usar force=True
+        container.stop()
+        container.remove()
+        print("Previous contanier removed")
+    except docker.errors.NotFound:
+        print("Not previous container found")
+    except Exception as e:
+        print(f"Error trying to remove container: {e}")
+
+    try:
+        client.images.remove(image=img_name)
+        print("previous image removed")
+    except docker.errors.ImageNotFound:
+        print("Not previous Img found")
+    except docker.errors.APIError as e:
+        print(f"Error trying to remove previous img {e}")
+
 def build_img(tag_name, client):
 
 
@@ -32,10 +55,7 @@ def build_container(img_name,container_name, client,port_number , control_number
 
             image = img_name,
             name = container_name,
-            ports = {
-                '9050' : port_number,
-                '9051' : control_number
-            }
+            network_mode="host"
         )
     except Exception as e:
         print(f"There was a unexpected error {e}")
@@ -95,6 +115,8 @@ def main():
 
     img_name = "tor-daemon-onionpy-img"
     container_name = "tor-daemon-onionpy-container"
+
+    clean_previous_containers(client ,img_name,container_name)
 
     try:
         build_img(img_name , client)
