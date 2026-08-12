@@ -47,6 +47,8 @@ def build_img(tag_name, client):
         print(f"There was a unexpected error {e}")
         raise e
 
+
+#discontinued here
 def build_container(img_name,container_name, client,port_number , control_number):
     print("entrei no buld container")
     print("Stating container creation\n")
@@ -104,6 +106,20 @@ def configure_startup_file(img_name, container_name):
 
     return (port_number ,control_number)
 
+def generate_torrc_file(port_number , control_number):
+
+    torrc_content = f"""
+        SocksPort 127.0.0.1:{port_number}
+        ControlPort 127.0.0.1:{control_number}
+        DataDirectory /var/lib/tor
+        CookieAuthentication 0
+        Log notice stdout
+
+    """
+
+    with open("torrc" , "w" , encoding="utf-8") as file:
+        file.write(torrc_content)
+
 
 def main():
 
@@ -115,8 +131,16 @@ def main():
 
     img_name = "tor-daemon-onionpy-img"
     container_name = "tor-daemon-onionpy-container"
-
     clean_previous_containers(client ,img_name,container_name)
+
+
+    try:
+        port_number , control_number = configure_startup_file(img_name,container_name)
+    except Exception as e:
+        print(e)
+        return
+
+    generate_torrc_file(port_number,control_number)
 
     try:
         build_img(img_name , client)
@@ -124,18 +148,15 @@ def main():
         print(e)
         return
  
-    try:
-        port_number , control_number = configure_startup_file(img_name,container_name)
-    except Exception as e:
-        print(e)
-        return
 
-    try:
-        print("build container")
-        build_container(img_name , container_name,client, port_number , control_number)
-    except Exception as e:
-        print(e)
-        return
+    
+
+    # try:
+    #     print("build container")
+    #     build_container(img_name , container_name,client, port_number , control_number)
+    # except Exception as e:
+    #     print(e)
+    #     return
    
 
 if __name__ == "__main__":

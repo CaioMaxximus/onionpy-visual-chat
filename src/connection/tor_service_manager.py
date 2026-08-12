@@ -12,7 +12,7 @@ import asyncio
 from python_socks import ProxyType## Temporary!
 import docker
 import json
-
+import secrets
 
 class TorServiceManager():
 
@@ -29,7 +29,7 @@ class TorServiceManager():
     global_controller = None
     config_json = None
     docker_client = None
-    password= "mypass"
+    password= ""
     INSTANCES_PATH = "tor_service/tor_instances"
     proxy_process = None
     TOR_CONTROL_PORT = None
@@ -284,20 +284,32 @@ class TorServiceManager():
             raise RuntimeError(f"Error trying top connect to docker client {e}")
 
         container_name = cls.config_json["container-name"]
+        img_name = cls.config_json["img-name"]
+        secret_pass = secrets.token_hex(16)
         try:
-            cls.docker_container = cls.docker_client.containers.get(container_name)
-            cls.docker_container.start()
+            cls.docker_container =  cls.docker_client.containers.run(
+            
+                        image = img_name,
+                        name = container_name,
+                        network_mode="host",environment = {"TOR_PASSWORD" : secret_pass}
+                        ,detach= True,
+                        auto_remove=True
+                    )
+            # cls.docker_container = cls.docker_client.containers.get(container_name)
+            # cls.docker_container.start(enviroment = {"TOR_PASSWORD" : secret_pass})
+
         except Exception as e:
             raise RuntimeError(f"Unable to start docker container {e}")
 
         cls.wait_for_socks(cls.config_json["port"])
         cls.TOR_CONTROL_PORT = cls.config_json["control-port"]
+        cls.password = secret_pass
         
     @classmethod
     def _kill_tor(cls):
         try:
             cls.docker_container.stop()
-            cls.docker_container.wait()
+            # cls.docker_container.wait()
         except Exception as e:
             #Log here
             pass
