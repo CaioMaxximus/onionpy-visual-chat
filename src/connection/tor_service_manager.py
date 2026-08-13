@@ -1,18 +1,13 @@
 import os
 import subprocess
 from pathlib import Path
-from python_socks.sync import Proxy
-# from python_socks._types import ProxyType
 from stem.control import Controller
 import time
 import socket
 import shutil
-import asyncio
-# from python_socks.async_.asyncio import Proxy
-from python_socks import ProxyType## Temporary!
 import docker
-import json
 import secrets
+from src.infrastructure import ConfigLoader
 
 class TorServiceManager():
 
@@ -22,17 +17,16 @@ class TorServiceManager():
     
     """
 
-    APPLICATION_ROOT = os.getenv("APPLICATION_ROOT") or str(Path(__file__).resolve().parents[2])
+    APPLICATION_ROOT = ConfigLoader.get_application_root()
+    INSTANCES_PATH = "tor_service/tor_instances"
+    TOR_CONTROL_PORT = None
 
-    if not os.path.isdir(APPLICATION_ROOT):
-        raise RuntimeError(f"APPLICATION_ROOT invalid: {APPLICATION_ROOT}")
+
     global_controller = None
     config_json = None
     docker_client = None
     password= ""
-    INSTANCES_PATH = "tor_service/tor_instances"
     proxy_process = None
-    TOR_CONTROL_PORT = None
 
     @classmethod
     def create_new_onion_server(cls, server_name ):
@@ -262,22 +256,24 @@ class TorServiceManager():
 
         return
 
+
+
     @classmethod
-    def _open_setup_file(cls):
+    def _container_exists(cls,docker_client, container_name):
 
         try:
-            with open(f"{cls.APPLICATION_ROOT}/config.json" ,"r" , encoding="utf-8") as jfile:
-                set_up_data = json.load(jfile)
-        except FileNotFoundError as e:
-            raise RuntimeError("The setup file cannot be found, check the make install step")
-        return set_up_data
+            docker_client.containers.get(container_name)
+        except docker.errors.NotFound:
+            return False
+        except Exception as e:
+            raise RuntimeError(f"Problemm trying to connect with the container {e}")
+        return True
 
 
     @classmethod
     def start_tor(cls,timeout) -> None:
 
-        ## Load the configuration file
-        cls.config_json = cls._open_setup_file()
+        cls.config_json = ConfigLoader.get_config_data()
         try:
             cls.docker_client = docker.from_env()
         except Exception  as e:
@@ -286,6 +282,11 @@ class TorServiceManager():
         container_name = cls.config_json["container-name"]
         img_name = cls.config_json["img-name"]
         secret_pass = secrets.token_hex(16)
+
+        if cls._container_exists(cls.docker_client,container_name):
+            print("o container ja existe")
+            cls.docker_client.containers.get(container_name).remove(force = True)
+
         try:
             cls.docker_container =  cls.docker_client.containers.run(
             

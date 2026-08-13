@@ -11,7 +11,6 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
 ## Status
 
   - Cleaning architecture
-  - Working in tor container connection
 
 ## ✨ Features
 

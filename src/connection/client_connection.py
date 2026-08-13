@@ -6,7 +6,8 @@ from typing import Any, Callable ,Optional
 from decorators import validate_connection_state
 from infrastructure import client_connection_handshake,handle_server_response
 from .base_connection import BaseConnection
-from models import ServerMessage
+from src.models import ServerMessage
+from src.infrastructure import ConfigLoader
 
 
 ## This will use an interface
@@ -67,7 +68,7 @@ class ClientConnection(BaseConnection):
         self.password = password
         self.HOST  = None 
         self.PORT = None
-        self.PROXY_PORT = 9050 # fixed here for while
+        self.PROXY_PORT = ConfigLoader.get_proxy_port_number() # fixed here for while
         self.sock = None
         self.writer = None  
         self._connected = False
@@ -188,7 +189,7 @@ class ClientConnection(BaseConnection):
         try:
             self.proxy = Proxy(proxy_type= ProxyType.SOCKS5,
                             host= "127.0.0.1" , port = self.PROXY_PORT, rdns=True)
-            self.sock  = await self.proxy.connect(dest_host = self.HOST,dest_port= self.PORT,timeout=20
+            self.sock  = await self.proxy.connect(dest_host = self.HOST,dest_port= self.PORT,timeout=30
             )   
         except TimeoutError as e:
             raise RuntimeError(f"Connection timeout in proxy connection {self.HOST}:{self.PORT}") from e
