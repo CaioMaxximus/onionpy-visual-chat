@@ -175,8 +175,10 @@ class BaseAsyncController(ABC):
 
     
     def _enqueue(self, func : Callable, *args, callback=None):
-        self.my_loop.call_soon_threadsafe(self.function_queue.put_nowait, (func, args, callback))
-      
+        try:
+            self.my_loop.call_soon_threadsafe(self.function_queue.put_nowait, (func, args, callback))
+        except RuntimeError:
+            pass
     
 
     async def stop_routines(self) -> None:

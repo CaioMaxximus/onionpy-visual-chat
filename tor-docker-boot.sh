@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [-z "$TOR_PASSWORD"]; then
+if [- z "$TOR_PASSWORD"]; then
     echo "Can't start daemon without a proper password"
     exit 1
 

@@ -1,163 +1,167 @@
 import docker
 import json
+import threading
+import customtkinter as ctk
 
+ctk.set_appearance_mode("Dark")
+ctk.set_default_color_theme("blue")
 
+class TorDockerApp(ctk.CTk):
+    def __init__(self):
+        super().__init__()
 
-def clean_previous_containers(client , img_name , container_name):
+        self.title("Tor Docker Setup Manager")
+        self.geometry("600x650")
+        self.resizable(False, False)
+        self.img_name = "tor-daemon-onionpy-img"
+        self.container_name = "tor-daemon-onionpy-container"
 
-    try:
-        container = client.containers.get(container_name)
+        self._build_gui()
+
+    def _build_gui(self):
+        self.title_label = ctk.CTkLabel(
+            self, text="Gerenciador Tor Daemon", font=ctk.CTkFont(size=22, weight="bold")
+        )
+        self.title_label.pack(padx=20, pady=(20, 10))
+
+        self.config_frame = ctk.CTkFrame(self)
+        self.config_frame.pack(padx=20, pady=10, fill="x")
+
+        self.socks_label = ctk.CTkLabel(self.config_frame, text="Port SOCKS Proxy (default 9050):")
+        self.socks_label.pack(anchor="w", padx=15, pady=(10, 0))
         
-        # É necessário parar o contêiner antes de remover, ou usar force=True
-        container.stop()
-        container.remove()
-        print("Previous contanier removed")
-    except docker.errors.NotFound:
-        print("Not previous container found")
-    except Exception as e:
-        print(f"Error trying to remove container: {e}")
+        self.socks_entry = ctk.CTkEntry(self.config_frame, placeholder_text="9050")
+        self.socks_entry.insert(0, "9050")
+        self.socks_entry.pack(fill="x", padx=15, pady=(0, 10))
 
-    try:
-        client.images.remove(image=img_name)
-        print("previous image removed")
-    except docker.errors.ImageNotFound:
-        print("Not previous Img found")
-    except docker.errors.APIError as e:
-        print(f"Error trying to remove previous img {e}")
+        self.control_label = ctk.CTkLabel(self.config_frame, text="Port de Controle (default 9051):")
+        self.control_label.pack(anchor="w", padx=15, pady=(5, 0))
 
-def build_img(tag_name, client):
+        self.control_entry = ctk.CTkEntry(self.config_frame, placeholder_text="9051")
+        self.control_entry.insert(0, "9051")
+        self.control_entry.pack(fill="x", padx=15, pady=(0, 15))
 
-
-    print("Starting to buld docker img")
-    
-            
-    try:
-        print("Starting building image")
-
-        image , logs = client.images.build(
-            path  = ".",
-            tag = tag_name
-
+        self.run_button = ctk.CTkButton(
+            self, text="Start configuration and build", command=self.start_process_thread, font=ctk.CTkFont(weight="bold")
         )
-        print(f"The image {tag_name} was build successfully")
-    except docker.errors.BuildError as e:
-        print(f"Error during docker build phase : {e}")
-        raise e
-    except Exception as e:
-        print(f"There was a unexpected error {e}")
-        raise e
+        self.run_button.pack(padx=20, pady=10, fill="x")
 
+        self.log_label = ctk.CTkLabel(self, text="Logs:")
+        self.log_label.pack(anchor="w", padx=20, pady=(10, 0))
 
-#discontinued here
-def build_container(img_name,container_name, client,port_number , control_number):
-    print("entrei no buld container")
-    print("Stating container creation\n")
-    try:
-        container = client.containers.create(
+        self.log_textbox = ctk.CTkTextbox(self, height=220, font=ctk.CTkFont(family="Consolas", size=12))
+        self.log_textbox.pack(padx=20, pady=(5, 20), fill="both", expand=True)
 
-            image = img_name,
-            name = container_name,
-            network_mode="host"
-        )
-    except Exception as e:
-        print(f"There was a unexpected error {e}")
-        raise e
-    
-    print("Container creation ending..")
+    def log(self, text):
+        self.log_textbox.insert("end", text + "\n")
+        self.log_textbox.see("end")
 
-    
-def collect_valid_port_number(blacklist):
-
-    while True:
+    def validate_ports(self, socks_str, control_str):
         try:
-            port_number = int(input())
-            if port_number < 8000 or port_number > 10000 or port_number in blacklist:
-                raise ValueError
-        except Exception:
-            print("iNSERT A VALID PORT NUMBER BETWEEN 8000 AND 10000")
-        else:
-            return port_number
-        
-def configure_startup_file(img_name, container_name):
+            socks_port = int(socks_str)
+            control_port = int(control_str)
 
-    port_number = 9050
-    control_number = 9051
+            if not (8000 <= socks_port <= 10000) or not (8000 <= control_port <= 10000):
+                self.log("❌ Erro: The port must be between 8000 and 10000.")
+                return None, None
 
-    print("Want to change the port number for tor proxy service. (default 9050)")
-    res_p = input("Enter S if you wish: ")
-    if res_p.upper() == "S":
-        port_number = collect_valid_port_number([])
+            if socks_port == control_port:
+                self.log("❌ Erro: The ports cant be equal")
+                return None, None
 
-    print("Want to change the port number for tor control service; (default 9051)")
-    res_c = input("Enter S if you wish: ")
-    if res_c.upper() == "S":
-        control_number = collect_valid_port_number([port_number])
+            return socks_port, control_port
+        except ValueError:
+            self.log("❌ Error, Insert valid numbers")
+            return None, None
 
+    def clean_previous_containers(self, client):
+        try:
+            container = client.containers.get(self.container_name)
+            container.stop()
+            container.remove()
+            self.log("✔ Previous contanier removed")
+        except docker.errors.NotFound:
+            self.log("ℹ Not previous container found")
+        except Exception as e:
+            self.log(f"⚠️ Error trying to remove container: {e}")
 
-    config = {
-        "port" : port_number,
-        "control-port" : control_number,
-        "img-name" : img_name,
-        "container-name" : container_name
+        try:
+            client.images.remove(image=self.img_name)
+            self.log("✔ previous image removed")
+        except docker.errors.ImageNotFound:
+            self.log("ℹ Not previous Img found")
+        except docker.errors.APIError as e:
+            self.log(f"⚠️ Error trying to remove previous img {e}")
+
+    def generate_torrc_file(self, port_number, control_number):
+        torrc_content = f"""SocksPort 127.0.0.1:{port_number}
+            ControlPort 127.0.0.1:{control_number}
+            DataDirectory /var/lib/tor
+            CookieAuthentication 0
+            Log notice stdout
+            """
+        with open("torrc", "w", encoding="utf-8") as file:
+            file.write(torrc_content)
+        self.log("✔ 'torrc' File created successfully")
+
+    def configure_startup_file(self, port_number, control_number):
+        config = {
+            "port": port_number,
+            "control-port": control_number,
+            "img-name": self.img_name,
+            "container-name": self.container_name,
         }
+        with open("config.json", "w", encoding="utf-8") as file:
+            json.dump(config, file, indent=4)
+        self.log("✔ 'config.json' Updated.")
 
-    with open("config.json" ,"w" , encoding="utf-8") as file:
-        json.dump(config, file , indent= 4)
+    def build_img(self, client):
+        self.log("⏳Starting docker ing build...")
+        try:
+            image, logs = client.images.build(path=".", tag=self.img_name)
+            self.log(f"🚀 The image '{self.img_name}' was build successfully!")
+        except docker.errors.BuildError as e:
+            self.log(f"❌ Error in docker build phase: {e}")
+            raise e
+        except Exception as e:
+            self.log(f"❌ Unexpected error: {e}")
+            raise e
 
-    return (port_number ,control_number)
+    def start_process_thread(self):
 
-def generate_torrc_file(port_number , control_number):
+        self.run_button.configure(state="disabled")
+        self.log_textbox.delete("1.0", "end")
+        threading.Thread(target=self.run_process, daemon=True).start()
 
-    torrc_content = f"""
-        SocksPort 127.0.0.1:{port_number}
-        ControlPort 127.0.0.1:{control_number}
-        DataDirectory /var/lib/tor
-        CookieAuthentication 0
-        Log notice stdout
+    def run_process(self):
+        socks_port, control_port = self.validate_ports(
+            self.socks_entry.get(), self.control_entry.get()
+        )
+        
+        if socks_port is None or control_port is None:
+            self.run_button.configure(state="normal")
+            return
 
-    """
+        try:
+            client = docker.from_env()
+        except Exception as e:
+            self.log(f"❌ Error conecting with the docker {e}")
+            self.run_button.configure(state="normal")
+            return
 
-    with open("torrc" , "w" , encoding="utf-8") as file:
-        file.write(torrc_content)
+        self.clean_previous_containers(client)
+        self.configure_startup_file(socks_port, control_port)
+        self.generate_torrc_file(socks_port, control_port)
 
+        try:
+            self.build_img(client)
+            self.log("\n✅ Process ended!")
+        except Exception:
+            self.log("\n❌ The process failed during the buld.")
+        finally:
+            self.run_button.configure(state="normal")
 
-def main():
-
-    try:
-        client = docker.from_env()
-    except Exception as e:
-        print(f"Error while trying to find the docker service : {e}")
-        return 
-
-    img_name = "tor-daemon-onionpy-img"
-    container_name = "tor-daemon-onionpy-container"
-    clean_previous_containers(client ,img_name,container_name)
-
-
-    try:
-        port_number , control_number = configure_startup_file(img_name,container_name)
-    except Exception as e:
-        print(e)
-        return
-
-    generate_torrc_file(port_number,control_number)
-
-    try:
-        build_img(img_name , client)
-    except Exception as e:
-        print(e)
-        return
- 
-
-    
-
-    # try:
-    #     print("build container")
-    #     build_container(img_name , container_name,client, port_number , control_number)
-    # except Exception as e:
-    #     print(e)
-    #     return
-   
 
 if __name__ == "__main__":
-    main()
+    app = TorDockerApp()
+    app.mainloop()

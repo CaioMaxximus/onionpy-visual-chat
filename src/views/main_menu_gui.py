@@ -56,7 +56,7 @@ class MainMenuGUI:
                  client_gui_navigate,server_gui_navigate):
         
         BASE_DIR = Path(__file__).resolve().parent     
-        PROJECT_ROOT = BASE_DIR.parent     
+        self.PROJECT_ROOT = BASE_DIR.parent     
 
         self.root = root
         self.root.geometry("630x630")
@@ -68,7 +68,19 @@ class MainMenuGUI:
         self.client_gui_navigate = client_gui_navigate
         self.server_gui_navigate = server_gui_navigate
 
-        # set a purple background similar to the Tor symbol
+        self.controller.run(self.root,self.start_tor_daemon)
+
+
+
+    def start_tor_daemon(self):
+        self.get_notification_routine()
+
+        self.controller.start_tor_service(lambda _ : self.build_interface(self.root, self.PROJECT_ROOT))
+
+
+
+
+    def build_interface(self, root, PROJECT_ROOT):
         self.main_frame = ctk.CTkFrame(root)
         self.main_frame.pack(expand = True , fill="both")
         
@@ -104,7 +116,7 @@ class MainMenuGUI:
             height=30,
             fg_color="#6B2FB3",
             hover_color="#444",
-            command=lambda:self.open_configarion()
+            command=lambda:self.open_configuration()
         )
         self.config_btn.pack(pady = 30)
 
@@ -132,17 +144,16 @@ class MainMenuGUI:
         self.my_visited_servers_list = ItemListView(self.bottow_frame,"My discovered servers", self.initiate_client_window,
                                                     lambda server : (f"{server.name}"))
         self.my_visited_servers_list.pack(side = "right", fill = "y", padx=10, pady=10)
-        self.controller.run(self.root,self.create_tables)
+        self.create_tables()
 
     def create_tables(self):
         def fecth_local_data(*args):
             self.controller.get_servers(lambda servers: self.my_servers_list.update_items(servers) )
             self.controller.get_discovered_servers(lambda servers_info: self.my_visited_servers_list.update_items(servers_info) )
-            self.get_notification_routine()
             
         self.controller.start_tables(fecth_local_data)
 
-        # self.open_configarion()
+        # self.open_configuration()
 
     def on_close(self):
             self.controller.end_tor(callback = lambda _ : self.root.destroy())
@@ -204,11 +215,12 @@ class MainMenuGUI:
                               ["Insert the password if the server has strict acess otherwise leave it blank","Insert a fantasy name"],
                               ["password" ,"name"])
         self.root.wait_window(pop_w)
-        self.client_gui_navigate(self.root, pop_w.registered_values["name"] ,server_info.hostname, server_info.port, password = pop_w.registered_values["password"])
+        if pop_w.done:
+            self.client_gui_navigate(self.root, pop_w.registered_values["name"] ,server_info.hostname, server_info.port, password = pop_w.registered_values["password"])
 
 
     # i will move this to application coordinato
-    def open_configarion(self):
+    def open_configuration(self):
         self.config_view = ConfigurationGUI(self.root ,self.main_frame ,  self.controller)
         self.config_view.place(relx=0, rely=0, relwidth=1, relheight=1)
         # config_view.tkraise()

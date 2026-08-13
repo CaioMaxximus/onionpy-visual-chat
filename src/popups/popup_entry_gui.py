@@ -31,8 +31,9 @@ class PopUpEntryGui(ctk.CTkToplevel):
 
     def __init__(self, master, labels , maps_of_inputs) -> None:
         super().__init__(master)
-        self.width = 270
+        self.width = 300
         self.geometry(f"{self.width}x{self.width}")
+        self.title("MENU")
         self.master = master
         self.labels = labels
         self.maps_of_inputs = maps_of_inputs
@@ -43,7 +44,7 @@ class PopUpEntryGui(ctk.CTkToplevel):
         self.confirm_btn = ctk.CTkButton(self,text= "CONFIRM", command= self.confirm)
         self.confirm_btn.pack(side = "bottom" , pady = 8)
         self.generate_personalized_inputs()
-        self.registered_values = {}
+        self.registered_values = dict(zip(maps_of_inputs, ["" for e in range(len(maps_of_inputs))]))
         self.done = False
         self.resizable(False, False)
 

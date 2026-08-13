@@ -60,7 +60,6 @@ class MenuController:
             self.function_queue = asyncio.Queue()
             self.running = True
             self.my_loop = asyncio.get_running_loop()
-            self._enqueue(self._start_tor_service)
             self.notification_bus.start()
             self.main_routine = asyncio.create_task(self.function_dispatcher())
             self.gui_loop.after(100,callback)
@@ -70,6 +69,9 @@ class MenuController:
             asyncio.run(start())
         except asyncio.CancelledError:
             pass
+
+    def start_tor_service(self,callback):
+        self._enqueue(func = self._start_tor_service, callback=callback)
     
     async def _start_tor_service(self):
         await self.service.start_tor_service(self.tor_start_timeout)

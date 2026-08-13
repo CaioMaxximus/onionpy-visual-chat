@@ -1,4 +1,5 @@
 import asyncio
+from src.models import Notification , NotificationType
 
 class MenuService:
 
@@ -18,6 +19,7 @@ class MenuService:
     
     async def start_tor_service(self,tor_start_timeout):
         await asyncio.to_thread(self.tor_service.start_tor,tor_start_timeout)
+        await self.notification_bus.send(Notification( NotificationType.SUCCESS ,"Tor service is ready!") )
 
     async def start_tables(self):
         await self.repository.create_tables()
@@ -27,8 +29,10 @@ class MenuService:
     
     async def remove_server(self, server_name):
        
-       await asyncio.to_thread(self.tor_service.remove_onion_service,server_name)
-       await self.repository.remove_server(server_name)
+        await asyncio.to_thread(self.tor_service.remove_onion_service,server_name)
+        await self.repository.remove_server(server_name)
+        await self.notification_bus.send(Notification( NotificationType.SUCCESS ,f"Server {server_name} way removed"))
+
     
     async def remove_discovered_server(self,hostname):
         await self.repository.remove_discovered_server(hostname)
