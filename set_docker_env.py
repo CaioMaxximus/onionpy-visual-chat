@@ -2,6 +2,7 @@ import docker
 import json
 import threading
 import customtkinter as ctk
+from pathlib import Path
 
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("blue")
@@ -133,6 +134,15 @@ class TorDockerApp(ctk.CTk):
         self.log_textbox.delete("1.0", "end")
         threading.Thread(target=self.run_process, daemon=True).start()
 
+    def create_servers_folder(self):
+
+        servers_path = Path("tor_service/tor_instances")
+        if not servers_path.is_dir():
+        
+            self.log("\n✅Creating servers folder")
+            servers_path.mkdir(parents=True,exist_ok=True)
+            
+
     def run_process(self):
         socks_port, control_port = self.validate_ports(
             self.socks_entry.get(), self.control_entry.get()
@@ -141,7 +151,11 @@ class TorDockerApp(ctk.CTk):
         if socks_port is None or control_port is None:
             self.run_button.configure(state="normal")
             return
-
+        try:
+            self.create_servers_folder()
+        except Exception as e:
+            self.log(f"❌ Error creating servers folder {e}")
+            return 
         try:
             client = docker.from_env()
         except Exception as e:
