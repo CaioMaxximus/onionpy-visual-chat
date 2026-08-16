@@ -7,9 +7,10 @@ class PopUpNotificationGUI(CTkToplevel):
         
         super().__init__(master)
         # keep window on top of master and fixed size
+        master.bind("<Configure>",self.center_position_to_midle)
         self.transient(master)
         self.resizable(False, False)
-        
+        self.title("")
         self.disable_button = disable_button
         self.message_label = CTkLabel(self, text=message)
         self.confirm_btn = CTkButton(self, text="CONFIRM", command=lambda: self.on_close(True))
@@ -25,7 +26,7 @@ class PopUpNotificationGUI(CTkToplevel):
         self.change_notification_type( notification_type)
         self.final_val = False
         self.callback = callback
-        self.protocol("WM_DELETE_WINDOW", lambda : print("suave"))
+        # self.protocol("WM_DELETE_WINDOW", lambda : print("suave"))
 
     
 
@@ -60,6 +61,28 @@ class PopUpNotificationGUI(CTkToplevel):
             self.message_label.configure(text_color=text_color)
         except Exception:
             pass
+
+
+
+
+    def center_position_to_midle(self,event):
+
+        if self.winfo_exists():
+
+            root_x = self.master.winfo_x()
+            root_y = self.master.winfo_y()
+            root_w = self.master.winfo_width()
+            root_h = self.master.winfo_height()
+
+            l_wigdet = self.winfo_width()
+            l_height = self.winfo_height()
+
+            new_x = root_x + (root_w // 2) - (l_wigdet // 2)
+            new_y = root_y + (root_h // 3) - (l_height // 2)
+
+            self.geometry(f"+{new_x}+{new_y}")
+
+
         
     def change_buttons_state(self) -> None:
         self.disable_button = not self.disable_button
