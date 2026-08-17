@@ -36,8 +36,8 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
 - ✅ **Handshake Protocol**: JSON-based with mandatory authentication fields
 - ✅ **Tor Routing**: All traffic routed through Tor hidden services
 
-### Known Limitations
-- ⚠️ **Security issues**: This user the tor network fot its connections but its not audited for security
+## Known Limitations
+- ⚠️ **Security issues**: This application is not audited; verify the source code first.
 
 ---
 ##  Tkinter issues
@@ -47,8 +47,11 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
 ---
 
 ## Requirements
+
+- Docker 
 - Python 3.8+
-- Dependencies listed in `requirements.txt`
+- To run the build steps you need to have special permissions for your docker : https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user
+
 
 ## Install
 ```bash
