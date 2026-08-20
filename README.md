@@ -39,12 +39,6 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
 ## Known Limitations
 - ⚠️ **Security issues**: This application is not audited; verify the source code first.
 
----
-##  Tkinter issues
-
--  The messages inside the Scrollable element will need a new render method, to manage the receiving of too many messages;
-
----
 
 ## Requirements
 
