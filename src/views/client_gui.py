@@ -47,7 +47,7 @@ class ClientGUI(BasicChatView):
                    """
 
         nums = [ random.randint(0, len(text) - 1), random.randint(0, len(text) - 1)]
-        time_interval = random.randint(850, 1600)
+        time_interval = random.randint(350, 1600)
         s = min(nums)
         e = max(nums)
         self.add_my_message(text[s:e])

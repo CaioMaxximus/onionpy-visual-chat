@@ -3,7 +3,7 @@ import queue
 from popups import PopUpNotificationGUI  , PopUpEntryGui
 from components.message_frame import MessageFrame
 from src.models import NotificationType
-
+from src.components import LazyScroller
 
 
 
@@ -104,14 +104,21 @@ class BasicChatView(ctk.CTkToplevel):
 
     def  build_interface(self) -> None:
 
+
         self.top_info = ctk.CTkLabel(self,text= "Total active users : 0")
         self.top_info.pack(pady = 3)
 
         self.copy_btn = ctk.CTkButton(self, text = "copy", width= int(self.width * 0.10) )
         self.copy_btn.pack()
 
-        self.scroll_frame = ctk.CTkScrollableFrame(self, label_text="")
+        # self.scroll_frame = ctk.CTkScrollableFrame(self, label_text="")
+        # self.scroll_frame.pack(expand=True, fill="both", padx=10, pady=10)
+
+        self.scroll_frame = LazyScroller(self, 300, 30, MessageFrame, label_text="")
         self.scroll_frame.pack(expand=True, fill="both", padx=10, pady=10)
+
+        self.bind("<Button-4>", self.scroll_frame._on_mousewheel)
+        self.bind("<Button-5>", self.scroll_frame._on_mousewheel)
 
         self.insert_message_btn = ctk.CTkButton(self, text = "enter", command= self.collect_message_inp
                                                 , width= min(int(self.width * 0.45),175 ))
@@ -259,22 +266,19 @@ class BasicChatView(ctk.CTkToplevel):
             fg_color = "#56378f"
             width = int(self.width * 0.9)
 
-        message_frame = MessageFrame(
-            self.scroll_frame,
-            author_name,
-            content=entry,
-            width= width,
-            callback= print,
-            fg_color=fg_color,
-            corner_radius=10
-        )
-        message_frame.pack(
-            padx=((side_gap, 0) if not owner else (0, side_gap)),
-            pady=10,
-            fill="x",
-            anchor="w"
-        )
+        data = {
+            "author_name": author_name,
+            "entry": entry,
+            "width": width,
+            "callback": print,
+            "column": 0 if not owner else 1,
+            "fg_color": fg_color,
+            "side_gap" : side_gap
+        }
 
+
+        self.scroll_frame.add_children(data)
+        
         self.after(90 , self.scroll_to_bottom)
 
     def collect_message_inp(self):
@@ -295,5 +299,3 @@ class BasicChatView(ctk.CTkToplevel):
         self.controller.send_message_to_web(msg , None)
         self.message_queue.put(msg)
 
-    def scroll_to_bottom(self) -> None:
-        self.scroll_frame._parent_canvas.yview_moveto(1.0)
