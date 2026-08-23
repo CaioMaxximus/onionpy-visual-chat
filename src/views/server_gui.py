@@ -36,6 +36,7 @@ class ServerGUI(BasicChatView):
         self.title("Server Onion conneciton")
         self.password = password
         self.controller.run(self.master , lambda : self._start_server())
+
     
     def _start_server(self) -> None: 
 

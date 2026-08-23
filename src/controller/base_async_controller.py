@@ -2,7 +2,7 @@ import asyncio
 from typing import Any, Callable, Optional, Tuple
 from src.models import Notification , NotificationType
 from abc import ABC
-
+from queue import Queue
 #Temporary location
 RETRYABLE_ERRORS = (TimeoutError , ConnectionError , ConnectionAbortedError)
 
@@ -35,9 +35,11 @@ class BaseAsyncController(ABC):
     """
 
     def __init__(self, service,notification_bus):
+
         self.service = service
         self.notification_bus = notification_bus
         self.function_queue : Optional[asyncio.Queue] 
+        self.callback_queue  = Queue()
 
         self.HOST = None
         self.PORT = None
@@ -165,14 +167,12 @@ class BaseAsyncController(ABC):
             pass
 
     def _execute_callback(self,*args,callback = None):
-        if callback is not None:
-            try:
-                self.gui_loop.after(10,callback,*args)
-            except AttributeError:
-                raise AttributeError(f"Event loop is None, unable to callback {callback}")
-            except Exception as e:
-                raise RuntimeError("Unexpected error") from e
 
+        """
+            The callbacks are stored to be collected and executed by the tkinter thread
+        """
+        
+        self.callback_queue.put((callback,args))
     
     def _enqueue(self, func : Callable, *args, callback=None):
         try:
@@ -231,5 +231,8 @@ class BaseAsyncController(ABC):
     async def _get_web_message(self):
         msg = await self.service.get_message()
         return msg
-    
-    
+
+    def get_callback(self):
+        
+        return self.callback_queue.get_nowait()
+        

@@ -171,7 +171,8 @@ class MainMenuGUI:
         self.root.wait_window(pop_w)
         server_name = pop_w.registered_values["server_name"]
         password = pop_w.registered_values["password"]
-        self.create_new_server_window(server_name , password)
+        if pop_w.done:
+            self.create_new_server_window(server_name , password)
     
     def create_new_client(self):
         pop_w = PopUpEntryGui(self.root,

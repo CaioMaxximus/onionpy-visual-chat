@@ -70,12 +70,24 @@ class BasicChatView(ctk.CTkToplevel):
         self.multiple_lines  = False
 
 
+
+        font_style = ctk.CTkFont(
+            family="Helvetica",      
+            size=16,            
+            weight="bold",      
+            slant="italic")
+               
         self.width = 750
         self.height = 750
         self.geometry(f"{self.height}x{self.width}")
         self.running = False
         self.active_notification_gui = None
         self.resizable(False, False)
+        self.after(1000,self.collect_and_execute_callback)
+
+        self.loading_label = ctk.CTkLabel(self, text="LOADING...", font = font_style ,height=35)
+        self.loading_label.pack(side="top", pady=10,expand = True)
+
 
 
         
@@ -104,6 +116,7 @@ class BasicChatView(ctk.CTkToplevel):
 
     def  build_interface(self) -> None:
 
+        self.loading_label.pack_forget()
 
         self.top_info = ctk.CTkLabel(self,text= "Total active users : 0")
         self.top_info.pack(pady = 3)
@@ -278,8 +291,7 @@ class BasicChatView(ctk.CTkToplevel):
 
 
         self.scroll_frame.add_children(data)
-        
-        self.after(90 , self.scroll_to_bottom)
+
 
     def collect_message_inp(self):
 
@@ -298,4 +310,16 @@ class BasicChatView(ctk.CTkToplevel):
 
         self.controller.send_message_to_web(msg , None)
         self.message_queue.put(msg)
+
+    def collect_and_execute_callback(self):
+
+
+        try:
+            func , args = self.controller.get_callback()
+            self.after(100,func, *args)
+        except queue.Empty:
+            pass
+
+        self.after(100,self.collect_and_execute_callback)
+
 

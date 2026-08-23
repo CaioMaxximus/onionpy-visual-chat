@@ -138,7 +138,6 @@ class ServerConnection(BaseConnection):
             await writer.wait_closed()
             self.my_connections.pop(writer, None)
         except Exception as e:
-            print(e)
             pass
 
         
@@ -190,7 +189,6 @@ class ServerConnection(BaseConnection):
             except asyncio.exceptions.LimitOverrunError as e:
                
                ## logg here
-                print("entrou no limitoverrun")
                 break
 
             except Exception as e: 
@@ -206,7 +204,6 @@ class ServerConnection(BaseConnection):
                     "author_name": self.my_connections[writer], 
                     "owner": False
                 }
-                print(msg_info)
 
             except UnicodeDecodeError as e:
                 await self.notify(
