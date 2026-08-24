@@ -1,5 +1,5 @@
 PYTHON = python3
-LOCAL_PYTHON = venv/bin/python3.9
+LOCAL_PYTHON = python
 INSTALL_SCRIPT = set_docker_env.py
 PIP = venv/bin/pip3
 

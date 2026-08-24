@@ -43,7 +43,7 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
 ## Requirements
 
 - Docker 
-- Python 3.8+
+- Python 3.9+
 - To run the build steps you need to have special permissions for your docker : https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user
 
 
