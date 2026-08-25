@@ -33,8 +33,9 @@ class ClientGUI(BasicChatView):
 
     def build_interface(self,server_data):
         super().build_interface()
-        host_info = f"{server_data['name']} \n Connected to : \n {self.host}:{self.port}"
-        self.title(f"Active chat : {self.host[0:10]}...")
+        self.title(f"Client of {server_data['name']}")
+        host_info = f"Connected to : \n {self.host}:{self.port}"
+        # self.title(f"Active chat : {self.host[0:10]}...")
         self.top_info.configure(text=host_info)
         self.send_automated_msg()
 

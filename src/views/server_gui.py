@@ -33,7 +33,7 @@ class ServerGUI(BasicChatView):
         self.PORT = None
         self.name = name
         self.creator_mode = creator_mode
-        self.title("Server Onion conneciton")
+        self.title(f"Server - {name}")
         self.password = password
         self.controller.run(self.master , lambda : self._start_server())
 
