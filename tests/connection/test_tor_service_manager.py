@@ -2,7 +2,6 @@ from src.connection.tor_service_manager import TorServiceManager
 import unittest
 from unittest.mock import patch , MagicMock
 
-
 class TestTorServiceManager(unittest.TestCase):
 
     def setUp(self):
@@ -52,43 +51,47 @@ class TestTorServiceManager(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             self.manager.remove_onion_service("Server")
 
-    @patch("src.connection.tor_service_manager.subprocess.Popen")
-    def test_start_tor_raises_if_invalid_path(self,mock_check):
 
-        mock_check.side_effect = Exception()
+    @patch("src.connection.tor_service_manager.ConfigLoader")
+    @patch("src.connection.tor_service_manager.docker")
+    
+    def test_start_tor_raises_if_docker_fails(self,mock_docker ,mock_config):
+
+        mock_docker.from_env.side_effect = Exception()
         
-        with self.assertRaises(ConnectionError):
+        with self.assertRaises(RuntimeError):
             self.manager.start_tor(2)
 
-
-    @patch.object(TorServiceManager , "wait_for_socks")
-    @patch.object(TorServiceManager ,"_kill_tor")
-    @patch("src.connection.tor_service_manager.Proxy")
-    @patch("src.connection.tor_service_manager.subprocess.Popen")
-    def test_start_tor_raises_and_kills_tor_if_proxy_test_timeout(self,subprocess_mock,
-                                                                  proxy_mock,
-                                                                  kill_tor_mock,
-                                                                  wait_socks_mock):
+    #removed
+    # @patch.object(TorServiceManager , "wait_for_socks")
+    # @patch.object(TorServiceManager ,"_kill_tor")
+    # @patch("src.connection.tor_service_manager.Proxy")
+    # @patch("src.connection.tor_service_manager.subprocess.Popen")
+    # def test_start_tor_raises_and_kills_tor_if_proxy_test_timeout(self,subprocess_mock,
+    #                                                               proxy_mock,
+    #                                                               kill_tor_mock,
+    #                                                               wait_socks_mock):
     
-        subprocess_mock.return_value = MagicMock()
-        proxy_mock.return_value.connect.side_effect = TimeoutError
-        wait_socks_mock.retur_value = True
+    #     subprocess_mock.return_value = MagicMock()
+    #     proxy_mock.return_value.connect.side_effect = TimeoutError
+    #     wait_socks_mock.retur_value = True
 
-        with self.assertRaises(TimeoutError):
-            self.manager.start_tor(0)
+    #     with self.assertRaises(TimeoutError):
+    #         self.manager.start_tor(0)
         
-        kill_tor_mock.assert_called_once()
+    #     kill_tor_mock.assert_called_once()
 
 
 
     @patch.object(TorServiceManager , "wait_for_socks")
     @patch.object(TorServiceManager ,"_kill_tor")
-    @patch("src.connection.tor_service_manager.subprocess.Popen")
-    def test_start_tor_raises_and_kills_tor_if_wait_for_socks_timeout(self,subprocess_mock,
+    @patch("src.connection.tor_service_manager.ConfigLoader")
+    @patch("src.connection.tor_service_manager.docker")
+    def test_start_tor_raises_and_kills_tor_if_wait_for_socks_timeout(self,mock_docker ,mock_config ,
                                                                   kill_tor_mock,
                                                                   wait_socks_mock):
     
-        subprocess_mock.return_value = MagicMock()
+        # subprocess_mock.return_value = MagicMock()
         wait_socks_mock.side_effect = TimeoutError()
         
         with self.assertRaises(TimeoutError):

@@ -284,7 +284,6 @@ class TorServiceManager():
         secret_pass = secrets.token_hex(16)
 
         if cls._container_exists(cls.docker_client,container_name):
-            print("o container ja existe")
             cls.docker_client.containers.get(container_name).remove(force = True)
 
         try:
@@ -296,13 +295,18 @@ class TorServiceManager():
                         ,detach= True,
                         auto_remove=True
                     )
-            # cls.docker_container = cls.docker_client.containers.get(container_name)
-            # cls.docker_container.start(enviroment = {"TOR_PASSWORD" : secret_pass})
+            
 
         except Exception as e:
             raise RuntimeError(f"Unable to start docker container {e}")
 
-        cls.wait_for_socks(cls.config_json["port"])
+        try:
+
+            cls.wait_for_socks(cls.config_json["port"],timeout)
+        except TimeoutError as e:
+            cls._kill_tor()
+            raise TimeoutError(e)
+
         cls.TOR_CONTROL_PORT = cls.config_json["control-port"]
         cls.password = secret_pass
         

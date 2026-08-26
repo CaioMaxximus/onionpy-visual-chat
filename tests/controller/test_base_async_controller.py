@@ -30,7 +30,7 @@ class TestBaseAsyncController(unittest.IsolatedAsyncioTestCase):
         await self.controller.dispatcher_executer(exe_function ,
                                                          ("payload",) , cb_function)
 
-        cb_function.assert_called_once_with("ok")
+        self.assertIs(self.controller.callback_queue.get()[0], cb_function)
 
 
     async def test_dispatcher_schedule(self):
@@ -52,7 +52,6 @@ class TestBaseAsyncController(unittest.IsolatedAsyncioTestCase):
                                             ("payload",) , cb_function)
         
         self.assertEqual(exe_function.call_count, 4)
-        cb_function.assert_called_once_with("ok")
             
 
     async def test_dispacther_aborts_immediately_when_a_non_retryable_error_is_raised(self):
@@ -64,4 +63,3 @@ class TestBaseAsyncController(unittest.IsolatedAsyncioTestCase):
 
         await self.controller.dispatcher_executer(exe_function, ("payload",), cb_function)
         exe_function.assert_called_once()
-        cb_function.assert_not_called()

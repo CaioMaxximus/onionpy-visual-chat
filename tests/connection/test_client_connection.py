@@ -35,7 +35,7 @@ class TestClientConnection(unittest.IsolatedAsyncioTestCase):
 
     
     @patch("src.connection.client_connection.Proxy",new_callable=MagicMock())
-    async def test_startup_handles_timeout_error_on_proxy_connect(self,proxy_mock):
+    async def test_startup_handles_timeout_error_on_proxy_connect(self , proxy_mock):
         
         async_sock_mock = AsyncMock()
         async_sock_mock.side_effect = [TimeoutError]

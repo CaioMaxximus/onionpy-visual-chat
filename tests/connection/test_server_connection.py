@@ -80,7 +80,6 @@ class TestServerConnection(unittest.IsolatedAsyncioTestCase):
     @patch("src.connection.server_connection.asyncio.create_task")
     async def test_server_listener_send_notification_when_starts(self,task_mock , server_mock):
        
-        print("testando o bus")
         self.mock_server_listener(task_mock , server_mock)
         await self.inst.startup()
         self.inst.notify.assert_called_once()

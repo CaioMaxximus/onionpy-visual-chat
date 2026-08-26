@@ -68,7 +68,7 @@ class ClientConnection(BaseConnection):
         self.password = password
         self.HOST  = None 
         self.PORT = None
-        self.PROXY_PORT = ConfigLoader.get_proxy_port_number() # fixed here for while
+        self.PROXY_PORT = None
         self.sock = None
         self.writer = None  
         self._connected = False
@@ -86,6 +86,7 @@ class ClientConnection(BaseConnection):
         self.name = name
         self.HOST = host
         self.PORT = int(port)
+        self.PROXY_PORT = ConfigLoader.get_proxy_port_number() # fixed here for while
         return await self.startup()
  
     @validate_connection_state
