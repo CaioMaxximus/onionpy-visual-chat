@@ -38,7 +38,7 @@ class BaseConnection(ABC):
 
     @abstractmethod
     async def _handshake(self,reader,writer):
-         raise NotImplementedError()
+        raise NotImplementedError()
 
     def handle_tasks_errors(self, task):
          

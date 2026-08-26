@@ -11,7 +11,7 @@ class ConfigurationGUI(CTkFrame):
 
     """
 
-    def __init__(self, master , parent ,controller):
+    def __init__(self, master , parent ,controller, on_leave_callback):
         super().__init__(parent)
         self.master = master
         self.parent = parent
@@ -23,6 +23,7 @@ class ConfigurationGUI(CTkFrame):
         self.build_interface()
         self.controller.get_servers(lambda x: self.update_servers_list(x))
         self.controller.get_discovered_servers(lambda x :self.update_discovered_servers_list(x))
+        self.on_leave_callback = on_leave_callback
 
     def build_interface(self):
         #  frame 1 content
@@ -44,7 +45,6 @@ class ConfigurationGUI(CTkFrame):
         self.scroll_frame_discovered_server = CTkScrollableFrame(self.frame_2, label_text="Connections available")
         self.scroll_frame_discovered_server.pack(fill="both", padx=7, pady=7)
     
-        # hover effect no container
     def on_enter(self,e,container):
         container.configure(fg_color="#3a3a3a")
 
@@ -60,7 +60,7 @@ class ConfigurationGUI(CTkFrame):
             container = CTkFrame(
                 self.scroll_frame_servers,
                 height=15,
-                fg_color="#2b2b2b",       # fundo levemente destacado
+                fg_color="#2b2b2b",       
                 corner_radius=8
             )
             container.pack(fill="x", pady=4, padx=4)
@@ -146,6 +146,7 @@ class ConfigurationGUI(CTkFrame):
     ## I should move this fucniton to coordinator
     def return_to_menu(self):
         self.destroy()
+        self.after(0, self.on_leave_callback)
         # super().place_forget()
 
 # Trying later

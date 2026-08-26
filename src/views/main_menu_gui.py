@@ -222,7 +222,7 @@ class MainMenuGUI:
 
     # i will move this to application coordinato
     def open_configuration(self):
-        self.config_view = ConfigurationGUI(self.root ,self.main_frame ,  self.controller)
+        self.config_view = ConfigurationGUI(self.root ,self.main_frame ,  self.controller,self.create_tables)
         self.config_view.place(relx=0, rely=0, relwidth=1, relheight=1)
         # config_view.tkraise()
 

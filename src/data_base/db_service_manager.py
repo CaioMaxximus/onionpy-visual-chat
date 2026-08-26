@@ -36,8 +36,7 @@ async def save_new_server(server_name: str, local_port , onion_hostname, onion_p
     Insert or replace a server record.
     server_name is the primary key; this will upsert the entry.
     """
-    print(db_path)
-    print("==========")
+
     async with aiosqlite.connect(db_path) as conn:
         await conn.execute(
             "INSERT OR REPLACE INTO servers (server_name, onion_hostname, local_server_port ,onion_port, password) VALUES (?, ?, ?,? ,?)",

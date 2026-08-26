@@ -16,7 +16,9 @@ class Response(Enum):
     ERROR = "ERROR"
     SUCCESS = "SUCCESS"
 
-CLIENT_NAME_RAGEX_ = r'^[A-Za-z0-9_]{5,30}$'
+
+CLIENT_NAME_RAGEX_ = r'^[A-Za-z0-9_]{5,25}$'
+SERVER_NAME_REGEX = r'^[A-Za-z0-9_-]{5,30}'
 
 
 ## SERVER SIDE HANDSHAKE
@@ -75,6 +77,8 @@ def handle_server_response(res):
             raise ValueError
     elif dic_data["type"] == Response.SUCCESS.value:
         if "name" not in dic_data:
+            raise ValueError
+        if not re.match(SERVER_NAME_REGEX, dic_data["name"]):
             raise ValueError
         
         exit_dic = {}
