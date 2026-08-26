@@ -36,8 +36,7 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
 - ✅ **Handshake Protocol**: JSON-based with mandatory authentication fields
 - ✅ **Tor Routing**: All traffic routed through Tor hidden services
 
-## Known Limitations
-- ⚠️ **Security issues**: This application is not audited; verify the source code first.
+- ⚠️ **X**: The software lacks a third-party security audit. Review the source code before deployment in critical environments.
 
 
 ## Requirements
@@ -71,10 +70,8 @@ TESTS
 - TorServiceManager ![Status](https://img.shields.io/badge/status-done-brightgreen)
 - client_connection ![Status](https://img.shields.io/badge/status-done-green)
 - server_connection ![Status](https://img.shields.io/badge/status-done-brightgreen)
-- client_controller ![Status](https://img.shields.io/badge/status-lacking-red)
 - basic_async_controller ![Status](https://img.shields.io/badge/status-done-brightgreen)
 - menu_controller ![Status](https://img.shields.io/badge/status-done-brightgreen)
-- server_controller ![Status](https://img.shields.io/badge/status-lacking-red)
 
 ## Project Structure
 
