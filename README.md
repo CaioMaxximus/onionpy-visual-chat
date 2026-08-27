@@ -41,14 +41,26 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
 
 ## Requirements
 
+- tkinter
 - Docker 
 - Python 3.9+
 - To run the build steps you need to have special permissions for your docker : https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user
 
 
 ## Install
+
+**ATENTION** Tkinter is not installed via pip. If you don't have it, you will need to install it using the appropriate package manager for your Linux distribution
+
+**ATENTION 2**  The same goes for the venv module: you'll need to install it separately if you don't have it:
+
+  ```bash
+  sudo apt update
+  sudo apt install python3-venv
+
+  ```
+
 ```bash
-git clone https://github.com/CaioMaxximus/onion_py_chat.git
+git clone https://github.com/CaioMaxximus/onionpy-visual-chat.gi
 make install
 ```
 ## Execute
@@ -78,5 +90,9 @@ TESTS
 ## Contact
 - Author: Caio Maxximus
 - Email: puntmaxximus@gmail.com
+
+## TroubleShooting
+
+- In debian machines be sure that you have the enviroment creator lib for python available
 
 

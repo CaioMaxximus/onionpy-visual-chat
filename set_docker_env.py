@@ -35,7 +35,7 @@ class TorDockerApp(ctk.CTk):
         self.socks_entry.insert(0, "9050")
         self.socks_entry.pack(fill="x", padx=15, pady=(0, 10))
 
-        self.control_label = ctk.CTkLabel(self.config_frame, text="Port de Controle (default 9051):")
+        self.control_label = ctk.CTkLabel(self.config_frame, text="Controll Port (default 9051):")
         self.control_label.pack(anchor="w", padx=15, pady=(5, 0))
 
         self.control_entry = ctk.CTkEntry(self.config_frame, placeholder_text="9051")
