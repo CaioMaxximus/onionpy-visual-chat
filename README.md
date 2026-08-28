@@ -4,7 +4,7 @@
   <img src="src/assets/logo_onio_py.png" alt="Project Logo" width="200">
 </p>
 
-A graphical application for hosting and connecting to onion-based chat stateless servers P2P, 
+A graphical application for hosting and connecting to onion-based chat stateless servers, 
 enabling the creation of multiple independent Tor hidden services with minimal setup.
 Built with CustomTkinter, asyncio, and the Tor control library Stem.
 
@@ -41,15 +41,17 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
 
 ## Requirements
 
+- Linux machine
 - tkinter
 - Docker 
 - Python 3.9+
+- Python enviroment creator module
 - To run the build steps you need to have special permissions for your docker : https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user
 
 
 ## Install
 
-**ATENTION** Tkinter is not installed via pip. If you don't have it, you will need to install it using the appropriate package manager for your Linux distribution
+**ATENTION** Tkinter is not installed via pip and generaly don't come by default in the python distributions. If you don't have it, you will need to install it using the appropriate package manager for your Linux version.
 
 **ATENTION 2**  The same goes for the venv module: you'll need to install it separately if you don't have it:
 
@@ -58,9 +60,16 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
   sudo apt install python3-venv
 
   ```
+  Or use the proper method for your python version
+
+### With the enviroment ready you can start the instalation process
 
 ```bash
 git clone https://github.com/CaioMaxximus/onionpy-visual-chat.gi
+```
+#### Then, inside the project folder:
+
+```bash
 make install
 ```
 ## Execute
@@ -87,12 +96,12 @@ TESTS
 
 ## Project Structure
 
+
+## Future features
+  **A conection keeper for not stable connections**
+
 ## Contact
 - Author: Caio Maxximus
 - Email: puntmaxximus@gmail.com
-
-## TroubleShooting
-
-- In debian machines be sure that you have the enviroment creator lib for python available
 
 
