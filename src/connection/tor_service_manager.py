@@ -8,6 +8,12 @@ import shutil
 import docker
 import secrets
 from src.infrastructure import ConfigLoader
+import logging
+import shutil
+from contextlib import contextmanager
+
+logger = logging.getLogger(__name__)
+
 
 class TorServiceManager():
 
@@ -35,33 +41,67 @@ class TorServiceManager():
 
         else:
             raise ValueError("Server name already exists!")
-    
+
+
+
+    @contextmanager
+    def onion_creation_transaction(cls, server_name):
+
+        try:
+            yield
+        except Exception as e:
+
+            try:
+                if cls.check_server_exists(server_name):
+                    cls.remove_onion_service(server_name)
+
+            except Exception:
+                logger.exception(f"Error while trying to remove folder for server: %s after permission failure",
+                                                 server_name)
+            logger.exception(f"Error while trying to create onion server folder  %s ",
+                                                             server_name)
+            raise RuntimeError("Error creating onion server")
+        
     @classmethod
     def _create_new_onion_server(cls, server_name ):
         
         folder_instace_path = f"{cls.APPLICATION_ROOT}/{cls.INSTANCES_PATH}/instance_{server_name}"
         # data_dir = f"{folder_instace_path}/data"
-        os.makedirs(folder_instace_path, exist_ok= True)
+        
 
         private_key_file_name = "hs_ed25519_secret_key"
         private_key_filepath = os.path.join(folder_instace_path, private_key_file_name)
 
         hostname_path = os.path.join(folder_instace_path , "hostname")
 
-        try:
-            with open(private_key_filepath , "w" , encoding="utf-8") as file:
-                file.write("")
-        except Exception as e:
-            raise RuntimeError(f"Error creating {server_name} private file : {e}")
+        with cls.onion_creation_transaction(cls = cls , server_name= server_name):
 
-        try:
-            with open(hostname_path , "w" , encoding="utf-8") as file:
-                file.write("")
+            try:
+                os.makedirs(folder_instace_path, exist_ok= True, mode=0o700)
+            except Exception:
+                logger.exception(f"Error while trying to create onion folder %s" , folder_instace_path)
+                raise RuntimeError(f"Error creating server folder : {e}")
 
-        except Exception as e:
-            raise RuntimeError(f"Error creating {server_name} hostname file : {e}")
+            try:
+                with open(private_key_filepath , "w" , encoding="utf-8") as file:
+                    file.write("")
+            except Exception as e:
 
-        subprocess.run(["chmod", "700", folder_instace_path]) 
+                logger.exception(f"Error while trying to create onion private key file %s" , private_key_filepath)
+                raise RuntimeError(f"Error creating {server_name} private file : {e}")
+
+            try:
+                with open(hostname_path , "w" , encoding="utf-8") as file:
+                    file.write("")
+
+            except Exception as e:
+                logger.exception(f"Error while trying to create onion hostname file %s" , hostname_path)
+                raise RuntimeError(f"Error creating {server_name} hostname file : {e}")
+
+        logger.info(f"New Onion server created in %s ",folder_instace_path)
+
+        
+        
 
     @classmethod   
     def start_onion_server(cls,server_name, local_port, onion_port):
