@@ -9,7 +9,9 @@ from infrastructure import server_connection_handshake ,server_success_handshake
 from .base_connection import BaseConnection
 from bidict import bidict
 from models import ServerMessage
+import logging
 
+logger = logging.getLogger(__name__)
 
 ## This will use an interface
 class ServerConnection(BaseConnection):
@@ -136,9 +138,15 @@ class ServerConnection(BaseConnection):
         try:
             writer.close()
             await writer.wait_closed()
-            self.my_connections.pop(writer, None)
+        except (OSError , asyncio.CancelledError):
+
+            logger.warning("On server : %s .Connection closed abruptly with client",self.name, exc_info=True)
         except Exception as e:
-            pass
+
+            logger.exception("Unexpected error while trying to remove connection from server %s" , e)
+        finally:
+            self.my_connections.pop(writer, None)
+
 
         
 
@@ -265,45 +273,59 @@ class ServerConnection(BaseConnection):
         author_name = message["author_name"]
         writer_name = self.my_connections[w]
 
-        try: ## this is just a simple version of proper indentificatiion method
+        try: 
             if message["owner"] or author_name != writer_name :
                 w.write(data_encoded)
                 await w.drain()
         except (ConnectionResetError , ConnectionRefusedError): 
-            await self.notify(
-                NotificationType.INFO, f"Error sending message to {writer_name}")
+            logger.exception("Unable to send a message to client :%s , connection closed temporaly", writer_name)
+
         except Exception:
-            # raise e
-            # logg here
-            pass
+            logger.exception("Error while trying to send a message to client :%s ", writer_name)
     
 
     
     @validate_connection_state    
     async def close_server(self):
+
+        logger.info("Closing server %s" , self.name)
         self._connected = False
+
         try:
             self.check_messages_for_web_task.cancel()
             await self.check_messages_for_web_task
         except asyncio.CancelledError:
-            pass
+            logger.debug("Error while trying to finish check_messages_for_web_task; task is already closed.")
+
 
         async def close_connection(writer):
             try:
                 writer.close()
                 await writer.wait_closed()
-            except Exception:
-                pass
+            except (OSError ,asyncio.CancelledError):
+                logger.warning("While disconecting client; connection abruptly closed",exc_info=True)
+            except Exception as e:
+                logger.exception("Unexpected error while disconecting client")
 
         if self.my_connections:
             writer_tasks = [close_connection(w) for w in self.my_connections]
-            await asyncio.gather(*writer_tasks, return_exceptions=True)
-            self.my_connections.clear()
+            await asyncio.gather(*writer_tasks)
+
+        self.my_connections.clear()
+
+        logger.info("All connection with server %s  are removed", self.name)
+
         try:
             self.server.close()
             await self.server.wait_closed()
-        except Exception:
-            pass
+        except asyncio.CancelledError:
+
+            logger.debug("Error while trying to close %s server, the TCP server is already closed!", self.name)
+
+        except Exception as e:
+            logger.exception("Error while close tcp server %s.",self.name)
+
+        logger.info("TCP server %s closed" ,self.name)
 
     # # @validate_connection_state
     # async def get_message_in_queue(self):

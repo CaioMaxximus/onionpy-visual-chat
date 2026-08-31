@@ -8,9 +8,11 @@ from infrastructure import client_connection_handshake,handle_server_response
 from .base_connection import BaseConnection
 from src.models import ServerMessage
 from src.infrastructure import ConfigLoader
-
+import logging
 
 ## This will use an interface
+logger = logging.getLogger(__name__)
+
 class ClientConnection(BaseConnection):
 
     """
@@ -99,11 +101,11 @@ class ClientConnection(BaseConnection):
             await self.server_task
             
         except asyncio.CancelledError :
-            # logg here
-            pass
-        except Exception:
-            ## logg here
-            pass
+            logger.debug("The client server task is already closed!")
+            
+        except Exception as e:
+            
+            logger.exception("Error while waiting client server task be closed : %s" , e)
         await  self.notify(NotificationType.WARNING,
                                           "Connection finished with the server.")
         

@@ -121,7 +121,7 @@ class TorServiceManager():
         except FileNotFoundError as e:
             raise FileNotFoundError(f"Local onion hostname adress {private_key_path} not found!")
         except Exception as e:
-            raise RuntimeError("Unexpceted error during server key reading {e}")
+            raise RuntimeError(f"Unexpected error during server key reading {e}")
                             
         return private_key
     
@@ -134,7 +134,7 @@ class TorServiceManager():
         except FileNotFoundError as e:
             raise FileNotFoundError(f"Local onion key adress {private_key_path} not found!")
         except Exception as e:
-            raise RuntimeError("Unexpected error during server key reading {e}")
+            raise RuntimeError(f"Unexpected error during server key reading {e}")
 
     @classmethod                        
     def _write_in_hostname_file(cls,hostname_path , hostname):
@@ -145,7 +145,7 @@ class TorServiceManager():
         except FileNotFoundError as e:
             raise FileNotFoundError(f"Local onion hostname adress {hostname_path} not found!")
         except Exception as e:
-            raise RuntimeError("Unexpected error during server key reading {e}")
+            raise RuntimeError(f"Unexpected error during server key reading {e}")
 
     @classmethod
     def _read_hostname_file(cls, hostname_path):
@@ -156,7 +156,7 @@ class TorServiceManager():
         except FileNotFoundError as e:
             raise FileNotFoundError(f"Local onion hostname adress {hostname} not found!")
         except Exception as e:
-            raise RuntimeError("Unexpceted error during server key reading {e}")
+            raise RuntimeError(f"Unexpceted error during server key reading {e}")
                             
         return hostname
 
@@ -207,6 +207,8 @@ class TorServiceManager():
 
         except Exception as e:
             raise RuntimeError(f"Error connecting with the server {e}")
+        else:
+            logger.info("Server %s started successfully on port %s", server_name, onion_port)
 
         adrr = f"{result.service_id}.onion"
 
@@ -237,8 +239,7 @@ class TorServiceManager():
             ctrl.authenticate(password = cls.password)
 
             res = ctrl.remove_ephemeral_hidden_service(hostname)
-
-
+        logger.info("Server %s stoped successfully ", server_name)
         
     # This will be used to cross-check with the sql database
     @classmethod
@@ -271,13 +272,15 @@ class TorServiceManager():
 
         if not cls.check_server_exists(name):
             raise FileNotFoundError(f"Cant find {name} server directory")
-        path = f"{cls.APPLICATION_ROOT}/{cls.INSTANCES_PATH}/instance_{name}"
 
+        path = f"{cls.APPLICATION_ROOT}/{cls.INSTANCES_PATH}/instance_{name}"
         app_root = Path(cls.APPLICATION_ROOT).resolve()
+
         try:
             instance_resolved = Path(path).resolve()
             instance_resolved.relative_to(app_root)
         except Exception:
+            logger.info("Application tried to remove an outside folder %s" , path)
             raise ValueError("Refusing to remove directory outside APPLICATION_ROOT")
         try:
             
@@ -287,13 +290,14 @@ class TorServiceManager():
             raise RuntimeError(f"The server folder {path} was not found")
             
         except PermissionError as e:
-            
+            logger.exception("Application has no permission to remove server folder : %s" , instance_resolved)
             raise RuntimeError(f"The application is unauthorized to remove the server folder; verify your credentials.")
         except Exception as e:
-            ## log here
-            raise RuntimeError(f"Unexpectd error during onion server removal {e}")
- 
 
+            logger.exception("Unexpectd error while trying to remove server folder : %s" , instance_resolved)
+            raise RuntimeError(f"Unexpectd error during onion server removal {e}")
+
+        logger.info("Server %s was removed successfully" , name)
         return
 
 
@@ -317,7 +321,8 @@ class TorServiceManager():
         try:
             cls.docker_client = docker.from_env()
         except Exception  as e:
-            raise RuntimeError(f"Error trying top connect to docker client {e}")
+            logger.e
+            raise RuntimeError(f"Error trying to connect to docker client {e}")
 
         container_name = cls.config_json["container-name"]
         img_name = cls.config_json["img-name"]

@@ -10,7 +10,7 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
 
 ## Status
 
-  - Cleaning architecture
+  - Adding loggin and more tests
 
 ## ✨ Features
 
@@ -18,7 +18,7 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
 |---------|--------|-------------|
 | **CustomTkinter GUI** | ✅ Done | Intuitive desktop interface |
 | **Zero-Config Onion Setup** | ✅ Done | Create Tor hidden services without config files |
-| **P2P Client/Server** | ✅ Done | Connect to any onion address, host multiple servers |
+| **Client/Server** | ✅ Done | Connect to any address, host multiple servers |
 | **Password Protected Servers** | ✅ Done | Optional  access control |
 | **Real-time Notifications** | ✅ Done | Connection status, errors, and alerts |
 | **Message Broadcasting** | ✅ Done | Async message delivery to all connected clients |
@@ -86,19 +86,18 @@ TESTS
 
 ![control flow](visual_schemes/control_flow.png)
 
-## Tests
+## Screenshots
 
-- TorServiceManager ![Status](https://img.shields.io/badge/status-done-brightgreen)
-- client_connection ![Status](https://img.shields.io/badge/status-done-green)
-- server_connection ![Status](https://img.shields.io/badge/status-done-brightgreen)
-- basic_async_controller ![Status](https://img.shields.io/badge/status-done-brightgreen)
-- menu_controller ![Status](https://img.shields.io/badge/status-done-brightgreen)
+![server screen](visual_schemes/screenshots/photo_1.png)
 
-## Project Structure
-
+## -------
+![client screen](visual_schemes/screenshots/photo_2.png)
 
 ## Future features
+
   **A conection keeper for not stable connections**
+  **A visual indicator for the lazyscroller chat view, indicating bottom or top**
+
 
 ## Contact
 - Author: Caio Maxximus

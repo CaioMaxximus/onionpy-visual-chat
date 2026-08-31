@@ -61,6 +61,9 @@ def setup_logging(env: str = "development", app_root = ""):
             },
             "PIL":{
                 "level" : "WARNING"
+            },
+            "stem" : {
+                "level" : "WARNING"
             }
         },
     }
