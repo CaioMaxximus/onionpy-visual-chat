@@ -321,7 +321,7 @@ class TorServiceManager():
         try:
             cls.docker_client = docker.from_env()
         except Exception  as e:
-            logger.e
+            logger.exception("Docker was not found during the application launch")
             raise RuntimeError(f"Error trying to connect to docker client {e}")
 
         container_name = cls.config_json["container-name"]

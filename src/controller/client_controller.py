@@ -1,7 +1,7 @@
 # import queue
 import asyncio
 import threading
-from .base_async_controller import BaseAsyncController
+from .base_async_controller import BaseAsyncChatController
 from data_base import db_service_manager
 
 # 
@@ -9,7 +9,7 @@ from data_base import db_service_manager
 
 # RETRYABLE_ERRORS = (TimeoutError , ConnectionError , ConnectionAbortedError)
 
-class ClientController(BaseAsyncController):
+class ClientController(BaseAsyncChatController):
 
 
     """

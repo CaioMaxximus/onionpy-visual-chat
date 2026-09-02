@@ -7,7 +7,7 @@ from queue import Queue
 RETRYABLE_ERRORS = (TimeoutError , ConnectionError , ConnectionAbortedError)
 
 
-class BaseAsyncController(ABC):
+class BaseAsyncChatController(ABC):
 
     """
         This class acts as a asynchronous controller,a background thread

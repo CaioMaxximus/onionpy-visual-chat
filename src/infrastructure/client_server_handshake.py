@@ -28,7 +28,7 @@ async def server_connection_handshake(message,password, local_users):
         clean = message[:-1]
         json_str = clean.decode("utf-8")
         dic_data = json.loads(json_str)
-        ## Create new exceptions for this case
+
         if "password" not in dic_data or "name" not in dic_data:
             raise ValueError("Invalid HandShakeFormat")
         if dic_data["name"] in local_users or not re.match(CLIENT_NAME_RAGEX_, dic_data["name"]):

@@ -1,4 +1,5 @@
 import json
+
 class ServerMessage():
 
     def __init__(self, author, message , from_server):

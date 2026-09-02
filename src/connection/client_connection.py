@@ -112,7 +112,6 @@ class ClientConnection(BaseConnection):
     
     async def _handshake(self, reader , writer,name):
         
-        # await reader
         res = None
         try:
             handshake_data = client_connection_handshake(name ,self.password)
@@ -121,7 +120,6 @@ class ClientConnection(BaseConnection):
         except Exception :
             raise ConnectionError
         try:
-            ## add a timer here
             res = await asyncio.wait_for(reader.readuntil(separator=b'\0'), timeout=6.0)
         except Exception as e :
             raise ConnectionError
@@ -131,15 +129,13 @@ class ClientConnection(BaseConnection):
             raise ConnectionAbortedError
         else:
             return data
-        # reader.read
 
 
     @validate_connection_state
     async def connection_handler(self,reader, writer):
-
-
         
         while self._connected:
+
             try:
                 data = await reader.readuntil(separator=b'\0')
 
@@ -149,11 +145,11 @@ class ClientConnection(BaseConnection):
                     self._connected = False
                 else:
                     await self.notify(NotificationType.WARNING, "Server closed connection.")
-                    
                     break
+
             except asyncio.LimitOverrunError as e:
                 await  self.notify(NotificationType.ERROR, 
-                    f"Message too large (> than {e.consumed} bytes)")
+                    f"Message too large > than {e.consumed} bytes)")
                 break
 
             except Exception:
@@ -162,7 +158,6 @@ class ClientConnection(BaseConnection):
                 break
 
             try:
-                # message = data.decode().strip()
                 message_obj = ServerMessage.from_stream(data)
                 msg_info = {
                     "entry": message_obj.message,
@@ -198,7 +193,9 @@ class ClientConnection(BaseConnection):
             raise RuntimeError(f"Connection timeout in proxy connection {self.HOST}:{self.PORT}") from e
         except ConnectionError as e:
             raise ConnectionError(f"ConnectionError with proxy to the host {self.HOST}:{self.PORT}") from e
-        
+        else:
+            logger.info("Proxy connected with %s" ,self.HOST)
+
         try :
             reader,writer = await asyncio.open_connection( 
                 sock = self.sock)
@@ -206,8 +203,8 @@ class ClientConnection(BaseConnection):
             raise RuntimeError(f"Connection timeout trying to connect to server {self.HOST}:{self.PORT}")
         except ConnectionError as e:
             raise ConnectionError(f"Error! Unable to connect to server {self.HOST}:{self.PORT}") from e
-
-        ## The server connected
+        else:
+            logger.info("Proxy connected with %s" ,self.HOST)
 
         self.writer = writer
         await self.notify(NotificationType.INFO, "Starting handshake")
@@ -217,10 +214,13 @@ class ClientConnection(BaseConnection):
             server_handshake_data = await self._handshake(reader, writer, self.name)
         except Exception as e:
             await self.notify(NotificationType.WARNING, "Server handshake failed.")
+            logger.info("Handshake with %s failed",self.HOST)
             await self.close_connection()
             raise e
+        
         else:
             await self.notify(NotificationType.SUCCESS, "Handshake sucefully")
+            logger.info("Handshake with %s finished successfuly",self.HOST)
             self._connected = True
             self.server_task = asyncio.create_task(self.connection_handler(reader,writer))
             self.server_task.add_done_callback(self.handle_tasks_errors)

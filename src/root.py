@@ -8,10 +8,11 @@ from src.configuration import setup_logging
 import logging
 
 if __name__ == "__main__":
+    logger = logging.getLogger(__name__)
+
 
     ConfigLoader.load_config_data()
     setup_logging(app_root = ConfigLoader.get_application_root())
-    logger = logging.getLogger(__name__)
     logger.info("Starting application")
     root = ctk.CTk()
     ApplicationCoordinator.main_menu(root)
