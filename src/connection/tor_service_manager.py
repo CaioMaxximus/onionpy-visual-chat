@@ -14,7 +14,6 @@ from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
 
-
 class TorServiceManager():
 
     """
@@ -297,7 +296,7 @@ class TorServiceManager():
             logger.exception("Unexpectd error while trying to remove server folder : %s" , instance_resolved)
             raise RuntimeError(f"Unexpectd error during onion server removal {e}")
 
-        logger.info("Server %s was removed successfully" , name)
+        logger.info("Server %s was removed successfully" , name) 
         return
 
 

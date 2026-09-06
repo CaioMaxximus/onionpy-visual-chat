@@ -34,7 +34,7 @@ class TestTorServiceManager(unittest.TestCase):
         mock_check.return_value = ""
         self.assertEqual(self.manager.global_controller,None)
         self.manager .start_onion_server("","","")
-        self.assertNotEqual(self.manager .global_controller,None)
+        self.assertNotEqual(self.manager.global_controller,None)
     
 
     @patch.object(TorServiceManager, "check_server_exists")
@@ -54,7 +54,6 @@ class TestTorServiceManager(unittest.TestCase):
 
     @patch("src.connection.tor_service_manager.ConfigLoader")
     @patch("src.connection.tor_service_manager.docker")
-    
     def test_start_tor_raises_if_docker_fails(self,mock_docker ,mock_config):
 
         mock_docker.from_env.side_effect = Exception()
@@ -90,7 +89,7 @@ class TestTorServiceManager(unittest.TestCase):
     def test_start_tor_raises_and_kills_tor_if_wait_for_socks_timeout(self,mock_docker ,mock_config ,
                                                                   kill_tor_mock,
                                                                   wait_socks_mock):
-    
+        
         # subprocess_mock.return_value = MagicMock()
         wait_socks_mock.side_effect = TimeoutError()
         

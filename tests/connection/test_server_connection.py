@@ -4,6 +4,12 @@ from unittest.mock import patch , MagicMock ,AsyncMock
 from src.error.special_errors import ConnectionClosedError
 import asyncio
 
+class AwaitableMock(AsyncMock):
+            def __await__(self):
+                return self().__await__()
+            
+            # def cancel(self):
+            #     return None
 
 class TestServerConnection(unittest.IsolatedAsyncioTestCase):
 
@@ -25,6 +31,7 @@ class TestServerConnection(unittest.IsolatedAsyncioTestCase):
         self.inst.check_messages_for_web = MagicMock()
         task_mock.return_value = MagicMock()
         server_mock.return_value = AsyncMock()
+        
         
 
     async def test_raises_error_if_connection_didnt_start_yet(self):
@@ -104,7 +111,7 @@ class TestServerConnection(unittest.IsolatedAsyncioTestCase):
             self.inst.notify.reset_mock()
 
 
-    @patch("src.connection.server_connection.server_connection_handshake", new_callable = AsyncMock)
+    @patch.object(ServerConnection, "_handshake", new_callable = AsyncMock)
     async def test_connection_handler_dont_break_with_an_incompleted_input(self,handshake_mock):
 
         self.inst._connected = True
@@ -120,12 +127,12 @@ class TestServerConnection(unittest.IsolatedAsyncioTestCase):
         # self.assertEqual(self.inst.notify.call_count , 1)
         self.assertEqual(len(self.inst.my_connections) , 0)
 
-    @patch("src.connection.server_connection.server_connection_handshake", new_callable = AsyncMock)
+    @patch.object(ServerConnection, "_handshake", new_callable = AsyncMock)
     async def test_connection_handler_dont_break_with_an_incompleted_input_with_partial_data(self,handshake_mock):
 
         self.inst._connected = True
         mocked_reader = AsyncMock()
-        mocked_writer = MagicMock()
+        mocked_writer = AsyncMock()
         incompleted_exception = asyncio.exceptions.IncompleteReadError(MagicMock() , MagicMock())
         incompleted_exception.partial =  "xxx"
         mocked_reader.readuntil.side_effect = [True, incompleted_exception, ValueError]
@@ -135,12 +142,12 @@ class TestServerConnection(unittest.IsolatedAsyncioTestCase):
         # self.assertEqual(self.inst.notification_bus.send.call_count , 0)
         self.assertEqual(len(self.inst.my_connections) , 0)
 
-    @patch("src.connection.server_connection.server_connection_handshake", new_callable = AsyncMock)
+    @patch.object(ServerConnection, "_handshake", new_callable = AsyncMock)
     async def test_connection_handler_dont_break_with_bad_formed_input(self,handshake_mock):
 
         self.inst._connected = True
         mocked_reader = AsyncMock()
-        mocked_writer = MagicMock()
+        mocked_writer = AsyncMock()
         mocked_data = MagicMock()
         mocked_data.decode.side_effect = UnicodeDecodeError
         mocked_reader.readuntil.return_value = [True , mocked_data]
@@ -159,7 +166,7 @@ class TestServerConnection(unittest.IsolatedAsyncioTestCase):
         server_mock.wait_closed = AsyncMock()
         self.my_connections = [writer_mock]
         self.inst.server = server_mock
-        self.inst.check_messages_for_web_task = MagicMock()
+        self.inst.check_messages_for_web_task = AwaitableMock()
         self.inst.check_messages_for_web_task.cancel.side_effect = asyncio.CancelledError
 
         await self.inst.close_server()
@@ -171,12 +178,6 @@ class TestServerConnection(unittest.IsolatedAsyncioTestCase):
     async def test_close_server_finish_connection_even_if_a_writer_rises_exception(self):
 
 
-        class AwaitableMock(AsyncMock):
-            def __await__(self):
-                return self().__await__()
-            
-            def cancel(self):
-                return None
                 
         self.inst._connected = True
         writer_mock1 = AsyncMock()

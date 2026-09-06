@@ -1,6 +1,6 @@
 import asyncio
 import unittest 
-from src.controller import BaseAsyncController
+from src.controller import BaseAsyncChatController
 from unittest.mock import MagicMock  , AsyncMock
 
 
@@ -13,7 +13,7 @@ class TestBaseAsyncController(unittest.IsolatedAsyncioTestCase):
 
 
     async def asyncSetUp(self) -> None:
-        self.controller = BaseAsyncController(service= MagicMock(), notification_bus= AsyncMock())
+        self.controller = BaseAsyncChatController(service= MagicMock(), notification_bus= AsyncMock())
         self.controller.running = True
         moked_gui_loop = MagicMock()
         moked_gui_loop.after = self.mocked_gui_loop_after
