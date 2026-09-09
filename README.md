@@ -30,8 +30,7 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
 ---
 
 ## 🔒 Security 
-
-#### All the connection runs over the tor network using tor as a proxy service and onion servers for the chat servers and passwords allow the creation of protected servers. The Tor daemon runs using a unique random password generated each time the applications starts, protecting the controll port.
+#### All the connection runs over the tor network using tor as a proxy service and onion servers for the chat servers, also passwords allow the creation of protected servers. The Tor daemon runs using a unique random password generated each time the applications starts, protecting the controll port.
 
 - ⚠️ **X**: The software lacks a third-party security audit. Review the source code before deployment in critical environments.
 

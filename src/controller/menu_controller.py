@@ -171,7 +171,6 @@ class MenuController:
     
     async def function_dispatcher(self):
     
-        print("o dispatcher foi iniciado!!")
         while self.running:
             func, args , callback = await self.function_queue.get()
             new_task = asyncio.create_task(self.function_executer(func, args , callback))

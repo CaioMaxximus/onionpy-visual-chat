@@ -51,7 +51,7 @@ class PopUpEntryGui(ctk.CTkToplevel):
 
     def generate_personalized_inputs(self) -> None:
         for label_text in self.labels:
-            label = ctk.CTkLabel(self.inputs_canvas,text = label_text,wraplength=int(self.width * 0.85))
+            label = ctk.CTkLabel(self.inputs_canvas,text = label_text,wraplength=int(self.width * 0.80))
             label.pack(pady = 3)
             input_ = ctk.CTkEntry(self.inputs_canvas )
             input_.pack(pady = 5)

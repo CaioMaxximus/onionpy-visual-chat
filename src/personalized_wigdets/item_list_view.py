@@ -24,12 +24,12 @@ class ItemListView(ctk.CTkScrollableFrame):
     items : list
         items used to polute the wigdet
     buttons : {CTkButton}
-        dictionary containing the buttons wigdets
+        dictionary containing the buttons widgets
     
     Methods
     ------
     render_items
-        Instanciate the wigdets on the canvas
+        Instanciate the widgets on the canvas
     update_items
         Allows lazy creation of the items on the list, and a update without the 
         need to destroy all the wigdet

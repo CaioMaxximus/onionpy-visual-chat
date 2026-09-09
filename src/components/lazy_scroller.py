@@ -92,7 +92,7 @@ class LazyScroller(ctk.CTkScrollableFrame):
         self.window_size = window_size
         self.wigdet_model = wigdet_model
         self.children_ele = []
-        self.wigdets_ele = []
+        self.widgets_ele = []
 
         # This represents the head and tail of the total elements list
         self.h_window_p = 0
@@ -135,8 +135,8 @@ class LazyScroller(ctk.CTkScrollableFrame):
 
         new_e = self.wigdet_model(self)
         new_e.set_config(child)
-        self.wigdets_ele.append(new_e)
-        new_e.set_pos(len(self.wigdets_ele) - 1)
+        self.widgets_ele.append(new_e)
+        new_e.set_pos(len(self.widgets_ele) - 1)
         self.t_internal_window += 1
         self.t_window_p += 1
 
@@ -158,7 +158,7 @@ class LazyScroller(ctk.CTkScrollableFrame):
         self.h_window_p = (self.h_window_p + 1) % self.max_elements
         self.t_window_p = (self.t_window_p + 1) % self.max_elements
 
-        self.wigdets_ele[self.h_internal_window].set_config(
+        self.widgets_ele[self.h_internal_window].set_config(
             self.children_ele[self.t_window_p]
         )
         self.h_internal_window = (
@@ -171,10 +171,10 @@ class LazyScroller(ctk.CTkScrollableFrame):
         i = self.h_internal_window
         counter = 0
         while i != self.t_internal_window:
-            self.wigdets_ele[i].set_pos(counter)
-            i = (i + 1) % len(self.wigdets_ele)
+            self.widgets_ele[i].set_pos(counter)
+            i = (i + 1) % len(self.widgets_ele)
             counter += 1
-        self.wigdets_ele[i].set_pos(counter)
+        self.widgets_ele[i].set_pos(counter)
 
     def move_window_up(self):
 
@@ -187,7 +187,7 @@ class LazyScroller(ctk.CTkScrollableFrame):
         self.h_window_p = (self.h_window_p - 1) % self.max_elements
         self.t_window_p = (self.t_window_p - 1) % self.max_elements
 
-        self.wigdets_ele[self.t_internal_window].set_config(
+        self.widgets_ele[self.t_internal_window].set_config(
             self.children_ele[self.h_window_p]
         )
         self.h_internal_window = (
@@ -200,10 +200,10 @@ class LazyScroller(ctk.CTkScrollableFrame):
         i = self.h_internal_window
         counter = 0
         while i != self.t_internal_window:
-            self.wigdets_ele[i].set_pos(counter)
-            i = (i + 1) % len(self.wigdets_ele)
+            self.widgets_ele[i].set_pos(counter)
+            i = (i + 1) % len(self.widgets_ele)
             counter += 1
-        self.wigdets_ele[i].set_pos(counter)
+        self.widgets_ele[i].set_pos(counter)
 
     def move_circular_list(self):
 

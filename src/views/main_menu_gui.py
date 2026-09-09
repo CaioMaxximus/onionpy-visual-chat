@@ -15,7 +15,7 @@ class MainMenuGUI:
     Class representing the root view from the application.
     
     It allows to navigate to the server and clint view. Listing the alrady used 
-    and availble  connecitons.
+    and availble  connections.
 
     Atributtes
     ----------
@@ -165,7 +165,7 @@ class MainMenuGUI:
         "Minimum of 8 characters ;any blank space after or before will be removed!"
 
         pop_w = PopUpEntryGui(self.root,
-                               ["Define a name for the new server, with al least 6 and a maximus of 30 characters",
+                               ["Define a name for the new server, with at least 6 and a maximum of 30 characters",
                                  password_label_message]
                               , ["server_name", "password"])
         self.root.wait_window(pop_w)
@@ -244,12 +244,12 @@ class MainMenuGUI:
 #     items : list
 #         Items used to polute the wigdet
 #     buttons : {CTkButton}
-#         Dictionary containing the buttons wigdets
+#         Dictionary containing the buttons widgets
     
 #     Methods
 #     ------
 #     polute_frame
-#         Instanciate the wigdets on the canvas
+#         Instanciate the widgets on the canvas
 #     set_items
 #         Allows lazy creation of the items on the list
 #     """
