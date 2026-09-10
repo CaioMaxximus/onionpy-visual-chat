@@ -28,7 +28,6 @@ class ConfigLoader():
     
     @classmethod
     def load_config_data(cls):
-        print("carreguei os dados!")
         try:
             with open(f"{cls.APPLICATION_ROOT}/config.json" ,"r" , encoding="utf-8") as jfile:
                 cls._set_up_data = json.load(jfile)

@@ -2,6 +2,9 @@ from abc import ABC , abstractmethod
 import asyncio
 from src.models import Notification, NotificationType
 from typing import Optional
+import logging
+
+logger = logging.getLogger(__name__)
 
 class BaseConnection(ABC):
 
@@ -46,10 +49,9 @@ class BaseConnection(ABC):
         
             task.result()
         except asyncio.CancelledError:
-            pass
+            logger.exception("Unexpected error, task already closed!")
 
         except Exception as e:
              
-            ## Logg here
-            print(e)
-            pass
+            logger.exception("Unexpected error in task")
+            

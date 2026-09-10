@@ -6,7 +6,6 @@ import sys
 
 def setup_logging(env: str = "development", app_root = ""):
 
-    print(app_root)
 
     is_production = env.lower() == "production"
     os.makedirs(f"{app_root}/logs/",exist_ok = True)

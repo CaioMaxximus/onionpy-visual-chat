@@ -98,5 +98,3 @@ class TestTorServiceManager(unittest.TestCase):
         
         kill_tor_mock.assert_called_once()
 
-import sys
-print(sys.path)

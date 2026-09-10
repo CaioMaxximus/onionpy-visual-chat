@@ -188,12 +188,12 @@ class ServerConnection(BaseConnection):
                 data = await reader.readuntil(separator=b'\0')
 
             except asyncio.exceptions.IncompleteReadError as e:
-                ##loog here
+                logger.info("In server %s connection send an incomplete data, closing connection" , self.name)
                 break
 
             except asyncio.exceptions.LimitOverrunError as e:
                
-               ## logg here
+                logger.info("In server %s connection. Cliente send an message causing overflow, closing connection." , self.name)
                 break
 
             except Exception as e: 
@@ -251,7 +251,7 @@ class ServerConnection(BaseConnection):
         else:
             await self.notify(
             NotificationType.SUCCESS, f"Server started on {self.HOST}:{local_port}")
-            logger.info("Server %s started successfuly on adress : %s" , self.name, self)
+            logger.info("Local TCP server %s started successfuly on local port : %s" , self.name, self.PORT)
             
         self._connected = True
         self.check_messages_for_web_task = asyncio.create_task(self.check_messages_for_web())

@@ -1,4 +1,3 @@
-import asyncio
 import inspect
 from src.models import Notification , NotificationType
 from src.models import OnionServer

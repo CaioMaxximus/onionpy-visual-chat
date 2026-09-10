@@ -117,16 +117,20 @@ class ClientConnection(BaseConnection):
             handshake_data = client_connection_handshake(name ,self.password)
             writer.write(handshake_data)
             await writer.drain()
-        except Exception :
-            raise ConnectionError
+        except Exception as e:
+            logger.info("Handshake start with %s failed!", self.HOST)
+            raise ConnectionError(f"Error while starting handshake with the server. {e}")
         try:
             res = await asyncio.wait_for(reader.readuntil(separator=b'\0'), timeout=6.0)
+
         except Exception as e :
-            raise ConnectionError
+            logger.info("Handshake response with %s failed!", self.HOST)
+            raise ConnectionError(f"Error while waiting handshake response with the server. {e}")
         try:
             data = handle_server_response(res)
-        except:
-            raise ConnectionAbortedError
+        except Exception as e:
+            logger.info("Handshake response with %s response is invalid.", self.HOST)
+            raise ConnectionError(f"Error while processing server reponse. {e}")
         else:
             return data
 

@@ -155,7 +155,7 @@ class TorServiceManager():
         except FileNotFoundError as e:
             raise FileNotFoundError(f"Local onion hostname adress {hostname} not found!")
         except Exception as e:
-            raise RuntimeError(f"Unexpceted error during server key reading {e}")
+            raise RuntimeError(f"Unexpected error during server key reading {e}")
                             
         return hostname
 
@@ -174,6 +174,7 @@ class TorServiceManager():
             raise ConnectionError("Error starting onion service")
         return result
 
+    @classmethod
     def _start_existing_onion(cls,controller,onion_port , local_port, private_key):
         private_key = private_key.split(":")
         with controller.from_port(port = cls.TOR_CONTROL_PORT) as ctrl:
@@ -202,7 +203,7 @@ class TorServiceManager():
             if private_key == "":
                 result =cls._create_new_onion(controller,onion_port , local_port)
             else:
-                result = cls._start_existing_onion(cls,controller,onion_port , local_port, private_key)
+                result = cls._start_existing_onion(controller,onion_port , local_port, private_key)
 
         except Exception as e:
             raise RuntimeError(f"Error connecting with the server {e}")

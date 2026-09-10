@@ -17,8 +17,8 @@ class Response(Enum):
     SUCCESS = "SUCCESS"
 
 
-CLIENT_NAME_RAGEX_ = r'^[A-Za-z0-9_]{5,25}$'
-SERVER_NAME_REGEX = r'^[A-Za-z0-9_-]{5,30}'
+CLIENT_NAME_REGEX_ = r'^[A-Za-z0-9_]{5,25}$'
+SERVER_NAME_REGEX = r'^[A-Za-z0-9_-]{5,30}$'
 
 
 ## SERVER SIDE HANDSHAKE
@@ -31,7 +31,7 @@ async def server_connection_handshake(message,password, local_users):
 
         if "password" not in dic_data or "name" not in dic_data:
             raise ValueError("Invalid HandShakeFormat")
-        if dic_data["name"] in local_users or not re.match(CLIENT_NAME_RAGEX_, dic_data["name"]):
+        if dic_data["name"] in local_users or not re.match(CLIENT_NAME_REGEX_, dic_data["name"]):
             raise ValueError("Invalid Name")
         if password == "":
             return dic_data
@@ -71,22 +71,24 @@ def handle_server_response(res):
     desired_keys = ["name"]
     ## Create new exceptions for this case
     if "type" not in dic_data:
-        raise ValueError
+        raise ValueError("Missing 'Type' field in response")
     
     if dic_data["type"] == Response.ERROR.value:
-            raise ValueError
+            raise ValueError("Server responded with ERROR.")
+    
     elif dic_data["type"] == Response.SUCCESS.value:
         if "name" not in dic_data:
-            raise ValueError
+            raise ValueError("Missing 'Type' field in response")
+        
         if not re.match(SERVER_NAME_REGEX, dic_data["name"]):
-            raise ValueError
+            raise ValueError("Invalid server name format")
         
         exit_dic = {}
         try:
             exit_dic = {k: dic_data[k] for k in desired_keys}
-        except Exception:
-            raise ValueError
+        except Exception as e:
+            raise ValueError("Missing a field in server response. {e}")
         else:
             return exit_dic
                 
-    raise ValueError
+    raise ValueError("Server reesponse with a unsuported format")

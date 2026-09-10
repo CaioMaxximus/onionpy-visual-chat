@@ -26,7 +26,6 @@ class PopUpNotificationGUI(CTkToplevel):
         self.change_notification_type( notification_type)
         self.final_val = False
         self.callback = callback
-        # self.protocol("WM_DELETE_WINDOW", lambda : print("suave"))
 
     
 

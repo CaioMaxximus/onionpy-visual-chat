@@ -1,4 +1,3 @@
-import asyncio
 import re
 ## Temporary
 class InvalidOnionHost(Exception): pass

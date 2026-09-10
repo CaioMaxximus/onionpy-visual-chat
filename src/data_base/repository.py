@@ -9,26 +9,26 @@ async def save_new_server(server_name, local_port ,
     await db.save_new_server(server_name, local_port , 
                             onion_hostname, onion_port,password)
     
-async def save_discovered_server( host , port,server_name = "Unknow_connection" ):
+async def save_discovered_server( host , port,server_name = "Unknown_connection"):
 
     await db.save_discovered_server_securely(server_name,host, port)
 
 async def get_all_discovered_servers():
     servers = await db.list_all_discovered_servers()
     #  verficar se pode retornar none
-    exit_ =  []
+    res =  []
     for s in servers:
-        exit_.append(DiscoveredServer(name =s[0] , hostname=s[1],port= s[2], password= ""))
-    return exit_
+        res.append(DiscoveredServer(name =s[0] , hostname=s[1],port= s[2], password= ""))
+    return res
 
 async def get_all_servers():
     servers = await db.list_all_servers()
-    exit_ =  []
+    res =  []
 
     for s in servers:
-        exit_.append(OnionServer(name=s[0], hostname=s[1],local_server_port=s[2],
+        res.append(OnionServer(name=s[0], hostname=s[1],local_server_port=s[2],
                                  onion_port=s[3],password= s[4]))
-    return exit_
+    return res
 
 async def get_server_by_name(name):
     res =  await db.get_server_by_name(name)

@@ -141,18 +141,18 @@ class MenuController:
         return await self.notification_bus.consume()
 
 
+    "Change this to a proper callback system , like in the connection controllers"
     def _enqueue(self, func, *args, callback=None):
         try:
             self.my_loop.call_soon_threadsafe(self.function_queue.put_nowait, (func, args, callback))
         except Exception as e:
-            raise e
+            raise RuntimeError(f"Error while executing callback, {e}")
 
     ## This funciton will act this way, while the class have few async functions 
     ## an it was designed to be sync, prob will change in the future
 
     async def function_executer(self,func, args , callback):
         try:
-            print(func.__name__)
             res = await func(*args)
 
         except (ConnectionError, TimeoutError ,FileNotFoundError , RuntimeError) as e:

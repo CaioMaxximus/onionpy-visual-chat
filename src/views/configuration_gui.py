@@ -176,7 +176,6 @@ class PopUpDialogItemList(CTkToplevel):
             self.value.pack(side = "right",padx = 3.5)
 
     def on_close(self):
-        print("to fechando")
         self.destroy()
 
 
