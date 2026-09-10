@@ -50,10 +50,17 @@ class PopUpEntryGui(ctk.CTkToplevel):
 
 
     def generate_personalized_inputs(self) -> None:
-        for label_text in self.labels:
+
+        
+
+        for label_text,input_map in zip(self.labels,self.maps_of_inputs):
             label = ctk.CTkLabel(self.inputs_canvas,text = label_text,wraplength=int(self.width * 0.80))
             label.pack(pady = 3)
-            input_ = ctk.CTkEntry(self.inputs_canvas )
+            placeholder = ""
+            if input_map == "password":
+                placeholder = "*"
+            input_ = ctk.CTkEntry(self.inputs_canvas, show = placeholder )
+
             input_.pack(pady = 5)
             self.entrys.append(input_)
             
