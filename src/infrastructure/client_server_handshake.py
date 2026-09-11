@@ -87,7 +87,7 @@ def handle_server_response(res):
         try:
             exit_dic = {k: dic_data[k] for k in desired_keys}
         except Exception as e:
-            raise ValueError("Missing a field in server response. {e}")
+            raise ValueError(f"Missing a field in server response. {e}")
         else:
             return exit_dic
                 

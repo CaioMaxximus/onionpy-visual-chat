@@ -77,7 +77,7 @@ class TorServiceManager():
 
             try:
                 os.makedirs(folder_instace_path, exist_ok= True, mode=0o700)
-            except Exception:
+            except Exception as e:
                 logger.exception(f"Error while trying to create onion folder %s" , folder_instace_path)
                 raise RuntimeError(f"Error creating server folder : {e}")
 
@@ -197,7 +197,6 @@ class TorServiceManager():
         hostname_path = f"{instance_path}/hostname"
         private_key_path = f"{instance_path}/hs_ed25519_secret_key"
         private_key = cls._read_private_key_file(private_key_path)
-        adrr = ""
         result = ""
         try:
             if private_key == "":
@@ -223,7 +222,7 @@ class TorServiceManager():
     @classmethod
     def stop_onion_server(cls,server_name):
         if not cls.check_server_exists(server_name):
-            raise ValueError("Server {server_name} not found!")
+            raise ValueError(f"Server {server_name} not found!")
 
         cls._stop_onion_server(server_name, cls.global_controller)
 
@@ -294,8 +293,8 @@ class TorServiceManager():
             raise RuntimeError(f"The application is unauthorized to remove the server folder; verify your credentials.")
         except Exception as e:
 
-            logger.exception("Unexpectd error while trying to remove server folder : %s" , instance_resolved)
-            raise RuntimeError(f"Unexpectd error during onion server removal {e}")
+            logger.exception("Unexpected error while trying to remove server folder : %s" , instance_resolved)
+            raise RuntimeError(f"Unexpected error during onion server removal {e}")
 
         logger.info("Server %s was removed successfully" , name) 
         return
@@ -359,10 +358,8 @@ class TorServiceManager():
     def _kill_tor(cls):
         try:
             cls.docker_container.stop()
-            # cls.docker_container.wait()
         except Exception as e:
-            #Log here
-            pass
+            logger.exception("Error while finishing docker container service")
     
     @classmethod 
     def end_tor(cls):
