@@ -21,9 +21,8 @@ Built with CustomTkinter, asyncio, and the Tor control library Stem.
 | **Client/Server** | ✅ Done | Connect to any address, host multiple servers |
 | **Password Protected Servers** | ✅ Done | Optional  access control |
 | **Real-time Notifications** | ✅ Done | Connection status, errors, and alerts |
-| **Message Broadcasting** | ✅ Done | Async message delivery to all connected clients |
-| **Secure Credentials** | ✅ Done | Passwords hashed  |
-| **Persistent Storage** | ✅ Done | SQLite database for servers and connections |
+| **Secure Credentials** | ✅ Done | Passwords Option  |
+| **Persistent Storage** | ✅ Done | Retrieve local servers and discovered servers |
 | **Async Non-Blocking UI** | ✅ Done | Smooth, responsive interface via asyncio |
 | **Connection Management** | ✅ Done | View, manage, and delete saved servers |
 
