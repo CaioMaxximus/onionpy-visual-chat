@@ -33,7 +33,9 @@ class MessageFrame(CTkFrame, ScrollItem):
         self.side_gap = side_gap
 
         self.label1.configure(text = f" - {author_name}")
-        self.label1.bind("<ButtonRelease-1>", self.spaw_gui)
+
+        ## Discontinued for while
+        # self.label1.bind("<ButtonRelease-1>", self.spaw_gui)
 
         self.label2.configure(text = f" - {entry}",wraplength= int(width * 0.9))
 
