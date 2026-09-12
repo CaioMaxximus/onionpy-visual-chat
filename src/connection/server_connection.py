@@ -43,7 +43,7 @@ class ServerConnection(BaseConnection):
         my_connecions : list
             Stores all the writers type data from all the clients connected
         _connected : Bool
-            Indicates wether there is a active connecition running
+            Indicates wether there is a active connection running
         message_queue : asyncio.Queue
             Asynchronus queue to store the messages incoming from the web
         notification_queue : asyncio.Queue
@@ -122,7 +122,6 @@ class ServerConnection(BaseConnection):
                 await asyncio.gather(*[
                     self.broadcast_message(last_message, w) for w in self.my_connections
                 ])
-            #  precisa de um pass aq
             except  asyncio.CancelledError as e :
                 raise e
             except Exception as e:
@@ -154,10 +153,14 @@ class ServerConnection(BaseConnection):
 
                 client_data = await server_connection_handshake(handshake_data, password, local_clients.inverse)
             except Exception as e:
-
+                logger.info("Handshake failed: %s", e)
                 res = server_failure_handshake_response()
                 writer.write(res)
-                await writer.drain()
+
+                try:
+                    await writer.drain()
+                except Exception:
+                    pass
                 raise ConnectionRefusedError
             else:
                 res = server_success_handshake_response(self.name)
@@ -175,7 +178,7 @@ class ServerConnection(BaseConnection):
             client_data = await self._handshake(reader , writer, self.password, self.my_connections)
         except Exception as e:
 
-            await self.notify(NotificationType.INFO, f"""handshake failed""")
+            await self.notify(NotificationType.INFO, f"Handshake failed")
             await self.remove_connection(writer)
             return 
         else:
@@ -235,7 +238,6 @@ class ServerConnection(BaseConnection):
 
     async def startup(self):
    
-
         try:
             server = await asyncio.start_server(self.connection_handler, self.HOST, 
                                                 self.PORT,reuse_address = True,limit = 1024)
@@ -261,13 +263,10 @@ class ServerConnection(BaseConnection):
     @validate_connection_state            
     async def broadcast_message(self, message , w):
 
-
         data = message["entry"].replace("\x00", "")
-        # data_encoded = (data + "\0").encode()
 
         formated_message = ServerMessage(message= data ,author= message["author_name"] ,from_server= message["owner"])
         data_encoded = formated_message.convert_to_stream()
-        # for w in self.my_connections:
         author_name = message["author_name"]
         writer_name = self.my_connections[w]
 
@@ -292,8 +291,8 @@ class ServerConnection(BaseConnection):
             self.check_messages_for_web_task.cancel()
             await self.check_messages_for_web_task
         except asyncio.CancelledError:
-            logger.debug("Error while trying to finish check_messages_for_web_task; task is already closed.")
-
+            # logger.debug("Error while trying to finish check_messages_for_web_task; task is already closed.")
+            pass
 
         async def close_connection(writer):
             try:
@@ -317,7 +316,7 @@ class ServerConnection(BaseConnection):
             await self.server.wait_closed()
         except asyncio.CancelledError:
 
-            logger.debug("Error while trying to close %s server, the TCP server is already closed!", self.name)
+            pass
 
         except Exception as e:
             logger.exception("Error while close tcp server %s.",self.name)

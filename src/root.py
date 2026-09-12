@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
 
     ConfigLoader.load_config_data()
-    setup_logging(app_root = ConfigLoader.get_application_root())
+    setup_logging(app_root = ConfigLoader.get_application_root(),env = "production")
     logger.info("Starting application")
     root = ctk.CTk()
     ApplicationCoordinator.main_menu(root)

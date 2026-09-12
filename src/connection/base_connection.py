@@ -44,14 +44,12 @@ class BaseConnection(ABC):
         raise NotImplementedError()
 
     def handle_tasks_errors(self, task):
-         
-        try:
-        
-            task.result()
-        except asyncio.CancelledError:
-            logger.exception("Unexpected error, task already closed!")
 
-        except Exception as e:
-             
-            logger.exception("Unexpected error in task")
-            
+        if task.cancelled():
+            pass
+
+        elif task.exception() is not None:
+
+            error = task.exception()
+            task.result()
+            logger.error(" %s ",error)

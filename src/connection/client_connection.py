@@ -40,7 +40,7 @@ class ClientConnection(BaseConnection):
         writer : StreamWriter
             Object to send data to the server
         _connected : Bool
-            Indicates wether there is a active connecition running
+            Indicates wether there is a active connection running
         message_queue : asyncio.Queue
             Asynchronus queue to store the messages incoming from the web
       
@@ -101,7 +101,7 @@ class ClientConnection(BaseConnection):
             await self.server_task
             
         except asyncio.CancelledError :
-            logger.debug("The client server task is already closed!")
+            pass
             
         except Exception as e:
             

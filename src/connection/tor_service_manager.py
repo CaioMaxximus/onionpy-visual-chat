@@ -333,13 +333,12 @@ class TorServiceManager():
         try:
             cls.docker_container =  cls.docker_client.containers.run(
             
-                        image = img_name,
-                        name = container_name,
-                        network_mode="host",environment = {"TOR_PASSWORD" : secret_pass}
-                        ,detach= True,
-                        auto_remove=True
-                    )
-            
+                image = img_name,
+                name = container_name,
+                network_mode="host",environment = {"TOR_PASSWORD" : secret_pass}
+                ,detach= True,
+                auto_remove=True
+            )
 
         except Exception as e:
             raise RuntimeError(f"Unable to start docker container {e}")
@@ -347,6 +346,7 @@ class TorServiceManager():
         try:
 
             cls.wait_for_socks(cls.config_json["port"],timeout)
+            
         except TimeoutError as e:
             cls._kill_tor()
             raise TimeoutError(e)
