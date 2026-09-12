@@ -90,8 +90,9 @@ TESTS
 
 ## Future features
 
-  **A conection keeper for not stable connections**
-  **A visual indicator for the lazyscroller chat view, indicating bottom or top**
+  - **A conection keeper for not stable connections**
+  - **A visual indicator for the lazyscroller chat view, indicating bottom or top**
+  - **Limit the maximum number of connection by room**
 
 ## License
 
