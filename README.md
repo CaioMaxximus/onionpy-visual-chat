@@ -93,6 +93,10 @@ TESTS
   **A conection keeper for not stable connections**
   **A visual indicator for the lazyscroller chat view, indicating bottom or top**
 
+## License
+
+This project is licensed under the GNU General Public License v2.0. Any derivative work must also remain open-source and free. For more details, please see the [LICENSE](LICENSE) file.
+
 
 ## Contact
 - Author: Caio Maxximus
